@@ -1,0 +1,39 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v5.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v5.0": {
+      "Accent.KShortestPaths/1.0.0": {
+        "dependencies": {
+          "Priority Queue": "4.2.0.0"
+        },
+        "runtime": {
+          "Accent.KShortestPaths.dll": {}
+        }
+      },
+      "Priority Queue/4.2.0.0": {
+        "runtime": {
+          "Priority Queue.dll": {
+            "assemblyVersion": "4.2.0.0",
+            "fileVersion": "4.2.0.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "Accent.KShortestPaths/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Priority Queue/4.2.0.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

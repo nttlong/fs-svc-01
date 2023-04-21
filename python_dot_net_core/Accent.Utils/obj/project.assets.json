@@ -1,0 +1,99 @@
+{
+  "version": 3,
+  "targets": {
+    "net5.0": {
+      "Accent.KShortestPaths/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v5.0",
+        "compile": {
+          "bin/placeholder/Accent.KShortestPaths.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Accent.KShortestPaths.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "Accent.KShortestPaths/1.0.0": {
+      "type": "project",
+      "path": "../Accent.KShortestPaths/Accent.KShortestPaths.csproj",
+      "msbuildProject": "../Accent.KShortestPaths/Accent.KShortestPaths.csproj"
+    }
+  },
+  "projectFileDependencyGroups": {
+    "net5.0": [
+      "Accent.KShortestPaths >= 1.0.0"
+    ]
+  },
+  "packageFolders": {
+    "/root/.nuget/packages/": {}
+  },
+  "project": {
+    "version": "1.0.0",
+    "restore": {
+      "projectUniqueName": "/home/vmadmin/python/v6/file-service-02/dotnet_core/VietnameseAccent/Accent.Utils/Accent.Utils.csproj",
+      "projectName": "Accent.Utils",
+      "projectPath": "/home/vmadmin/python/v6/file-service-02/dotnet_core/VietnameseAccent/Accent.Utils/Accent.Utils.csproj",
+      "packagesPath": "/root/.nuget/packages/",
+      "outputPath": "/home/vmadmin/python/v6/file-service-02/dotnet_core/VietnameseAccent/Accent.Utils/obj/",
+      "projectStyle": "PackageReference",
+      "configFilePaths": [
+        "/root/.nuget/NuGet/NuGet.Config"
+      ],
+      "originalTargetFrameworks": [
+        "net5.0"
+      ],
+      "sources": {
+        "https://api.nuget.org/v3/index.json": {}
+      },
+      "frameworks": {
+        "net5.0": {
+          "targetAlias": "net5.0",
+          "projectReferences": {
+            "/home/vmadmin/python/v6/file-service-02/dotnet_core/VietnameseAccent/Accent.KShortestPaths/Accent.KShortestPaths.csproj": {
+              "projectPath": "/home/vmadmin/python/v6/file-service-02/dotnet_core/VietnameseAccent/Accent.KShortestPaths/Accent.KShortestPaths.csproj"
+            }
+          }
+        }
+      },
+      "warningProperties": {
+        "warnAsError": [
+          "NU1605"
+        ]
+      }
+    },
+    "frameworks": {
+      "net5.0": {
+        "targetAlias": "net5.0",
+        "imports": [
+          "net461",
+          "net462",
+          "net47",
+          "net471",
+          "net472",
+          "net48",
+          "net481"
+        ],
+        "assetTargetFallback": true,
+        "warn": true,
+        "downloadDependencies": [
+          {
+            "name": "Microsoft.AspNetCore.App.Ref",
+            "version": "[5.0.0, 5.0.0]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Ref",
+            "version": "[5.0.0, 5.0.0]"
+          }
+        ],
+        "frameworkReferences": {
+          "Microsoft.NETCore.App": {
+            "privateAssets": "all"
+          }
+        },
+        "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/6.0.406/RuntimeIdentifierGraph.json"
+      }
+    }
+  }
+}

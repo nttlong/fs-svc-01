@@ -1,0 +1,4 @@
+/home/vmadmin/python/v6/file-service-02/dotnet_core/VietnameseAccent/Accent.KShortestPaths/bin/Debug/net5.0/publish/Accent.KShortestPaths.dll
+/home/vmadmin/python/v6/file-service-02/dotnet_core/VietnameseAccent/Accent.KShortestPaths/bin/Debug/net5.0/publish/Accent.KShortestPaths.deps.json
+/home/vmadmin/python/v6/file-service-02/dotnet_core/VietnameseAccent/Accent.KShortestPaths/bin/Debug/net5.0/publish/Accent.KShortestPaths.pdb
+/home/vmadmin/python/v6/file-service-02/dotnet_core/VietnameseAccent/Accent.KShortestPaths/bin/Debug/net5.0/publish/Priority Queue.dll

@@ -1,0 +1,16 @@
+/home/vmadmin/python/v6/file-service-02/dotnet_core/VietnameseAccent/Accent.Utils/bin/Debug/net5.0/Accent.Utils.deps.json
+/home/vmadmin/python/v6/file-service-02/dotnet_core/VietnameseAccent/Accent.Utils/bin/Debug/net5.0/Accent.Utils.dll
+/home/vmadmin/python/v6/file-service-02/dotnet_core/VietnameseAccent/Accent.Utils/bin/Debug/net5.0/Accent.Utils.pdb
+/home/vmadmin/python/v6/file-service-02/dotnet_core/VietnameseAccent/Accent.Utils/bin/Debug/net5.0/Accent.KShortestPaths.dll
+/home/vmadmin/python/v6/file-service-02/dotnet_core/VietnameseAccent/Accent.Utils/bin/Debug/net5.0/Priority Queue.dll
+/home/vmadmin/python/v6/file-service-02/dotnet_core/VietnameseAccent/Accent.Utils/bin/Debug/net5.0/Accent.KShortestPaths.pdb
+/home/vmadmin/python/v6/file-service-02/dotnet_core/VietnameseAccent/Accent.Utils/obj/Debug/net5.0/Accent.Utils.csproj.AssemblyReference.cache
+/home/vmadmin/python/v6/file-service-02/dotnet_core/VietnameseAccent/Accent.Utils/obj/Debug/net5.0/Accent.Utils.GeneratedMSBuildEditorConfig.editorconfig
+/home/vmadmin/python/v6/file-service-02/dotnet_core/VietnameseAccent/Accent.Utils/obj/Debug/net5.0/Accent.Utils.AssemblyInfoInputs.cache
+/home/vmadmin/python/v6/file-service-02/dotnet_core/VietnameseAccent/Accent.Utils/obj/Debug/net5.0/Accent.Utils.AssemblyInfo.cs
+/home/vmadmin/python/v6/file-service-02/dotnet_core/VietnameseAccent/Accent.Utils/obj/Debug/net5.0/Accent.Utils.csproj.CoreCompileInputs.cache
+/home/vmadmin/python/v6/file-service-02/dotnet_core/VietnameseAccent/Accent.Utils/obj/Debug/net5.0/Accent.Utils.csproj.CopyComplete
+/home/vmadmin/python/v6/file-service-02/dotnet_core/VietnameseAccent/Accent.Utils/obj/Debug/net5.0/Accent.Utils.dll
+/home/vmadmin/python/v6/file-service-02/dotnet_core/VietnameseAccent/Accent.Utils/obj/Debug/net5.0/refint/Accent.Utils.dll
+/home/vmadmin/python/v6/file-service-02/dotnet_core/VietnameseAccent/Accent.Utils/obj/Debug/net5.0/Accent.Utils.pdb
+/home/vmadmin/python/v6/file-service-02/dotnet_core/VietnameseAccent/Accent.Utils/obj/Debug/net5.0/ref/Accent.Utils.dll

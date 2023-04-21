@@ -1,0 +1,10 @@
+sudo apt update
+sudo apt install maven
+sudo apt update
+sudo apt -y install wget curl vim unzip
+sudo apt install -y default-jdk
+export VER="2.2.1"
+wget https://archive.apache.org/dist/tika/${VER}/tika-${VER}-src.zip
+unzip tika-${VER}-src.zip
+cd tika-${VER}
+mvn install

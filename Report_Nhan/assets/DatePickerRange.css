@@ -1,0 +1,32 @@
+/* Calendar date start and end */
+.CalendarDay__selected, .CalendarDay__selected:active, .CalendarDay__selected:hover {
+  background: rgb(41, 56, 55) !important; /* start and end day*/
+  /*background: rgb(10, 98, 212) !important;*/ /* start and end day*/
+  border: 1px double rgb(41, 56, 55) !important;
+  color: rgb(251, 251, 252) !important;
+}
+
+/* Calendar in between start and end date */
+.CalendarDay__selected_span {
+    background: rgb(93, 113, 120) !important; /*Selected Range*/
+	/*background: rgb(57, 187, 253) !important;*/ /*Selected Range*/
+    border: 1px double rgb(93, 113, 120) !important;
+    color: rgb(251, 251, 252) !important;
+}
+
+.CalendarDay__selected_span:active, .CalendarDay__selected_span:hover {
+    background: rgb(57, 81, 85) !important;
+    border: 1px double rgb(57, 81, 85) !important;
+    color: rgb(251, 251, 252) !important;
+}
+.DateRangePickerInput_arrow_svg, .DateRangePickerInput_arrow_svg_1 {
+  Height: 10px !important;
+  Width: 10px !important;
+}
+.no-scrollbars::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbars {
+  scrollbar-width: none;
+}
