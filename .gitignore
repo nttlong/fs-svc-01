@@ -27,3 +27,9 @@
 /web/
 /zip/
 /cy_xdoc/cache/
+/dotnet_core/VietnameseAccent/Accent.Utils/bin/
+/dotnet_core/VietnameseAccent/Accent.Utils/obj/
+/dotnet_core/VietnameseAccent/Accent.KShortestPaths/bin/
+/dotnet_core/VietnameseAccent/Accent.API/obj/
+/dotnet_core/VietnameseAccent/Accent.API/bin/
+/dotnet_core/VietnameseAccent/Accent.KShortestPaths/obj/
