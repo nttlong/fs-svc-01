@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Priority Queue">
+      <HintPath>..\..\..\HDHUY_PROJECT\BotProject\Accent.KShortestPaths\bin\Debug\Priority Queue.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>
