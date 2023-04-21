@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "2FOa6JkVnYbeOkUGnQAr5hwIU2kEg8aYdPMX0Y78DvKXcuTfJkP5sHS6dbreHUL4tAkrsYhIf0DT8FsSFFnoSg==",
+  "success": true,
+  "projectFilePath": "/home/vmadmin/python/v6/file-service-02/dotnet_core/VietnameseAccent/Accent.Utils/Accent.Utils.csproj",
+  "expectedPackageFiles": [
+    "/root/.nuget/packages/microsoft.netcore.app.ref/5.0.0/microsoft.netcore.app.ref.5.0.0.nupkg.sha512",
+    "/root/.nuget/packages/microsoft.aspnetcore.app.ref/5.0.0/microsoft.aspnetcore.app.ref.5.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}

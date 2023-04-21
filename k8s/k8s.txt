@@ -1,0 +1,70 @@
+
+ssh vmadmin@172.16.7.91
+
+sudo kubeadm init  --pod-network-cidr=192.168.0.0/16  --upload-certs  --service-dns-domain=cluster.local --cri-socket /run/cri-dockerd.sock
+sudo kubeadm reset  --cri-socket /run/cri-dockerd.sock
+
+kubeadm join 172.16.7.91:6443 --token xv4orj.uoizq7m5amgojy2o \
+        --discovery-token-ca-cert-hash sha256:6fc8d5cf14eeb1e576232d30fcc510260be225b09f88f0718e86a435e1363c3d   --cri-socket /run/cri-dockerd.sock
+
+kubeadm join 172.16.7.91:6443 --token 4ww196.vjrzk4i3u68h32sm \
+        --discovery-token-ca-cert-hash sha256:302a0777e23201d535b96c38942ae32cc4e6e48ac96d770bb3b612d863bd5841  --cri-socket /run/cri-dockerd.sock
+xe file:
+/etc/security/limits.conf
+ps -Flww -p 5733
+ps -Flww -p 5741
+
+ps -Flww -p 5752
+ps -Flww -p 5936
+ps -Flww -p 6014
+
+systemctl stop  containerd
+sudo systemctl status crio
+sudo systemctl status containerd
+sudo systemctl disable containerd
+
+sudo systemctl status docker
+sudo systemctl disable docker
+Neu cap loi
+-------------The connection to the server 172.16.7.91:6443 was refused-------
+Lam cac buoc sau
+export KUBECONFIG=/etc/kubernetes/admin.conf
+sudo cp /etc/kubernetes/admin.conf $HOME/
+sudo chown $(id -u):$(id -g) $HOME/admin.conf
+export KUBECONFIG=$HOME/admin.conf
+sudo echo 'export KUBECONFIG=$HOME/admin.conf' >> $HOME/.bashrc
+echo 'export KUBECONFIG=$HOME/.kube/config' >> $HOME/.bashrc
+---------------------------------------------------------------------
+nano /etc/host
+
+kubeadm join worker01:6443 --token mt8ojd.o1815ns3400kbfv7 --discovery-token-ca-cert-hash sha256:26c333a68520d73779acb47689732691853e77ecdd4ff64535f66b85abc2be1c  --control-plane --certificate-key 2abdca2494e1753100847724c5dd9df14ad8ab8e30fa9b425ebec54aaaca26f9 --cri-socket=unix:///var/run/crio/crio.sock
+
+
+kubeadm join 172.16.13.72:6443 --token bk3fdi.gseoc1s3jtuc5cht \
+        --discovery-token-ca-cert-hash sha256:27e8301b6c273e2d42360f279a9675d00dfa835838398fc7466906f53ad978d9 --cri-socket unix:///var/run/cri-dockerd.sock
+
+sudo ufw allow from any to any port 6443 proto tcp
+
+vim nodeport_dashboard_patch1.yaml
+spec:
+  ports:
+  - nodePort: 32000
+    port: 443
+    protocol: TCP
+    targetPort: 8443
+EOF
+
+------new----
+kubeadm join 172.16.13.72:6443 --token 2lkn8u.71iv1tfgl2pe7kwn \
+        --discovery-token-ca-cert-hash sha256:87761090589e5addf14629b11575520a319f02178ad85bb320d5b898c83a782e \
+        --control-plane --certificate-key 0a88c98904af30a74e7f70ea71ba775e6ef20c1990ac60097beaf5a3da3025ed --cri-socket /run/cri-dockerd.sock
+
+kubeadm join worker01:6443 --token ldqin7.nb1s9knfwj5lihmr \
+        --discovery-token-ca-cert-hash sha256:9c252d514dfc069e7fb051a031e8a8694293087950e6fcdfe616701c0ed05dc9 \
+        --control-plane --certificate-key 1f2bb7d9943a58970551909bfb0a5324c67d618306de4b113fa334fbab0bc81b --cri-socket /run/cri-dockerd.sock
+
+kubeadm reset --cri-socket=unix:///var/run/crio/crio.sock
+kubeadm join worker01:6443 --token idubxq.qznj4bnxgjzr5a0g \
+        --discovery-token-ca-cert-hash sha256:93843ceec693315fa546ac610e011d3465238616d82a74583595a228eb526e95 --cri-socket=unix:///var/run/crio/crio.sock
+scp root@172.16.13.72:/etc/kubernetes/admin.conf
+kubectl get nodes --kubeconfig /etc/kubernetes/kubelet.conf

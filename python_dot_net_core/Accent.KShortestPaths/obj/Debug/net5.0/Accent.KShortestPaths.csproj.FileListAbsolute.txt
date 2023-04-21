@@ -1,0 +1,14 @@
+/home/vmadmin/python/v6/file-service-02/dotnet_core/VietnameseAccent/Accent.KShortestPaths/bin/Debug/net5.0/Accent.KShortestPaths.deps.json
+/home/vmadmin/python/v6/file-service-02/dotnet_core/VietnameseAccent/Accent.KShortestPaths/bin/Debug/net5.0/Accent.KShortestPaths.dll
+/home/vmadmin/python/v6/file-service-02/dotnet_core/VietnameseAccent/Accent.KShortestPaths/bin/Debug/net5.0/Accent.KShortestPaths.pdb
+/home/vmadmin/python/v6/file-service-02/dotnet_core/VietnameseAccent/Accent.KShortestPaths/bin/Debug/net5.0/Priority Queue.dll
+/home/vmadmin/python/v6/file-service-02/dotnet_core/VietnameseAccent/Accent.KShortestPaths/obj/Debug/net5.0/Accent.KShortestPaths.csproj.AssemblyReference.cache
+/home/vmadmin/python/v6/file-service-02/dotnet_core/VietnameseAccent/Accent.KShortestPaths/obj/Debug/net5.0/Accent.KShortestPaths.GeneratedMSBuildEditorConfig.editorconfig
+/home/vmadmin/python/v6/file-service-02/dotnet_core/VietnameseAccent/Accent.KShortestPaths/obj/Debug/net5.0/Accent.KShortestPaths.AssemblyInfoInputs.cache
+/home/vmadmin/python/v6/file-service-02/dotnet_core/VietnameseAccent/Accent.KShortestPaths/obj/Debug/net5.0/Accent.KShortestPaths.AssemblyInfo.cs
+/home/vmadmin/python/v6/file-service-02/dotnet_core/VietnameseAccent/Accent.KShortestPaths/obj/Debug/net5.0/Accent.KShortestPaths.csproj.CoreCompileInputs.cache
+/home/vmadmin/python/v6/file-service-02/dotnet_core/VietnameseAccent/Accent.KShortestPaths/obj/Debug/net5.0/Accent.KShortestPaths.csproj.CopyComplete
+/home/vmadmin/python/v6/file-service-02/dotnet_core/VietnameseAccent/Accent.KShortestPaths/obj/Debug/net5.0/Accent.KShortestPaths.dll
+/home/vmadmin/python/v6/file-service-02/dotnet_core/VietnameseAccent/Accent.KShortestPaths/obj/Debug/net5.0/refint/Accent.KShortestPaths.dll
+/home/vmadmin/python/v6/file-service-02/dotnet_core/VietnameseAccent/Accent.KShortestPaths/obj/Debug/net5.0/Accent.KShortestPaths.pdb
+/home/vmadmin/python/v6/file-service-02/dotnet_core/VietnameseAccent/Accent.KShortestPaths/obj/Debug/net5.0/ref/Accent.KShortestPaths.dll

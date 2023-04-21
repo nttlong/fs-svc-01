@@ -1,0 +1,11 @@
+ssh vmadmin@172.16.7.91
+
+https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.3.1/deploy/static/provider/cloud/deploy.yaml
+kubectl create clusterrolebinding deployment-controller --clusterrole=cluster-admin --serviceaccount=kube-system:deployment-controller
+
+xoa het
+
+kubectl delete all --all -n ingress-nginx
+kubectl delete all --all -n codxservice1
+kubectl delete all --all -n codxservice
+kubectl delete all --all -n calico-system
