@@ -1,0 +1,40 @@
+apt-get install libpcap-dev -y
+apt-get install build-essential libcap-dev -y
+apt-get install python3-pip -y
+pip install git+http://github.com/seveas/python-prctl
+pip install --upgrade pip
+pip install python-prctl
+
+pip install ultocr
+pip install git+https://github.com/mindee/doctr.git
+pip install torch
+pip uninstall packaging -y
+pip install packaging==20.0
+git clone https://github.com/facebookresearch/detectron2.git
+python3 -m pip install -e detectron2
+pip install git+https://github.com/facebookresearch/detectron2.git
+
+apt-get install python3.9-dev -y
+pip install ipython
+pip install dataflow
+pip install Cython
+pip install pycocotools
+
+pip install torchvision
+pip install -r requirements.txt
+pip uninstall packaging -y
+pip install packaging==20.9
+
+pip install git+https://github.com/huggingface/datasets.git
+pip install git+https://github.com/huggingface/transformers.git
+pip uninstall packaging -y
+pip install deepdoctection
+pip install -U layoutparser
+pip install git+https://github.com/facebookresearch/detectron2.git@v0.4#egg=detectron2
+pip install git+https://github.com/deepdoctection/deepdoctection.git
+pip install timm
+pip install layoutparser[ocr]
+pip uninstall packaging -y
+pip install packaging==20.0
+
+#########################################

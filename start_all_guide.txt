@@ -1,0 +1,12 @@
+python cy_xdoc/server.py temp_directory=./brokers/tmp rabbitmq.server=172.16.7.91 rabbitmq.port=31672
+# Start process watch when file is uploaded
+python cy_consumers/files_upload.py  temp_directory=./brokers/tmp rabbitmq.server=172.16.7.91 rabbitmq.port=31672
+# Start process generate image file when upload
+python cy_consumers/files_generate_image_from_video.py temp_directory=./brokers/tmp rabbitmq.server=172.16.7.91 rabbitmq.port=31672
+python cy_consumers/files_generate_image_from_office.py temp_directory=./brokers/tmp rabbitmq.server=172.16.7.91 rabbitmq.port=31672
+python cy_consumers/files_generate_image_from_pdf.py  temp_directory=./brokers/tmp rabbitmq.server=172.16.7.91 rabbitmq.port=31672
+------------------------
+# start process generat all thumbs when after upload file
+python cy_consumers/files_generate_thumbs.py temp_directory=./brokers/tmp rabbitmq.server=172.16.7.91 rabbitmq.port=31672
+# start process update default thumb for one upload
+python cy_consumers/files_save_default_thumb.py  temp_directory=./brokers/tmp rabbitmq.server=172.16.7.91 rabbitmq.port=31672
