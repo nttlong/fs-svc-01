@@ -1,0 +1,36 @@
+FROM nttlong/base:ttn.2023.004  as pytorch
+ARG TARGETARCH
+RUN mkdir /app
+
+RUN cd /
+
+RUN if [ "$TARGETARCH" = "amd64" ]; then \
+
+     pip install torch --extra-index-url https://download.pytorch.org/whl/cpu;\
+
+
+    fi
+
+FROM pytorch as req
+RUN mkdir -p /app
+COPY ./../docker-build/base-core-slim.reg.txt /app
+RUN pip install -r /app/base-core-slim.reg.txt --no-cache-dir
+FROM req  as cy
+COPY ./../cy_docs ./app/cy_docs
+COPY ./../cy_kit ./app/cy_kit
+COPY ./../cy_es ./app/cy_es
+COPY ./../cy_web ./app/cy_web
+FROM cy as final
+WORKDIR /app
+RUN cd /app
+RUN python3 cy_docs/setup.py build_ext --inplace
+RUN python3 cy_kit/setup.py build_ext --inplace
+RUN python3 cy_es/setup.py build_ext --inplace
+RUN python3 cy_web/setup.py build_ext --inplace
+RUN cd ..
+#docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+#docker buildx rm builder
+#docker buildx create --name builder --driver docker-container --use
+#docker buildx inspect --bootstrap
+#docker buildx   build -t nttlong/base-core:ttn.2023.001  --platform=linux/amd64,linux/arm64/v8  ./.. -f base-core-slim
+#docker buildx   build -t nttlong/base-core-slim:rc.2023.018  --platform=linux/amd64,linux/arm64/v8  ./.. -f base-core-slim  --push=true --output type=registry

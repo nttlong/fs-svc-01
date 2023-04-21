@@ -1,0 +1,16 @@
+
+pip install -r docker-build/base-core-slim.reg.txt
+pip install -r docker-build/base-files-slim.req.txt
+pip install git+https://github.com/huggingface/datasets.git
+pip install git+https://github.com/huggingface/transformers.git
+pip install git+https://github.com/facebookresearch/detectron2.git
+pip install git+https://github.com/mindee/doctr.git
+pip install git+https://github.com/deepdoctection/deepdoctection.git@f251dca0df9d051fe133ba489d42c6ae2b27597a
+pip install git+https://github.com/facebookresearch/detectron2.git@4aca4bdaa9ad48b8e91d7520e0d0815bb8ca0fb1
+pip uninstall python-doctr -y
+pip install python-doctr==0.6.0
+pip uninstall pytesseract -y
+pip install pytesseract
+pip uninstall packaging -y
+pip install packaging==20.9
+#------xong-------------------------

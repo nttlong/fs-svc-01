@@ -1,0 +1,39 @@
+#Full file service including:
+# 1- Web API and Web app for documentation of storage
+# 2- VideoService Process Thumb
+version: '3.7'
+
+services:
+#  build-mage:
+#    image: files-service-web
+#    build:
+#      context: ./..
+#      dockerfile: ./docker-build/files-dockerfile
+#  restart: on-failure
+  orc-table:
+    image:  nttlong/files-service-final:rc.0.1.4.adm.test.8
+#    cpus: 0.125
+#    mem_reservation: "50M"
+#    mem_limit: "300M"
+#    container_name: xdoc-file-3
+#    restart: on-failure
+    ports:
+      - "8081:8081"
+    volumes:
+      - /home/vmadmin/python/v6/file-service-02/dataset:/app/dataset
+      #- /home/vmadmin/python/v6/file-service-02/dataset:/root/.cache/
+#    volumes:
+#
+#      - ${PATH_LOCAL_DIR_IN_HOST}/web-api/logs/:/app/logs
+#      - ${PATH_LOCAL_DIR_IN_HOST}/web-api/tmp-upload/:/app/tmp
+    command: python3 /app/production_test/gradio_hello.py host_port=8081
+#    deploy:
+#      resources:
+#        limits:
+#          cpus: '0.8'
+#          memory: 5Gi
+#        reservations:
+#          cpus: '0.8'
+#          memory: 5Gi
+
+

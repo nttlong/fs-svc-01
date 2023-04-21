@@ -1,0 +1,35 @@
+FROM nttlong/files-service-slim:rc.0.0.2
+RUN cd /
+RUN mkdir -p app
+RUN mkdir -p /app/cy_utils
+COPY ./../cy_utils /app/cy_utils
+RUN mkdir -p /app/bin
+COPY ./../bin /app/bin
+
+RUN mkdir -p /app/cy_utils
+COPY ./../cy_utils /app/cy_utils
+RUN mkdir -p /app/cyx
+COPY ./../cyx /app/cyx
+RUN mkdir -p /app/cy_xdoc
+COPY ./../cy_xdoc /app/cy_xdoc
+RUN mkdir -p /app/resource
+COPY ./../resource /app/resource
+COPY ./../config.yml /app/config.yml
+COPY ./../docker-build/base-api-web.req.txt /app/base-api-web.req.txt
+RUN pip install -r /app/base-api-web.req.txt  --no-cache-dir
+RUN mkdir -p /app/pre_test_build
+COPY ./../pre_test_build /app/pre_test_build
+RUN ls ./app
+WORKDIR /app
+RUN cd /app
+
+RUN python3 pre_test_build/check_vn_predict.py
+RUN python3 pre_test_build/check_py_vncorenlp.py
+#docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+#docker buildx rm builder
+#docker buildx create --name builder --driver docker-container --use
+#docker buildx inspect --bootstrap
+#docker buildx   build -t nttlong/files-api-web:beta.0.0.3  --platform=linux/amd64,linux/arm64/v8  ./.. -f base-api-web
+#docker buildx   build -t nttlong/files-api-web-slim:rc.0.0.3  --platform=linux/amd64,linux/arm64/v8  ./.. -f base-api-web  --push=true --output type=registry
+#test
+#docker run nttlong/files-api-web-slim:rc.0.0.2 python3 /app/cy_xdoc/server.py bind=0.0.0.0:80 host_url=http://172.16.13.72:8011 -p 80:8011

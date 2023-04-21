@@ -1,0 +1,118 @@
+#----------------------------------------------------------
+# The file use for deployment of file-svc into k8s
+# Thou notice that 4 sections:
+# 1- Namespace
+# 2- Deploy app with name of xdoc-web run in container
+# 3- Create service point to xdoc-web app with name xdoc-web-service
+# 4- Expose xdoc-web-service via ingress
+#----------------------------------------------------------
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: xdoc-test
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: xdoc-web-config
+  namespace: xdoc-test
+data:
+    db.authSource: admin
+    db.host: 10.200.16.15
+    db.password: Lacviet#123
+    db.port: '27017'
+    db.username: admin
+    elastic_search.prefix_index: qtsc-codx
+    elastic_search.server: http://10.200.16.16:9200
+    host_url: http://172.16.0.240/lvfile
+    rabbitmq.port: '5672'
+    rabbitmq.server: rabbitmq.rabbitmq-dev.svc.cluster.local
+    temp_directory: ./brokers/tmp
+
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: xdoc-orc-table
+  namespace: xdoc-test
+spec:
+  selector:
+    matchLabels:
+      app: xdoc-orc-table
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: xdoc-orc-table
+    spec:
+      volumes:
+        - name: xdoc-temp-storage
+          nfs:
+            server: 172.16.7.91 #172.16.0.83
+            path: /var/nfs_share_dir_for_k8s/xdoc-web #/data/share/xdoc-web
+        - name: xdoc-web-cache
+          nfs:
+            server: 172.16.7.91
+            path: /var/nfs_share_dir_for_k8s/xdoc-web-cache #/data/share/xdoc-web-cache
+        - name: xdoc-dataset
+          nfs:
+            server: 172.16.7.91
+            path: /var/nfs_share_dir_for_k8s/dataset #/data/share/xdoc-web-cache
+      initContainers:
+        - name: volume-mount-hack
+          image: busybox
+          command: [
+            "sh", "-c",
+            "mkdir -p /app/dataset",
+            "chmod -R 777 /app/dataset", "chown -R nfsnobody:nfsnobody /app/brokers",
+            "chmod -R 777 /app/dataset","chown -R nfsnobody:nfsnobody /app/cy_xdoc/cache"
+          ]
+          volumeMounts:
+            - mountPath: /app/dataset
+              name: xdoc-dataset
+
+
+      containers:
+        - args:
+            - python3
+            - /app/production_test/ocr_table.py
+            - host_port=80
+
+          image: nttlong/files-service-final:rc.0.1.4.adm.test0 #nttlong/lv-file:rc.1.0.3
+          envFrom:
+            - configMapRef:
+                name: xdoc-web-config
+          name: xdoc-orc-table
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - mountPath: /app/dataset
+              name: xdoc-dataset
+
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              memory: "3Gi"
+              cpu: "700m"
+            limits:
+              memory: "3Gi"
+              cpu: "700m"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: xdoc-ocr-table-service
+  namespace: xdoc-test
+  labels:
+    app: xdoc-orc-table
+spec:
+  type: NodePort
+  selector:
+    app: xdoc-web
+  ports:
+  - port: 8081
+    targetPort: 8081
+    protocol: TCP
+    nodePort: 31081

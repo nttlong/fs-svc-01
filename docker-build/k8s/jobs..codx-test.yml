@@ -1,0 +1,988 @@
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: xdoc-job
+  labels:
+    name: xdoc-job
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: xdoc-job-config
+  namespace: xdoc-job
+data:
+  admin_db_name: lv-docs
+  db.authSource: hps-file-test
+  db.host: 192.168.18.36
+  db.password: ''
+  db.port: '27018'
+  db.username: ''
+  elastic_search.prefix_index: lv-codx
+  elastic_search.server: http://192.168.18.36:9200
+  rabbitmq.port: '5672'
+  rabbitmq.server: rabbitmq.rabbitmq-dev
+  temp_directory: ./brokers/tmp
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: files-upload
+  namespace: xdoc-job
+spec:
+  selector:
+    matchLabels:
+      app: files-upload
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: files-upload
+    spec:
+      volumes:
+        - name: xdoc-temp-storage
+          nfs:
+            server: 172.16.7.91
+            path: /var/nfs_share_dir_for_k8s/xdoc-web
+        - name: xdoc-dataset
+          nfs:
+            server: 172.16.7.91
+            path: /var/nfs_share_dir_for_k8s/dataset
+
+      initContainers:
+        - name: volume-mount-hack
+          image: busybox
+          command: [
+            "sh",
+            "-c",
+            "mkdir -p /app/brokers",
+            "chmod -R 777 /app/brokers",
+            "chown -R nfsnobody:nfsnobody /app/brokers",
+            "mkdir -p /app/dataset",
+            "chmod -R 777 /app/dataset",
+            "chown -R nfsnobody:nfsnobody /app/dataset",
+
+          ]
+          volumeMounts:
+            - mountPath: /app/brokers
+              name: xdoc-temp-storage
+            - mountPath: /app/dataset
+              name: xdoc-dataset
+      containers:
+        - args:
+            - python3
+            - /app/cy_consumers/files_upload.py
+            - elastic_search.server=$(elastic_search.server)
+            - elastic_search.prefix_index=$(elastic_search.prefix_index)
+            - db.host=$(db.host)
+            - db.port=$(db.port)
+            - admin_db_name= $(admin_db_name)
+            - temp_directory=$(temp_directory)
+            - rabbitmq.server=$(rabbitmq.server)
+            - rabbitmq.port=$(rabbitmq.port)
+
+          image: nttlong/files-service-final:rc.0.3.3
+          envFrom:
+            - configMapRef:
+                name: xdoc-job-config
+
+          name: files-upload
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - mountPath: /app/brokers
+              name: xdoc-temp-storage
+            - mountPath: /app/dataset
+              name: xdoc-dataset
+
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: files-generate-image-from-office
+  namespace: xdoc-job
+spec:
+  selector:
+    matchLabels:
+      app: files-generate-image-from-office
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: files-generate-image-from-office
+    spec:
+      volumes:
+        - name: xdoc-temp-storage
+          nfs:
+            server: 172.16.7.91
+            path: /var/nfs_share_dir_for_k8s/xdoc-web
+        - name: xdoc-dataset
+          nfs:
+            server: 172.16.7.91
+            path: /var/nfs_share_dir_for_k8s/dataset
+      initContainers:
+        - name: volume-mount-hack
+          image: busybox
+          command: [
+            "sh",
+            "-c",
+            "mkdir -p /app/brokers",
+            "chmod -R 777 /app/brokers",
+            "chown -R nfsnobody:nfsnobody /app/brokers",
+            "mkdir -p /app/dataset",
+            "chmod -R 777 /app/dataset",
+            "chown -R nfsnobody:nfsnobody /app/dataset",
+
+          ]
+          volumeMounts:
+            - mountPath: /app/brokers
+              name: xdoc-temp-storage
+            - mountPath: /app/dataset
+              name: xdoc-dataset
+      containers:
+        - args:
+            - python3
+            - /app/cy_consumers/files_generate_image_from_office.py
+            - elastic_search.server=$(elastic_search.server)
+            - elastic_search.prefix_index=$(elastic_search.prefix_index)
+            - db.host=$(db.host)
+            - db.port=$(db.port)
+            - admin_db_name= $(admin_db_name)
+            - temp_directory=$(temp_directory)
+            - rabbitmq.server=$(rabbitmq.server)
+            - rabbitmq.port=$(rabbitmq.port)
+          envFrom:
+            - configMapRef:
+                name: xdoc-job-config
+          image: nttlong/files-service-final:rc.0.3.3
+
+          name: files-generate-image-from-office
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - mountPath: /app/brokers
+              name: xdoc-temp-storage
+            - mountPath: /app/dataset
+              name: xdoc-dataset
+
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: files-generate-image-from-pdf
+  namespace: xdoc-job
+spec:
+  selector:
+    matchLabels:
+      app: files-generate-image-from-pdf
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: files-generate-image-from-pdf
+    spec:
+      volumes:
+        - name: xdoc-temp-storage
+          nfs:
+            server: 172.16.7.91
+            path: /var/nfs_share_dir_for_k8s/xdoc-web
+        - name: xdoc-dataset
+          nfs:
+            server: 172.16.7.91
+            path: /var/nfs_share_dir_for_k8s/dataset
+      initContainers:
+        - name: volume-mount-hack
+          image: busybox
+          command: [
+            "sh",
+            "-c",
+            "mkdir -p /app/brokers",
+            "chmod -R 777 /app/brokers",
+            "chown -R nfsnobody:nfsnobody /app/brokers",
+            "mkdir -p /app/dataset",
+            "chmod -R 777 /app/dataset",
+            "chown -R nfsnobody:nfsnobody /app/dataset",
+
+          ]
+          volumeMounts:
+            - mountPath: /app/brokers
+              name: xdoc-temp-storage
+            - mountPath: /app/dataset
+              name: xdoc-dataset
+      containers:
+        - args:
+            - python3
+            - /app/cy_consumers/files_generate_image_from_pdf.py
+            - elastic_search.server=$(elastic_search.server)
+            - elastic_search.prefix_index=$(elastic_search.prefix_index)
+            - db.host=$(db.host)
+            - db.port=$(db.port)
+            - admin_db_name= $(admin_db_name)
+            - temp_directory=$(temp_directory)
+            - rabbitmq.server=$(rabbitmq.server)
+            - rabbitmq.port=$(rabbitmq.port)
+          envFrom:
+            - configMapRef:
+                name: xdoc-job-config
+          image: nttlong/files-service-final:rc.0.3.3
+          name: files-generate-image-from-pdf
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - mountPath: /app/brokers
+              name: xdoc-temp-storage
+            - mountPath: /app/dataset
+              name: xdoc-dataset
+
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: files-generate-image-from-video
+  namespace: xdoc-job
+spec:
+  selector:
+    matchLabels:
+      app: files-generate-image-from-video
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: files-generate-image-from-video
+    spec:
+      volumes:
+        - name: xdoc-temp-storage
+          nfs:
+            server: 172.16.7.91
+            path: /var/nfs_share_dir_for_k8s/xdoc-web
+        - name: xdoc-dataset
+          nfs:
+            server: 172.16.7.91
+            path: /var/nfs_share_dir_for_k8s/dataset
+      initContainers:
+        - name: volume-mount-hack
+          image: busybox
+          command: [
+            "sh",
+            "-c",
+            "mkdir -p /app/brokers",
+            "chmod -R 777 /app/brokers",
+            "chown -R nfsnobody:nfsnobody /app/brokers",
+            "mkdir -p /app/dataset",
+            "chmod -R 777 /app/dataset",
+            "chown -R nfsnobody:nfsnobody /app/dataset",
+
+          ]
+          volumeMounts:
+            - mountPath: /app/brokers
+              name: xdoc-temp-storage
+            - mountPath: /app/dataset
+              name: xdoc-dataset
+      containers:
+        - args:
+            - python3
+            - /app/cy_consumers/files_generate_image_from_video.py
+            - elastic_search.server=$(elastic_search.server)
+            - elastic_search.prefix_index=$(elastic_search.prefix_index)
+            - db.host=$(db.host)
+            - db.port=$(db.port)
+            - admin_db_name= $(admin_db_name)
+            - temp_directory=$(temp_directory)
+            - rabbitmq.server=$(rabbitmq.server)
+            - rabbitmq.port=$(rabbitmq.port)
+          envFrom:
+            - configMapRef:
+                name: xdoc-job-config
+          image: nttlong/files-service-final:rc.0.3.3
+          name: files-generate-image-from-video
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - mountPath: /app/brokers
+              name: xdoc-temp-storage
+            - mountPath: /app/dataset
+              name: xdoc-dataset
+
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: files-ocr-pdf
+  namespace: xdoc-job
+spec:
+  selector:
+    matchLabels:
+      app: files-ocr-pdf
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: files-ocr-pdf
+    spec:
+      volumes:
+        - name: xdoc-temp-storage
+          nfs:
+            server: 172.16.7.91
+            path: /var/nfs_share_dir_for_k8s/xdoc-web
+        - name: xdoc-dataset
+          nfs:
+            server: 172.16.7.91
+            path: /var/nfs_share_dir_for_k8s/dataset
+      initContainers:
+        - name: volume-mount-hack
+          image: busybox
+          command: [
+            "sh",
+            "-c",
+            "mkdir -p /app/brokers",
+            "chmod -R 777 /app/brokers",
+            "chown -R nfsnobody:nfsnobody /app/brokers",
+            "mkdir -p /app/dataset",
+            "chmod -R 777 /app/dataset",
+            "chown -R nfsnobody:nfsnobody /app/dataset",
+
+          ]
+          volumeMounts:
+            - mountPath: /app/brokers
+              name: xdoc-temp-storage
+            - mountPath: /app/dataset
+              name: xdoc-dataset
+      containers:
+        - args:
+            - python3
+            - /app/cy_consumers/files_ocr_pdf.py
+            - elastic_search.server=$(elastic_search.server)
+            - elastic_search.prefix_index=$(elastic_search.prefix_index)
+            - db.host=$(db.host)
+            - db.port=$(db.port)
+            - admin_db_name= $(admin_db_name)
+            - temp_directory=$(temp_directory)
+            - rabbitmq.server=$(rabbitmq.server)
+            - rabbitmq.port=$(rabbitmq.port)
+          envFrom:
+            - configMapRef:
+                name: xdoc-job-config
+          image: nttlong/files-service-final:rc.0.3.3
+          name: files-ocr-pdf
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - mountPath: /app/brokers
+              name: xdoc-temp-storage
+            - mountPath: /app/dataset
+              name: xdoc-dataset
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: files-generate-pdf-from-image
+  namespace: xdoc-job
+spec:
+  selector:
+    matchLabels:
+      app: files-generate-pdf-from-image
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: files-generate-pdf-from-image
+    spec:
+      volumes:
+        - name: xdoc-temp-storage
+          nfs:
+            server: 172.16.7.91
+            path: /var/nfs_share_dir_for_k8s/xdoc-web
+        - name: xdoc-dataset
+          nfs:
+            server: 172.16.7.91
+            path: /var/nfs_share_dir_for_k8s/dataset
+      initContainers:
+        - name: volume-mount-hack
+          image: busybox
+          command: [
+            "sh",
+            "-c",
+            "mkdir -p /app/brokers",
+            "chmod -R 777 /app/brokers",
+            "chown -R nfsnobody:nfsnobody /app/brokers",
+            "mkdir -p /app/dataset",
+            "chmod -R 777 /app/dataset",
+            "chown -R nfsnobody:nfsnobody /app/dataset",
+
+          ]
+          volumeMounts:
+            - mountPath: /app/brokers
+              name: xdoc-temp-storage
+            - mountPath: /app/dataset
+              name: xdoc-dataset
+      containers:
+        - args:
+            - python3
+            - /app/cy_consumers/files_generate_pdf_from_image.py
+            - elastic_search.server=$(elastic_search.server)
+            - elastic_search.prefix_index=$(elastic_search.prefix_index)
+            - db.host=$(db.host)
+            - db.port=$(db.port)
+            - admin_db_name= $(admin_db_name)
+            - temp_directory=$(temp_directory)
+            - rabbitmq.server=$(rabbitmq.server)
+            - rabbitmq.port=$(rabbitmq.port)
+          envFrom:
+            - configMapRef:
+                name: xdoc-job-config
+          image: nttlong/files-service-final:rc.0.3.3
+          name: files-generate-pdf-from-image
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - mountPath: /app/brokers
+              name: xdoc-temp-storage
+            - mountPath: /app/dataset
+              name: xdoc-dataset
+
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: files-generate-thumbs
+  namespace: xdoc-job
+spec:
+  selector:
+    matchLabels:
+      app: files-generate-thumbs
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: files-generate-thumbs
+    spec:
+      volumes:
+        - name: xdoc-temp-storage
+          nfs:
+            server: 172.16.7.91
+            path: /var/nfs_share_dir_for_k8s/xdoc-web
+        - name: xdoc-dataset
+          nfs:
+            server: 172.16.7.91
+            path: /var/nfs_share_dir_for_k8s/dataset
+      initContainers:
+        - name: volume-mount-hack
+          image: busybox
+          command: [
+            "sh",
+            "-c",
+            "mkdir -p /app/brokers",
+            "chmod -R 777 /app/brokers",
+            "chown -R nfsnobody:nfsnobody /app/brokers",
+            "mkdir -p /app/dataset",
+            "chmod -R 777 /app/dataset",
+            "chown -R nfsnobody:nfsnobody /app/dataset",
+
+          ]
+          volumeMounts:
+            - mountPath: /app/brokers
+              name: xdoc-temp-storage
+            - mountPath: /app/dataset
+              name: xdoc-dataset
+      containers:
+        - args:
+            - python3
+            - /app/cy_consumers/files_generate_thumbs.py
+            - elastic_search.server=$(elastic_search.server)
+            - elastic_search.prefix_index=$(elastic_search.prefix_index)
+            - db.host=$(db.host)
+            - db.port=$(db.port)
+            - admin_db_name= $(admin_db_name)
+            - temp_directory=$(temp_directory)
+            - rabbitmq.server=$(rabbitmq.server)
+            - rabbitmq.port=$(rabbitmq.port)
+          envFrom:
+            - configMapRef:
+                name: xdoc-job-config
+          image: nttlong/files-service-final:rc.0.3.3
+          name: files-generate-thumbs
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - mountPath: /app/brokers
+              name: xdoc-temp-storage
+            - mountPath: /app/dataset
+              name: xdoc-dataset
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: files-save-custom-thumb
+  namespace: xdoc-job
+spec:
+  selector:
+    matchLabels:
+      app: files-save-custom-thumb
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: files-save-custom-thumb
+    spec:
+      volumes:
+        - name: xdoc-temp-storage
+          nfs:
+            server: 172.16.7.91
+            path: /var/nfs_share_dir_for_k8s/xdoc-web
+        - name: xdoc-dataset
+          nfs:
+            server: 172.16.7.91
+            path: /var/nfs_share_dir_for_k8s/dataset
+      initContainers:
+        - name: volume-mount-hack
+          image: busybox
+          command: [
+            "sh",
+            "-c",
+            "mkdir -p /app/brokers",
+            "chmod -R 777 /app/brokers",
+            "chown -R nfsnobody:nfsnobody /app/brokers",
+            "mkdir -p /app/dataset",
+            "chmod -R 777 /app/dataset",
+            "chown -R nfsnobody:nfsnobody /app/dataset",
+
+          ]
+          volumeMounts:
+            - mountPath: /app/brokers
+              name: xdoc-temp-storage
+            - mountPath: /app/dataset
+              name: xdoc-dataset
+
+      containers:
+        - args:
+            - python3
+            - /app/cy_consumers/files_save_custom_thumb.py
+            - elastic_search.server=$(elastic_search.server)
+            - elastic_search.prefix_index=$(elastic_search.prefix_index)
+            - db.host=$(db.host)
+            - db.port=$(db.port)
+            - admin_db_name= $(admin_db_name)
+            - temp_directory=$(temp_directory)
+            - rabbitmq.server=$(rabbitmq.server)
+            - rabbitmq.port=$(rabbitmq.port)
+          envFrom:
+            - configMapRef:
+                name: xdoc-job-config
+          image: nttlong/files-service-final:rc.0.3.3
+          name: files-save-custom-thumb
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - mountPath: /app/brokers
+              name: xdoc-temp-storage
+            - mountPath: /app/dataset
+              name: xdoc-dataset
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: files-save-default-thumb
+  namespace: xdoc-job
+spec:
+  selector:
+    matchLabels:
+      app: files-save-default-thumb
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: files-save-default-thumb
+    spec:
+      volumes:
+        - name: xdoc-temp-storage
+          nfs:
+            server: 172.16.7.91
+            path: /var/nfs_share_dir_for_k8s/xdoc-web
+        - name: xdoc-dataset
+          nfs:
+            server: 172.16.7.91
+            path: /var/nfs_share_dir_for_k8s/dataset
+      initContainers:
+        - name: volume-mount-hack
+          image: busybox
+          command: [
+            "sh",
+            "-c",
+            "mkdir -p /app/brokers",
+            "chmod -R 777 /app/brokers",
+            "chown -R nfsnobody:nfsnobody /app/brokers",
+            "mkdir -p /app/dataset",
+            "chmod -R 777 /app/dataset",
+            "chown -R nfsnobody:nfsnobody /app/dataset",
+
+          ]
+          volumeMounts:
+            - mountPath: /app/brokers
+              name: xdoc-temp-storage
+            - mountPath: /app/dataset
+              name: xdoc-dataset
+      containers:
+        - args:
+            - python3
+            - /app/cy_consumers/files_save_default_thumb.py
+            - elastic_search.server=$(elastic_search.server)
+            - elastic_search.prefix_index=$(elastic_search.prefix_index)
+            - db.host=$(db.host)
+            - db.port=$(db.port)
+            - admin_db_name= $(admin_db_name)
+            - temp_directory=$(temp_directory)
+            - rabbitmq.server=$(rabbitmq.server)
+            - rabbitmq.port=$(rabbitmq.port)
+          envFrom:
+            - configMapRef:
+                name: xdoc-job-config
+          image: nttlong/files-service-final:rc.0.3.3
+          name: files-save-default-thumb
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - mountPath: /app/brokers
+              name: xdoc-temp-storage
+            - mountPath: /app/dataset
+              name: xdoc-dataset
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: files-save-orc-pdf-file
+  namespace: xdoc-job
+spec:
+  selector:
+    matchLabels:
+      app: files-save-orc-pdf-file
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: files-save-orc-pdf-file
+    spec:
+      volumes:
+        - name: xdoc-temp-storage
+          nfs:
+            server: 172.16.7.91
+            path: /var/nfs_share_dir_for_k8s/xdoc-web
+        - name: xdoc-dataset
+          nfs:
+            server: 172.16.7.91
+            path: /var/nfs_share_dir_for_k8s/dataset
+      initContainers:
+        - name: volume-mount-hack
+          image: busybox
+          command: [
+            "sh",
+            "-c",
+            "mkdir -p /app/brokers",
+            "chmod -R 777 /app/brokers",
+            "chown -R nfsnobody:nfsnobody /app/brokers",
+            "mkdir -p /app/dataset",
+            "chmod -R 777 /app/dataset",
+            "chown -R nfsnobody:nfsnobody /app/dataset",
+
+          ]
+          volumeMounts:
+            - mountPath: /app/brokers
+              name: xdoc-temp-storage
+            - mountPath: /app/dataset
+              name: xdoc-dataset
+      containers:
+        - args:
+            - python3
+            - /app/cy_consumers/files_save_orc_pdf_file.py
+            - elastic_search.server=$(elastic_search.server)
+            - elastic_search.prefix_index=$(elastic_search.prefix_index)
+            - db.host=$(db.host)
+            - db.port=$(db.port)
+            - admin_db_name= $(admin_db_name)
+            - temp_directory=$(temp_directory)
+            - rabbitmq.server=$(rabbitmq.server)
+            - rabbitmq.port=$(rabbitmq.port)
+          envFrom:
+            - configMapRef:
+                name: xdoc-job-config
+          image: nttlong/files-service-final:rc.0.3.3
+          name: files-save-orc-pdf-file
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - mountPath: /app/brokers
+              name: xdoc-temp-storage
+            - mountPath: /app/dataset
+              name: xdoc-dataset
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: files-save-search-engine
+  namespace: xdoc-job
+spec:
+  selector:
+    matchLabels:
+      app: files-save-search-engine
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: files-save-search-engine
+    spec:
+      volumes:
+        - name: xdoc-temp-storage
+          nfs:
+            server: 172.16.7.91
+            path: /var/nfs_share_dir_for_k8s/xdoc-web
+        - name: xdoc-dataset
+          nfs:
+            server: 172.16.7.91
+            path: /var/nfs_share_dir_for_k8s/dataset
+      initContainers:
+        - name: volume-mount-hack
+          image: busybox
+          command: [
+            "sh",
+            "-c",
+            "mkdir -p /app/brokers",
+            "chmod -R 777 /app/brokers",
+            "chown -R nfsnobody:nfsnobody /app/brokers",
+            "mkdir -p /app/dataset",
+            "chmod -R 777 /app/dataset",
+            "chown -R nfsnobody:nfsnobody /app/dataset",
+
+          ]
+          volumeMounts:
+            - mountPath: /app/brokers
+              name: xdoc-temp-storage
+            - mountPath: /app/dataset
+              name: xdoc-dataset
+      containers:
+        - args:
+            - python3
+            - /app/cy_consumers/files_save_search_engine.py
+            - elastic_search.server=$(elastic_search.server)
+            - elastic_search.prefix_index=$(elastic_search.prefix_index)
+            - db.host=$(db.host)
+            - db.port=$(db.port)
+            - admin_db_name= $(admin_db_name)
+            - temp_directory=$(temp_directory)
+            - rabbitmq.server=$(rabbitmq.server)
+            - rabbitmq.port=$(rabbitmq.port)
+          envFrom:
+            - configMapRef:
+                name: xdoc-job-config
+          image: nttlong/files-service-final:rc.0.3.3
+          name: files-save-search-engine
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - mountPath: /app/brokers
+              name: xdoc-temp-storage
+            - mountPath: /app/dataset
+              name: xdoc-dataset
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: files-extrac-text-from-image
+  namespace: xdoc-job
+spec:
+  selector:
+    matchLabels:
+      app: files-extrac-text-from-image
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: files-extrac-text-from-image
+    spec:
+      volumes:
+        - name: xdoc-temp-storage
+          nfs:
+            server: 172.16.7.91
+            path: /var/nfs_share_dir_for_k8s/xdoc-web
+        - name: xdoc-dataset
+          nfs:
+            server: 172.16.7.91
+            path: /var/nfs_share_dir_for_k8s/dataset
+      initContainers:
+        - name: volume-mount-hack
+          image: busybox
+          command: [
+            "sh",
+            "-c",
+            "mkdir -p /app/brokers",
+            "chmod -R 777 /app/brokers",
+            "chown -R nfsnobody:nfsnobody /app/brokers",
+            "mkdir -p /app/dataset",
+            "chmod -R 777 /app/dataset",
+            "chown -R nfsnobody:nfsnobody /app/dataset",
+
+          ]
+          volumeMounts:
+            - mountPath: /app/brokers
+              name: xdoc-temp-storage
+            - mountPath: /app/dataset
+              name: xdoc-dataset
+      containers:
+        - args:
+            - python3
+            - /app/cy_consumers/files_extrac_text_from_image.py
+            - elastic_search.server=$(elastic_search.server)
+            - elastic_search.prefix_index=$(elastic_search.prefix_index)
+            - db.host=$(db.host)
+            - db.port=$(db.port)
+            - admin_db_name= $(admin_db_name)
+            - temp_directory=$(temp_directory)
+            - rabbitmq.server=$(rabbitmq.server)
+            - rabbitmq.port=$(rabbitmq.port)
+          envFrom:
+            - configMapRef:
+                name: xdoc-job-config
+          image: nttlong/files-service-final:rc.0.3.3
+          name: files-extrac-text-from-image
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - mountPath: /app/brokers
+              name: xdoc-temp-storage
+            - mountPath: /app/dataset
+              name: xdoc-dataset
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: files-clean-up
+  namespace: xdoc-job
+spec:
+  selector:
+    matchLabels:
+      app: files-clean-up
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: files-clean-up
+    spec:
+      volumes:
+        - name: xdoc-temp-storage
+          nfs:
+
+            server: 172.16.7.91
+            path: /var/nfs_share_dir_for_k8s/xdoc-web
+        - name: xdoc-dataset
+          nfs:
+            server: 172.16.7.91
+            path: /var/nfs_share_dir_for_k8s/dataset
+      initContainers:
+        - name: volume-mount-hack
+          image: busybox
+          command: [
+            "sh",
+            "-c",
+            "mkdir -p /app/brokers",
+            "chmod -R 777 /app/brokers",
+            "chown -R nfsnobody:nfsnobody /app/brokers",
+            "mkdir -p /app/dataset",
+            "chmod -R 777 /app/dataset",
+            "chown -R nfsnobody:nfsnobody /app/dataset",
+
+          ]
+          volumeMounts:
+            - mountPath: /app/brokers
+              name: xdoc-temp-storage
+            - mountPath: /app/dataset
+              name: xdoc-dataset
+      containers:
+        - args:
+            - python3
+            - /app/cy_consumers/files_clean_up.py
+            - elastic_search.server=$(elastic_search.server)
+            - elastic_search.prefix_index=$(elastic_search.prefix_index)
+            - db.host=$(db.host)
+            - db.port=$(db.port)
+            - admin_db_name= $(admin_db_name)
+            - temp_directory=$(temp_directory)
+            - rabbitmq.server=$(rabbitmq.server)
+            - rabbitmq.port=$(rabbitmq.port)
+          envFrom:
+            - configMapRef:
+                name: xdoc-job-config
+          image: nttlong/files-service-final:rc.0.3.3
+          name: files-clean-up
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - mountPath: /app/brokers
+              name: xdoc-temp-storage
+            - mountPath: /app/dataset
+              name: xdoc-dataset
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: files-move-tanent
+  namespace: xdoc-job
+spec:
+  selector:
+    matchLabels:
+      app: files-move-tanent
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: files-move-tanent
+    spec:
+      volumes:
+        - name: xdoc-temp-storage
+          nfs:
+
+            server: 172.16.7.91
+            path: /var/nfs_share_dir_for_k8s/xdoc-web
+        - name: xdoc-dataset
+          nfs:
+            server: 172.16.7.91
+            path: /var/nfs_share_dir_for_k8s/dataset
+      initContainers:
+        - name: volume-mount-hack
+          image: busybox
+          command: [
+            "sh",
+            "-c",
+            "mkdir -p /app/brokers",
+            "chmod -R 777 /app/brokers",
+            "chown -R nfsnobody:nfsnobody /app/brokers",
+            "mkdir -p /app/dataset",
+            "chmod -R 777 /app/dataset",
+            "chown -R nfsnobody:nfsnobody /app/dataset",
+
+          ]
+          volumeMounts:
+            - mountPath: /app/brokers
+              name: xdoc-temp-storage
+            - mountPath: /app/dataset
+              name: xdoc-dataset
+      containers:
+        - args:
+            - python3
+            - /app/cy_consumers/files_move_tenants.py
+            - elastic_search.server=$(elastic_search.server)
+            - elastic_search.prefix_index=$(elastic_search.prefix_index)
+            - db.host=$(db.host)
+            - db.port=$(db.port)
+            - admin_db_name= $(admin_db_name)
+            - temp_directory=$(temp_directory)
+            - rabbitmq.server=$(rabbitmq.server)
+            - rabbitmq.port=$(rabbitmq.port)
+          envFrom:
+            - configMapRef:
+                name: xdoc-job-config
+          image: nttlong/files-service-final:rc.0.3.3
+          name: files-move-tanent
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - mountPath: /app/brokers
+              name: xdoc-temp-storage
+            - mountPath: /app/dataset
+              name: xdoc-dataset

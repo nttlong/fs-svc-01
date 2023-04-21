@@ -1,0 +1,15 @@
+doctr
+
+
+
+easyocr
+ghostscript
+
+PyMuPDF~=1.19.6
+ocrmypdf
+moviepy
+pytesseract
+gradio
+torchvision
+python-doctr==0.6.0
+pytesseract

@@ -1,0 +1,1 @@
+FROM nttlong/files-api-web:latest
