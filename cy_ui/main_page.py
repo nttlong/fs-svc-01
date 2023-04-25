@@ -1,7 +1,19 @@
 import dash_bootstrap_components as dbc
-from dash import html,Dash, Input,Output
+from dash import html,Dash, Input,Output,dcc
+import dash
+
 from dash.exceptions import PreventUpdate
 def get_header(app:Dash):
+    navs =[]
+    for page in dash.page_registry.values():
+        """page['name']} - {page['path']}", href=page["relative_path"]"""
+        navs+=[dbc.NavItem(dbc.NavLink(
+            page["name"],
+            href=page["relative_path"]))
+        ]
+    navs+=[dbc.NavItem(dbc.NavLink("Help")),
+                                    dbc.NavItem(dbc.NavLink("About"))]
+
     header = dbc.Navbar(
         dbc.Container(
             [
@@ -19,18 +31,7 @@ def get_header(app:Dash):
                         dbc.NavbarToggler(id="navbar-toggler"),
                         dbc.Collapse(
                             dbc.Nav(
-                                [
-                                    dbc.NavItem(dbc.NavLink("Tenant",id="Tenant", n_clicks=0)),
-                                    dbc.NavItem(dbc.NavLink("Page 1")),
-                                    dbc.NavItem(
-                                        dbc.NavLink("Page 2"),
-                                        # add an auto margin after page 2 to
-                                        # push later links to end of nav
-                                        className="me-auto",
-                                    ),
-                                    dbc.NavItem(dbc.NavLink("Help")),
-                                    dbc.NavItem(dbc.NavLink("About")),
-                                ],
+                                navs,
                                 # make sure nav takes up the full width for auto
                                 # margin to get applied
                                 className="w-100",
@@ -50,11 +51,6 @@ def get_header(app:Dash):
         color="dark",
     )
 
-    @app.callback(
-        Output("app-page-content", "children"), [Input("Tenant", "n_clicks")]
-    )
-    def show_clicks(*arg,**kwargs):
 
-        return "Tenant"
 
     return header
