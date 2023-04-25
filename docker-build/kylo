@@ -1,0 +1,3 @@
+FROM keven4ever/kylo_docker
+#docker run -it -v <absoluate path of your local directory to be mounted to container>:/var/share -p 8400:8400 -p 8079:8079 -p 3306:3306 -p 10000:10000 keven4ever/kylo_docker:latest bash
+#docker run -it -v /kylo/data:/var/share -p 8400:8400 -p 8079:8079 -p 3306:3306 -p 10000:10000 keven4ever/kylo_docker:latest bash

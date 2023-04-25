@@ -20,6 +20,7 @@ RUN pip uninstall -y gradio
 RUN pip install gradio==3.4.1
 RUN pip uninstall packaging -y
 RUN pip install packaging==20.9
+
 RUN mkdir -p /app/pre_test_build
 COPY ./../pre_test_build /app/pre_test_build
 RUN if ["$TARGETARCH" ="amd64"]; then \

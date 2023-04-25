@@ -15,5 +15,6 @@ docker run -d \
 apachekylin/apache-kylin-standalone:4.0.0
 kubectl rollout restart -n xdoc-web deployment xdoc-web
 ------------------------------------------------------------------------
+docker run --pull always --name lakefs   -p 8001:8000 treeverse/lakefs:latest  run --local-settings
 ------------------------ lacviet ----------------------
 eyJhbGciOiJSUzI1NiIsImtpZCI6Ik44bG5xcG1kZG1sczhGSWxPc2JnZXNMVVZydGdvUUlELW81M3pQeTN6QWcifQ.eyJhdWQiOlsiaHR0cHM6Ly9rdWJlcm5ldGVzLmRlZmF1bHQuc3ZjLmNsdXN0ZXIubG9jYWwiXSwiZXhwIjoxNzA5NjkyOTEzLCJpYXQiOjE2NzgxNTY5MTMsImlzcyI6Imh0dHBzOi8va3ViZXJuZXRlcy5kZWZhdWx0LnN2Yy5jbHVzdGVyLmxvY2FsIiwia3ViZXJuZXRlcy5pbyI6eyJuYW1lc3BhY2UiOiJrdWJlcm5ldGVzLWRhc2hib2FyZCIsInNlcnZpY2VhY2NvdW50Ijp7Im5hbWUiOiJhZG1pbi11c2VyIiwidWlkIjoiZWUwMmVkM2EtMjE1NC00YzBlLTk0NDYtMGQwODhiMjc5NDYzIn19LCJuYmYiOjE2NzgxNTY5MTMsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDprdWJlcm5ldGVzLWRhc2hib2FyZDphZG1pbi11c2VyIn0.XMk8OcqQi5n5BYFApeHh7KVQu5swR63i3PGArL5TbDiO9U87QXOGLaTsTxe-HU_lLQOk5gpCsVHiTehx6gQ8rxS0t8PX9fzbO62zsMCDiNFkqkIaBER7YNAoxsesVpOVKnBWiwf4Nz3bZl0Bu9yXW4SK_1oP0PTLiPq1LgEpt1YGAVEI-nmAaEMkrZK22YymOv_FORjr_B9zn3iIU1C8NbjSnyYtAdoEAatDoeIljXJ5TVukKROQShtWYHogMz-883DFlvTFawZ17lPuBy0XpAdUBM6tMU1D9D43PJwI3xD6-86SctHrizYMUow0gl8MPFqzpeRLPQYb1a8TUTQi2g
