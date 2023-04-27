@@ -760,7 +760,7 @@ class Field(__BaseField__):
 
 
 
-def to_json_convertable(data):
+def to_json_convertable(data,predict_content_handler=None):
     if isinstance(data, dict):
         ret = {}
         for k, v in data.items():

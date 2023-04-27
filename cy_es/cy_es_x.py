@@ -887,7 +887,38 @@ def match(field: DocumentFields, content: str, boost=None, slop=None):
     ret.__es_expr__ = __match_content__
     return ret
 
+def wildcard(field: DocumentFields, content: str):
+    """
+    :return:
+    """
+    """
+    "query": {
+          "bool": {
+              "should": [
+                {
+                  "wildcard": { "Field1": "*" + term + "*" }
+                },
+                {
+                  "wildcard": { "Field2": "*" + term + "*" }
+                }
+              ],
+              "minimum_should_match": 1
+          }
+      }
+    """
+    ret = DocumentFields()
+    __match_phrase__ = {
+        "wildcard":{
+            field.__name__:"*"+content+"*"
+        }
+    }
 
+    ret.__es_expr__ = {
+        "match_phrase": __match_phrase__
+    }
+
+    # ret.__es_expr__["boost"] = boost
+    return ret
 def match_phrase(field: DocumentFields, content: str, boost=None, slop=None,
                  analyzer="standard") -> DocumentFields:
     ret = DocumentFields()

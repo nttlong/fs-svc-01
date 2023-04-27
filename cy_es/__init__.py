@@ -169,6 +169,40 @@ match = cy_es_x.match
 query_string = cy_es_x.query_string
 
 
+def wildcard(field: DocumentFields, content: str):
+    """
+    :return:
+    """
+    """
+    "query": {
+          "bool": {
+              "should": [
+                {
+                  "wildcard": { "Field1": "*" + term + "*" }
+                },
+                {
+                  "wildcard": { "Field2": "*" + term + "*" }
+                }
+              ],
+              "minimum_should_match": 1
+          }
+      }
+    """
+    ret = DocumentFields()
+    __match_phrase__ = {
+        "wildcard": {
+            field.__name__: "*" + content + "*"
+        }
+    }
+
+    ret.__es_expr__ = {
+        "match_phrase": __match_phrase__
+    }
+
+    # ret.__es_expr__["boost"] = boost
+    return ret
+
+
 def update_doc_by_id(client: Elasticsearch, index: str, id: str, data, doc_type: str = "_doc"):
     return cy_es_x.update_doc_by_id(
         client=client,
@@ -258,8 +292,7 @@ def create_dict_from_key_path_value(field_path: str, value):
     return cy_es_x.create_dict_from_key_path_value(field_path, value)
 
 
-def update_data_fields(client: Elasticsearch, index: str, id: str, field_path=None,field_value=None,keys_values=None):
-
+def update_data_fields(client: Elasticsearch, index: str, id: str, field_path=None, field_value=None, keys_values=None):
     return cy_es_x.update_data_fields(
         client=client,
         index=index,
@@ -268,6 +301,8 @@ def update_data_fields(client: Elasticsearch, index: str, id: str, field_path=No
         field_value=field_value,
         keys_values=keys_values
     )
+
+
 def update_by_conditional(
         client: Elasticsearch, index: str,
         data_update,
@@ -283,10 +318,80 @@ def update_by_conditional(
     )
 
 
-def delete_by_conditional(client, index, conditional,doc_type="_doc"):
+def delete_by_conditional(client, index, conditional, doc_type="_doc"):
     return cy_es_x.delete_by_conditional(
         client=client,
         conditional=conditional,
         index=index,
         doc_type=doc_type
     )
+import uuid
+def __is_date__(str_date):
+    try:
+        datetime.datetime.strptime(str_date[0:26] + 'Z', '%Y-%m-%dT%H:%M:%S.%fZ')
+        return True
+    except Exception as e:
+        return False
+    str_date_time = str_date.split('+')[0]
+    try:
+        t = datetime.datetime.strptime(str_date_time, '%Y-%m-%dT%H:%M:%S.%f')
+        tz = datetime.datetime.strptime(str_date.split('+')[1], "%H:%M")
+        ret = t + datetime.timedelta(tz.hour)
+        return True
+    except Exception as e:
+        return False
+
+def __is_valid_uuid__(value):
+    try:
+        uuid.UUID(value)
+
+        return True
+    except ValueError:
+        return False
+def is_content_text(text):
+    if isinstance(text,str) and not __is_date__(text) and not __is_valid_uuid__(text):
+        return True
+    return False
+
+
+
+def convert_to_vn_predict_seg(data, handler, segment_handler):
+
+
+    def add_more_content(data, handler, segment_handler):
+        if isinstance(data, dict):
+            ret = {}
+            for k, v in data.items():
+                x, y, z = add_more_content(v, handler, segment_handler)
+                if y and y != x:
+                    ret[f"{k}_vn_predict"] = y
+                if z:
+                    ret[f"{k}_bm25_seg"] = z
+                ret[k] = x
+            return ret, None, None
+        elif isinstance(data, str):
+            if not " " in data:
+                return data, None, None
+            if __is_valid_uuid__(data):
+                return data, None, None
+            elif __is_date__(data):
+                return data, None, None
+            else:
+                predict_content = handler(data)
+
+                return data, predict_content, segment_handler(predict_content)+"/n"+segment_handler(data)
+        elif isinstance(data, list):
+            n_list = []
+            for item in data:
+                x, y, z = add_more_content(item, handler, segment_handler)
+                if y and y != x:
+                    n_list += [y]
+                if z:
+                    n_list += [z]
+                n_list += [x]
+            return n_list, None, None
+        else:
+            return data, None, None
+
+    ret, _, _ = add_more_content(data, handler, segment_handler)
+    return ret

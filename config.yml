@@ -13,6 +13,7 @@
 version: rc.0.0.15
 debug: false
 content_segment_len: 90
+ui: ui
 message:
   type: mongodb
   config:

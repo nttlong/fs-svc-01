@@ -36,14 +36,16 @@ class DoctrService:
         self.model = ocr_predictor(
             pretrained=True,
             detect_language=True,
-            export_as_straight_boxes=True
+            export_as_straight_boxes=True,
+            detect_orientation=True
             )
         import deepdoctection as dd
 
         global deepdoctection_analyzer
         if deepdoctection_analyzer is None:
             deepdoctection_analyzer = dd.get_dd_analyzer(
-                language="vie+eng"
+                language="vie"
+
             )
         self.deepdoctection_analyzer=deepdoctection_analyzer
 
@@ -58,10 +60,11 @@ class DoctrService:
                 "d2_model_0829999_layout_inf_only.pt"
             )
             if os.path.isfile(fake_model_path):
-                shutil.copy(
-                    src=fake_model_path,
-                    dst=dest_model
-                )
+                if not os.path.isfile(dest_model):
+                    shutil.copy(
+                        src=fake_model_path,
+                        dst=dest_model
+                    )
             # raise FileNotFoundError(f"{self.dataset_model_path} was not found")
         if not  os.path.isfile(dest_model):
             print(f"Copy model file form {self.dataset_model_path}\n\tto{dest_model}")

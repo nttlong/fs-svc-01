@@ -91,8 +91,8 @@ def file_add_chunks(client :pymongo.MongoClient, db_name: str, file_id: bson.Obj
         data=data
     )
 
-def to_json_convertable(data):
-    return cy_docs_x.to_json_convertable(data)
+def to_json_convertable(data,predict_content_handler=None):
+    return cy_docs_x.to_json_convertable(data,predict_content_handler)
 
 
 def file_get_iter_contents(client:pymongo.MongoClient, db_name:str, files_id:bson.ObjectId, from_chunk_index:int, num_of_chunks:int):

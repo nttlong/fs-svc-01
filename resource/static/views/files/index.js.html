@@ -41,11 +41,12 @@
     <div class="header layout-rows">
         <div class="layout-rows header-panel">
             <div>
-                <select style="min-width:220px" ng-model="currentAppName" ng-change="doLoadAllFiles().then()" class="form-control form-control-sm">
+                <input list="app-list" style="min-width:220px" id="ice-cream-choice" ng-change="doLoadAllFiles().then()" name="ice-cream-choice" ng-model="currentAppName"  class="form-control form-control-sm">
+                <datalist id="app-list"   >
                     <option ng-repeat="p in listOfApp" value="{{p.Name}}">
                         {{p.Name}}
                     </option>
-                </select>
+                </datalist>
             </div>
             <div>
                 <div class="input-group mb-3" style="width:250px">
@@ -58,7 +59,7 @@
             <div>
                 <div class="input-group mb-3" style="width:250px">
                     <span class="input-group-append">{{$res("Sort by")}}</span>
-                    <select class="form-control form-control-sm" ng-model="fileNameSort"></select>
+                    <datalist class="form-control form-control-sm" ng-model="fileNameSort"></datalist>
                     <!--<div class="input-group-append">
                         <button class="btn btn-outline-secondary btn-sm" ng-click="doSearchByFileName().then()" type="button">{{$res("Tìm")}}</button>
                     </div>-->

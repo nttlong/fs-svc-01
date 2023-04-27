@@ -89,8 +89,7 @@ class SearchEngine:
         content = self.vn_predictor.get_text(content)
         content = original_content + " " + content
         content_boots = self.vn.parse_word_segment(content=content, boot=[3])
-        content_boots_lower = self.vn.parse_word_segment(content=content.lower(), boot=[3])
-        content_no_boots = self.vn.parse_word_segment(content=content)
+
         search_expr = (cy_es.buiders.mark_delete == False)|(cy_es.buiders.mark_delete==None)
         if privileges is not None and privileges != {}:
             search_expr = search_expr & cy_es.create_filter_from_dict(
@@ -109,54 +108,14 @@ class SearchEngine:
                 # analyzer="stop"
 
             )
-            # content_search_match_phrase_lower = cy_es.match_phrase(
-            #     field=getattr(cy_es.buiders,f"{ self.get_content_field_name()}_lower"),
-            #     content=content_no_boots,
-            #     boost=90,
-            #     # slop=1,
-            #     # analyzer="stop"
-            #
-            # )
-            # content_search_match =  cy_es.match(
-            #     field=getattr(cy_es.buiders,"content"),
-            #     content=content,
-            #     boost=80,
-            #     # slop=1
-            #
-            # )
-            # content_search_match_lower = cy_es.match(
-            #     field=getattr(cy_es.buiders, f"{ self.get_content_field_name()}_lower"),
-            #     content=content_no_boots,
-            #     boost=70,
-            #     # slop=1
-            #
-            # )
+
             qr = cy_es.query_string(
                 fields=[getattr(cy_es.buiders, f"{self.get_content_field_name()}_seg")],
                 query=content_boots
                 # slop=1
 
             )
-            #
-            # qr_lower = cy_es.query_string(
-            #     fields=[getattr(cy_es.buiders, f"{self.get_content_field_name()}_lower")],
-            #     query=content_boots_lower
-            #     # slop=1
-            #
-            # )
-            # full_qr = {
-            #     "bool":{
-            #         "should":[
-            #             qr_lower,qr
-            #         ]
-            #     }
-            # }
-            # content_search = content_search | full_qr
 
-            # search_expr = search_expr & ( content_search_match_phrase |
-            #                               content_search_match_phrase_lower |
-            #                               content_search_match|
-            #                               content_search_match_lower)
             search_expr = search_expr & (content_search_match_phrase | qr)
             # search_expr.set_minimum_should_match(1)
         skip = page_index
@@ -245,12 +204,20 @@ class SearchEngine:
             mark_delete=mark_delete,
             content=content,
             vn_non_accent_content=vn_non_accent_content,
-            meta_info=meta_info,
-            data_item=data_item,
+            meta_info=cy_es.convert_to_vn_predict_seg(
+                meta_info,
+                segment_handler=self.vn.parse_word_segment,
+                handler=self.vn_predictor.get_text
+            ),
+            data_item=cy_es.convert_to_vn_predict_seg(
+                data_item,
+                segment_handler=self.vn.parse_word_segment,
+                handler=self.vn_predictor.get_text
+            ),
             privileges=privileges,
             meta_data=meta
         )
-        body_dict[f"{self.get_content_field_name()}_seg"] = self.vn.parse_word_segment(content=content)
+
         # body_dict[f"{self.get_content_field_name()}_lower"] = self.vn.parse_word_segment(content=content.lower())
         cy_es.create_doc(
             client=self.client,
@@ -281,7 +248,11 @@ class SearchEngine:
                     app_name=app_name,
                     privileges=privileges,
                     upload_id=upload_id,
-                    data_item=data_item
+                    data_item=cy_es.convert_to_vn_predict_seg(
+                        data_item,
+                        segment_handler=self.vn.parse_word_segment,
+                        handler=self.vn_predictor.get_text
+                        )
                 )
             else:
                 self.make_index_content(
@@ -323,7 +294,7 @@ class SearchEngine:
         if isinstance(data_item, cy_docs.DocumentObject):
             json_data_item = data_item.to_json_convertable()
         elif isinstance(data_item, dict):
-            json_data_item = cy_docs.to_json_convertable(data_item)
+            json_data_item = cy_docs.to_json_convertable(data_item,predict_content_handler=self.vn_predictor.get_text)
         if is_exist:
             es_doc = self.get_doc(
                 app_name=app_name,
@@ -339,19 +310,26 @@ class SearchEngine:
                 _Privileges = data_item.Privileges
             elif isinstance(data_item, dict):
                 _Privileges = data_item.get("Privileges")
+            seg_content = self.vn.parse_word_segment(
+                content=content
+            )
             return cy_es.update_doc_by_id(
                 client=self.client,
                 index=self.get_index(app_name),
                 id=id,
                 data=(
                     cy_es.buiders.privileges << _Privileges,
-                    getattr(cy_es.buiders, f"{self.get_content_field_name()}_seg") << self.vn.parse_word_segment(
-                        content=content),
+                    getattr(cy_es.buiders, f"{self.get_content_field_name()}_bm25_seg") << seg_content,
+                    getattr(cy_es.buiders, f"{self.get_content_field_name()}_seg") << seg_content,
                     getattr(cy_es.buiders, f"{self.get_content_field_name()}_lower") << self.vn.parse_word_segment(
                         content=content.lower()),
                     cy_es.buiders.vn_non_accent_content << vn_non_accent_content,
                     cy_es.buiders.content << content,
-                    cy_es.buiders.data_item << json_data_item,
+                    cy_es.buiders.data_item << cy_es.convert_to_vn_predict_seg(
+                        json_data_item,
+                        handler=self.vn_predictor.get_text,
+                        segment_handler=self.vn.parse_word_segment
+                    ) ,
                     cy_es.buiders.meta_data << meta
 
                 )
@@ -370,7 +348,11 @@ class SearchEngine:
                 app_name=app_name,
                 privileges=_Privileges,
                 upload_id=id,
-                data_item=json_data_item,
+                data_item=cy_es.convert_to_vn_predict_seg(
+                        json_data_item,
+                        handler=self.vn_predictor.get_text,
+                        segment_handler=self.vn.parse_word_segment
+                    ) ,
                 content=content,
                 meta_info=None,
                 meta=meta,
@@ -379,7 +361,7 @@ class SearchEngine:
             )
 
     def update_data_field(self, app_name, id, field_path, field_value):
-        return cy_es.update_data_fields(
+        cy_es.update_data_fields(
             index=self.get_index(app_name),
             id=id,
             field_path=field_path,
@@ -387,13 +369,37 @@ class SearchEngine:
             client=self.client
 
         )
+        if cy_es.is_content_text(field_value):
+            vn_predictor = self.vn_predictor.get_text(field_value)
+            vn_seg = self.vn.parse_word_segment(vn_predictor)
+            if vn_predictor!=field_value:
+                cy_es.update_data_fields(
+                    index=self.get_index(app_name),
+                    id=id,
+                    field_path=f"{field_path}_vn_predict",
+                    field_value=vn_predictor,
+                    client=self.client
+
+                )
+            cy_es.update_data_fields(
+                index=self.get_index(app_name),
+                id=id,
+                field_path=f"{field_path}_bm25_seg",
+                field_value=vn_seg,
+                client=self.client
+
+            )
 
     def update_by_conditional(self, app_name, conditional, data):
         if isinstance(conditional,dict):
             conditional = cy_es.create_filter_from_dict(conditional)
         return cy_es.update_by_conditional(
             client=self.client,
-            data_update=data,
+            data_update=cy_es.convert_to_vn_predict_seg(
+                        data,
+                        handler=self.vn_predictor.get_text,
+                        segment_handler=self.vn.parse_word_segment
+                    ),
             index=self.get_index(app_name),
             conditional=conditional
         )
