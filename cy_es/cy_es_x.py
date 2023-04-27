@@ -111,7 +111,14 @@ class DocumentFields:
         self.__norm__ = None
         self.__type__ = None
         self.__wrap_func__ = None
+        self.__highlight_fields__ = []
         # self.is_equal = False
+
+    def get_highlight_fields(self):
+        ret = []
+        for x in self.__highlight_fields__:
+            ret += [DocumentFields(x)]
+        return ret
 
     def set_type(self, str_type: str):
         self.__type__ = str_type
@@ -297,6 +304,7 @@ class DocumentFields:
                 ]
             }
             ret.__is_bool__ = True
+            ret.__highlight_fields__ = list(set(self.__highlight_fields__ + other.__highlight_fields__))
             return ret
         elif isinstance(other, dict):
             if not self.__is_bool__:
@@ -348,6 +356,7 @@ class DocumentFields:
                 ]
             }
             ret.__is_bool__ = True
+            ret.__highlight_fields__ = list(set(self.__highlight_fields__ + other.__highlight_fields__))
             return ret
         elif isinstance(other, dict):
             if not self.__is_bool__:
@@ -887,6 +896,7 @@ def match(field: DocumentFields, content: str, boost=None, slop=None):
     ret.__es_expr__ = __match_content__
     return ret
 
+
 def wildcard(field: DocumentFields, content: str):
     """
     :return:
@@ -908,8 +918,8 @@ def wildcard(field: DocumentFields, content: str):
     """
     ret = DocumentFields()
     __match_phrase__ = {
-        "wildcard":{
-            field.__name__:"*"+content+"*"
+        "wildcard": {
+            field.__name__: "*" + content + "*"
         }
     }
 
@@ -919,6 +929,8 @@ def wildcard(field: DocumentFields, content: str):
 
     # ret.__es_expr__["boost"] = boost
     return ret
+
+
 def match_phrase(field: DocumentFields, content: str, boost=None, slop=None,
                  analyzer="standard") -> DocumentFields:
     ret = DocumentFields()
@@ -1409,7 +1421,40 @@ def nested(prefix: str, filter):
     return filter
 
 
-def __apply_function__(function_name, field_name, owner_caller=None, args=None):
+def __build_search__(fields, content,suggest_handler=None):
+    """
+
+    :param fields:
+    :param content:
+    :return:
+    """
+    """
+    "query": {
+    "multi_match" : {
+      "query" : "this is a test",
+      "fields" : [ "subject^3", "message" ] 
+    }
+  }
+    """
+    ret = DocumentFields()
+    match_fields = []
+    if callable(suggest_handler):
+        content= content+" "+suggest_handler(content)
+    else:
+        return
+    for x in fields:
+        match_fields+=[x,f"{x}_seg^2",f"{x}_bm25_seg^1"]
+    ret.__es_expr__ = {
+        "multi_match": {
+            "fields": fields,
+            "query": content
+        }
+    }
+    ret.__highlight_fields__ = fields
+    return ret
+
+
+def __apply_function__(function_name, field_name, owner_caller=None, args=None,suggest_handler=None):
     if function_name == "$$day":
         ret = DocumentFields(field_name)
         return ret.get_day_of_month()
@@ -1428,11 +1473,15 @@ def __apply_function__(function_name, field_name, owner_caller=None, args=None):
     elif function_name == "$$contains":
         ret = DocumentFields(field_name)
         return ret.__contains__
+    elif function_name == "$$search":
+        fields = field_name['$fields']
+        content = field_name['$value']
+        return __build_search__(fields, content,suggest_handler)
     else:
         raise NotImplemented("error")
 
 
-def create_filter_from_dict(expr: dict, owner_caller=None, op=None):
+def create_filter_from_dict(expr: dict, owner_caller=None, op=None,suggest_handler=None):
     global __map__
 
     if isinstance(expr, dict):
@@ -1452,7 +1501,7 @@ def create_filter_from_dict(expr: dict, owner_caller=None, op=None):
 
         for k, v in expr.items():
             if k[0:2] == "$$":
-                ret = __apply_function__(k, v, owner_caller)
+                ret = __apply_function__(k, v, owner_caller,suggest_handler=suggest_handler)
                 if callable(ret) and not isinstance(ret, DocumentFields):
                     ret = ret(expr["$value"])
                     return ret
@@ -1480,10 +1529,10 @@ def create_filter_from_dict(expr: dict, owner_caller=None, op=None):
                             ret = getattr(owner_caller, map_name)(*v)
                             return ret
                         else:
-                            ret = create_filter_from_dict(v[0])
+                            ret = create_filter_from_dict(v[0],suggest_handler=suggest_handler)
                             if len(v) > 1:
                                 for i in range(1, len(v)):
-                                    next = create_filter_from_dict(v[i])
+                                    next = create_filter_from_dict(v[i],suggest_handler=suggest_handler)
                                     if map_type == __expr_type_enum__.LOGI:
                                         ret = getattr(ret, map_name)(next)
                                     else:
@@ -1493,7 +1542,7 @@ def create_filter_from_dict(expr: dict, owner_caller=None, op=None):
                                         raise NotImplemented
                             return ret
                     elif isinstance(v, dict):
-                        ret = create_filter_from_dict(v, op=__map__[k])
+                        ret = create_filter_from_dict(v, op=__map__[k],suggest_handler=suggest_handler)
                         return ret
                     elif isinstance(v, str):
                         ret = getattr(owner_caller, map_name)(*v)
@@ -1506,7 +1555,7 @@ def create_filter_from_dict(expr: dict, owner_caller=None, op=None):
                     else:
                         if map_type == __expr_type_enum__.OPER:
                             if isinstance(v, dict):
-                                ret = create_filter_from_dict(v)
+                                ret = create_filter_from_dict(v,suggest_handler=suggest_handler)
                                 ret = getattr(ret, map_name)()
                                 return ret
                             elif isinstance(owner_caller, DocumentFields):
@@ -1521,7 +1570,7 @@ def create_filter_from_dict(expr: dict, owner_caller=None, op=None):
             else:
                 if isinstance(v, dict):
                     ret = DocumentFields(k)
-                    ret = create_filter_from_dict(v, ret)
+                    ret = create_filter_from_dict(v, ret,suggest_handler=suggest_handler)
                     return ret
                 elif k == "$value" and op is not None and len([x for x in expr.keys() if x.startswith('$$')]) > 0:
 
@@ -1809,7 +1858,6 @@ def update_by_conditional(
         conditional,
         doc_type="_doc"
 ):
-
     _data_update = to_json_convertable(data_update)
     body = {}
 
@@ -1831,33 +1879,32 @@ def update_by_conditional(
       }
     }
     """
-    params={
-        "___obj___":dict()
+    params = {
+        "___obj___": dict()
     }
     for k, v in h.items():
-        txt =""
-        p_k =k.replace('.','_')
+        txt = ""
+        p_k = k.replace('.', '_')
         items = k.split('.')
-        if items.__len__()>1:
-            k1=""
+        if items.__len__() > 1:
+            k1 = ""
             for x in items[:-1]:
-                k1+="."+x
+                k1 += "." + x
                 txt += f"if(ctx._source{k1}==null)\r\n {{\r\nctx._source{k1}=[:];\r\n}}\r\n"
 
         txt += f"ctx._source.{k}=params.{p_k};\r\n"
 
-        inline_script +=txt
+        inline_script += txt
         # inline_script += f"ctx._source.{k}=params.{p_k};"
-        params[p_k] =v
+        params[p_k] = v
 
     body["script"] = {
         "inline": inline_script,
         "lang": "painless",
-        "params":params
+        "params": params
     }
 
-
-    ret= client.update_by_query(
+    ret = client.update_by_query(
         index=index,
         doc_type=doc_type,
         body=body
@@ -1866,7 +1913,7 @@ def update_by_conditional(
     return ret.get("updated") or 0
 
 
-def delete_by_conditional(client:Elasticsearch,index:str, conditional,doc_type="_doc"):
+def delete_by_conditional(client: Elasticsearch, index: str, conditional, doc_type="_doc"):
     body = {}
 
     if isinstance(conditional, DocumentFields):
@@ -1874,9 +1921,84 @@ def delete_by_conditional(client:Elasticsearch,index:str, conditional,doc_type="
     if isinstance(conditional, dict):
         body = dict(query=conditional)
     ret = client.delete_by_query(
-        index = index,
-        body=body,doc_type=doc_type
+        index=index,
+        body=body, doc_type=doc_type
 
     )
 
     return ret.get("deleted") or 0
+
+
+import uuid
+
+
+def __is_date__(str_date):
+    try:
+        datetime.datetime.strptime(str_date[0:26] + 'Z', '%Y-%m-%dT%H:%M:%S.%fZ')
+        return True
+    except Exception as e:
+        return False
+    str_date_time = str_date.split('+')[0]
+    try:
+        t = datetime.datetime.strptime(str_date_time, '%Y-%m-%dT%H:%M:%S.%f')
+        tz = datetime.datetime.strptime(str_date.split('+')[1], "%H:%M")
+        ret = t + datetime.timedelta(tz.hour)
+        return True
+    except Exception as e:
+        return False
+
+
+def __is_valid_uuid__(value):
+    try:
+        uuid.UUID(value)
+
+        return True
+    except ValueError:
+        return False
+
+
+def is_content_text(text):
+    if isinstance(text, str) and not __is_date__(text) and not __is_valid_uuid__(text):
+        return True
+    return False
+
+
+def convert_to_vn_predict_seg(data, handler, segment_handler,clear_accent_mark_handler):
+    def add_more_content(data, handler, segment_handler,clear_accent_mark_handler):
+        if isinstance(data, dict):
+            ret = {}
+            for k, v in data.items():
+                x, y, z = add_more_content(v, handler, segment_handler,clear_accent_mark_handler)
+                if y and y != x:
+                    ret[f"{k}_vn_predict"] = y
+                if z:
+                    ret[f"{k}_bm25_seg"] = z
+                ret[k] = x
+            return ret, None, None
+        elif isinstance(data, str):
+            if not " " in data:
+                return data, None, None
+            if __is_valid_uuid__(data):
+                return data, None, None
+            elif __is_date__(data):
+                return data, None, None
+            else:
+                vn_none_accent_content = clear_accent_mark_handler(data.lower())
+                predict_content = handler(data)
+
+                return data, predict_content, segment_handler(predict_content) + "/n" + segment_handler(data)+"/n"+ vn_none_accent_content
+        elif isinstance(data, list):
+            n_list = []
+            for item in data:
+                x, y, z = add_more_content(item, handler, segment_handler,clear_accent_mark_handler)
+                if y and y != x:
+                    n_list += [y]
+                if z:
+                    n_list += [z]
+                n_list += [x]
+            return n_list, None, None
+        else:
+            return data, None, None
+
+    ret, _, _ = add_more_content(data, handler, segment_handler,clear_accent_mark_handler)
+    return ret

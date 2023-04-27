@@ -97,7 +97,8 @@ class SearchEngine:
                 cy_es.nested(
                     field_name="privileges",
                     filter=privileges
-                )
+                ),
+                suggest_handler=self.vn_predictor.get_text
             )
         if content is not None and content != "" and content.lstrip().rstrip().strip() != "":
             content_search_match_phrase = cy_es.match_phrase(
@@ -135,10 +136,10 @@ class SearchEngine:
                 getattr(cy_es.buiders, f"{self.get_content_field_name()}_seg")
             ]
         if logic_filter is not None:
-            _logic_filter = cy_es.create_filter_from_dict(logic_filter)
+            _logic_filter = cy_es.create_filter_from_dict(logic_filter,suggest_handler=self.vn_predictor.get_text)
             if _logic_filter:
                 search_expr = search_expr & _logic_filter
-
+        highlight_expr+=search_expr.get_highlight_fields()
         ret = cy_es.search(
             client=self.client,
             limit=page_size,
@@ -207,12 +208,14 @@ class SearchEngine:
             meta_info=cy_es.convert_to_vn_predict_seg(
                 meta_info,
                 segment_handler=self.vn.parse_word_segment,
-                handler=self.vn_predictor.get_text
+                handler=self.vn_predictor.get_text,
+                clear_accent_mark_handler=self.text_process_service.vn_clear_accent_mark
             ),
             data_item=cy_es.convert_to_vn_predict_seg(
                 data_item,
                 segment_handler=self.vn.parse_word_segment,
-                handler=self.vn_predictor.get_text
+                handler=self.vn_predictor.get_text,
+                clear_accent_mark_handler=self.text_process_service.vn_clear_accent_mark
             ),
             privileges=privileges,
             meta_data=meta
@@ -251,7 +254,8 @@ class SearchEngine:
                     data_item=cy_es.convert_to_vn_predict_seg(
                         data_item,
                         segment_handler=self.vn.parse_word_segment,
-                        handler=self.vn_predictor.get_text
+                        handler=self.vn_predictor.get_text,
+                        clear_accent_mark_handler=self.text_process_service.vn_clear_accent_mark
                         )
                 )
             else:
@@ -328,7 +332,8 @@ class SearchEngine:
                     cy_es.buiders.data_item << cy_es.convert_to_vn_predict_seg(
                         json_data_item,
                         handler=self.vn_predictor.get_text,
-                        segment_handler=self.vn.parse_word_segment
+                        segment_handler=self.vn.parse_word_segment,
+                        clear_accent_mark_handler=self.text_process_service.vn_clear_accent_mark
                     ) ,
                     cy_es.buiders.meta_data << meta
 
@@ -351,7 +356,8 @@ class SearchEngine:
                 data_item=cy_es.convert_to_vn_predict_seg(
                         json_data_item,
                         handler=self.vn_predictor.get_text,
-                        segment_handler=self.vn.parse_word_segment
+                        segment_handler=self.vn.parse_word_segment,
+                        clear_accent_mark_handler=self.text_process_service.vn_clear_accent_mark
                     ) ,
                 content=content,
                 meta_info=None,
@@ -398,7 +404,8 @@ class SearchEngine:
             data_update=cy_es.convert_to_vn_predict_seg(
                         data,
                         handler=self.vn_predictor.get_text,
-                        segment_handler=self.vn.parse_word_segment
+                        segment_handler=self.vn.parse_word_segment,
+                        clear_accent_mark_handler=self.text_process_service.vn_clear_accent_mark
                     ),
             index=self.get_index(app_name),
             conditional=conditional
