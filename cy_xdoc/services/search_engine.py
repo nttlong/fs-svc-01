@@ -84,6 +84,24 @@ class SearchEngine:
 
         content = content or ""
         original_content = content
+        def fix_error(data_privileges):
+            """
+            Lỗi này là do mấy cha nội Codx đưa dữ liệu vào sai nên phải fix trước khi tìm
+            :param data_privileges:
+            :return:
+            """
+            if isinstance(data_privileges,dict):
+                for k,v in data_privileges.items():
+                    if k=="$contains" and v==['']:
+                        data_privileges[k]=['.']
+                    else:
+                        data_privileges[k]= fix_error(v)
+            elif isinstance(data_privileges,list):
+                return [fix_error(x) for x in data_privileges]
+            else:
+                return data_privileges
+            return data_privileges
+        privileges = fix_error(privileges)
         if isinstance(privileges, dict):
             privileges = cy_es.text_lower(privileges)
         content = self.vn_predictor.get_text(content)

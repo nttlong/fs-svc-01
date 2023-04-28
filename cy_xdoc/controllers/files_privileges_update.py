@@ -67,6 +67,21 @@ def update_privileges(
     # from cy_xdoc.controllers.apps import check_app
     # check_app(app_name)
     file_services = cy_kit.singleton(cy_xdoc.services.files.FileServices)
+    def fix_error(privileges):
+        """
+        Lỗi này là do mấy cha nội Codx đưa dữ liệu vào sai nên phải fix trước khi tìm
+        :param privileges:
+        :return:
+        """
+        if isinstance(privileges,list):
+            ret =[]
+            for x in privileges:
+                if x.Values=="":
+                    x.Values="."
+                ret +=[x]
+            return ret
+        return privileges
+    Data =fix_error(Data)
     for upload_id in UploadIds:
         ret = file_services.update_privileges(
             app_name=app_name,
