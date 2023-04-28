@@ -1,0 +1,78 @@
+# Default values for xdoc-job.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+defaults:
+  replicate: 1
+namespace: xdoc-job-v3
+nfs:
+  server: 172.16.7.91
+  directory: /var/nfs_share_dir_for_k8s
+
+image:
+  repository: nttlong/files-service-final
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "rc.0.4.2"
+deployments:
+  - name: files-upload
+    endpoint: files_upload.py
+    description: watch all upload from lv-doc-service
+  - name: generate-image-from-office
+    endpoint: files_generate_image_from_office.py
+    description: Generate image from any office file, replicate number should be number of worker
+  - name: files-generate-image-from-pdf
+    endpoint: files_generate_image_from_pdf.py
+    replicate: 3
+  - name: files-generate-image-from-video
+    endpoint: files_generate_image_from_video.py
+  - name: files-ocr-pdf
+    endpoint: files_ocr_pdf.py
+  - name: files-generate-pdf-from-image
+    endpoint: files_generate_pdf_from_image.py
+  - name: files-generate-thumbs
+    endpoint: files_generate_thumbs.py
+    replicate: 3
+  - name: files-save-custom-thumb
+    endpoint: files_save_custom_thumb.py
+  - name: files-save-default-thumb
+    endpoint: files_save_default_thumb.py
+    replicate: 3
+  - name: files-save-orc-pdf-file
+    endpoint: files_save_orc_pdf_file.py
+  - name: files-save-search-engine
+    endpoint: files_save_search_engine.py
+  - name: files-extrac-text-from-image
+    endpoint: files_extrac_text_from_image.py
+  - name: files-clean-up
+    endpoint: files_clean_up.py
+  - name: files-move-tenants
+    endpoint: files_move_tenants.py
+
+
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
