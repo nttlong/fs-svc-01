@@ -5,7 +5,8 @@
 replicaCount: 1
 defaults:
   replicate: 1
-namespace: xdoc-job-v3
+  description: "Uprate version"
+namespace: xdoc-job-v4
 nfs:
   server: 172.16.7.91
   directory: /var/nfs_share_dir_for_k8s
@@ -14,7 +15,7 @@ image:
   repository: nttlong/files-service-final
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "rc.0.4.2"
+  tag: "rc.0.4.3"
 deployments:
   - name: files-upload
     endpoint: files_upload.py
@@ -49,7 +50,9 @@ deployments:
     endpoint: files_clean_up.py
   - name: files-move-tenants
     endpoint: files_move_tenants.py
-
+  - name: fix-elastic-search-missing-data
+    endpoint: fix_elastic_search_missing_data.py
+    description: Lỗi này là do mấy cha nội Codx đưa dữ liệu vào sai nên phải fix trước khi tìm
 
 
 resources: {}

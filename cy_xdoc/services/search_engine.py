@@ -153,11 +153,16 @@ class SearchEngine:
                 getattr(cy_es.buiders, f"content"),
                 getattr(cy_es.buiders, f"{self.get_content_field_name()}_seg")
             ]
-        if logic_filter is not None:
-            _logic_filter = cy_es.create_filter_from_dict(logic_filter,suggest_handler=self.vn_predictor.get_text)
+        if logic_filter is not None and isinstance(logic_filter,dict):
+            _logic_filter = cy_es.create_filter_from_dict(
+                logic_filter,
+                suggest_handler=self.vn_predictor.get_text
+            )
             if _logic_filter:
                 search_expr = search_expr & _logic_filter
+        highlight_expr = highlight_expr or []
         highlight_expr+=search_expr.get_highlight_fields()
+        print(f"------------{skip}--{page_size}-------------------------")
         ret = cy_es.search(
             client=self.client,
             limit=page_size,
@@ -437,3 +442,7 @@ class SearchEngine:
             index=self.get_index(app_name),
             conditional=conditional
         )
+
+
+
+

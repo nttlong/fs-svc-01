@@ -452,6 +452,7 @@ class DocumentFields:
             }
             return ret
         else:
+
             raise Exception(f"{other} is not int,float or datetime")
 
     def __ne__(self, other):

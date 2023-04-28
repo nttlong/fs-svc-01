@@ -33,6 +33,8 @@ kind: Deployment
 metadata:
   name: {{$value.name}}
   namespace: {{$.Values.namespace}}
+  annotations:
+    description: "{{$value.description | default $.Values.defaults.description }}"
 spec:
   selector:
     matchLabels:

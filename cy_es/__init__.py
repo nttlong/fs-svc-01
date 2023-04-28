@@ -40,7 +40,7 @@ def select(client: Elasticsearch, index: str, doc_type: str = "_doc", fields=[],
         limit=limit
     )
 
-
+__cache__settings_max_result_window___ = {}
 def search(client: Elasticsearch,
            index: str,
            filter,
@@ -51,6 +51,14 @@ def search(client: Elasticsearch,
            sort=None,
            doc_type="_doc",
            logic_filter=None):
+    global __cache__settings_max_result_window___
+    if __cache__settings_max_result_window___.get(index)== None:
+
+        client.indices.put_settings(index=index,
+                                body={"index": {
+                                    "max_result_window": 50000000
+                                }})
+        __cache__settings_max_result_window___[index] = True
     return cy_es_x.search(
         client=client,
         index=index,
