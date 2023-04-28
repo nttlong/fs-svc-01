@@ -33,4 +33,4 @@ RUN cd ..
 #docker buildx create --name builder --driver docker-container --use
 #docker buildx inspect --bootstrap
 #docker buildx   build -t nttlong/base-core:ttn.2023.001  --platform=linux/amd64,linux/arm64/v8  ./.. -f base-core-slim
-#docker buildx   build -t nttlong/base-core-slim:rc.2023.018  --platform=linux/amd64,linux/arm64/v8  ./.. -f base-core-slim  --push=true --output type=registry
+#docker buildx   build -t nttlong/base-core-slim:rc.2023.019  --platform=linux/amd64,linux/arm64/v8  ./.. -f base-core-slim  --push=true --output type=registry

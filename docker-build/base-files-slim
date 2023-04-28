@@ -1,4 +1,4 @@
-FROM nttlong/base-core-slim:rc.2023.018  as git
+FROM nttlong/base-core-slim:rc.2023.019  as git
 ARG TARGETARCH
 RUN pip uninstall torch -y
 RUN pip uninstall torchvision -y
@@ -24,7 +24,7 @@ RUN pip install ghostscript --no-cache-dir
 RUN pip install -r base-files-slim.req.txt --no-cache-dir
 RUN pip install git+https://github.com/huggingface/datasets.git@7b2af47647152d39a3acade256da898cb396e4d9 --no-cache-dir
 RUN pip install git+https://github.com/huggingface/transformers.git@60d51ef5123d949fd8c59cd4d3254e711541d278 --no-cache-dir
-RUN pip install git+https://github.com/mindee/doctr.git --no-cache-dir
+RUN pip install doctr==1.9.0 --no-cache-dir
 RUN pip install git+https://github.com/deepdoctection/deepdoctection.git@f251dca0df9d051fe133ba489d42c6ae2b27597a  --no-cache-dir
 RUN pip install git+https://github.com/facebookresearch/detectron2.git@4aca4bdaa9ad48b8e91d7520e0d0815bb8ca0fb1  --no-cache-dir
 RUN pip uninstall pytesseract -y
@@ -32,7 +32,7 @@ RUN pip install pytesseract
 
 RUN pip uninstall python-doctr -y
 RUN pip install python-doctr==0.6.0
-
+RUN pip install rapidfuzz
 RUN pip uninstall packaging -y
 RUN pip install packaging==20.9
 
@@ -43,4 +43,4 @@ RUN python3 /app/pre_test_build/cheK_layout_detection.py
 #docker buildx create --name builder --driver docker-container --use
 #docker buildx inspect --bootstrap
 #docker buildx   build -t nttlong/files-service-slim:rc.0.1.1   --platform=linux/amd64,linux/arm64/v8  ./.. -f base-files-slim
-#docker buildx   build -t nttlong/files-service-slim:rc.0.1.1  --platform=linux/amd64,linux/arm64/v8  ./.. -f base-files-slim  --push=true --output type=registry
+#docker buildx   build -t nttlong/files-service-slim:rc.0.1.2  --platform=linux/amd64,linux/arm64/v8  ./.. -f base-files-slim  --push=true --output type=registry
