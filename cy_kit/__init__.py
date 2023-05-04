@@ -54,15 +54,31 @@ def check_implement(from_class: type, implement_class: T) -> T:
 def must_imlement(interface_class: type):
     return cy_kit_x.must_implement(interface_class)
 
-
+def trip_content(data):
+    if isinstance(data,dict):
+        for k,v in data.items():
+            if isinstance(v,str):
+                data[k]=v.rstrip(' ').lstrip(' ')
+            elif isinstance(v,dict):
+                data[k] = trip_content(v)
+    return data
 def yaml_config(path: str, apply_sys_args: bool = True):
     ret = cy_kit_x.yaml_config(path, apply_sys_args)
-    ret = cy_kit_x.trip_content(ret)
+    if hasattr(cy_kit_x,"trip_content"):
+        ret = cy_kit_x.trip_content(ret)
+    else:
+        ret = trip_content(ret)
     return ret
 
 
 def combine_agruments(data):
-    return getattr(cy_kit_x, "combine_agruments")(data)
+    ret = cy_kit_x.combine_agruments(data)
+    if hasattr(cy_kit_x,"trip_content"):
+        ret = cy_kit_x.trip_content(ret)
+    else:
+        ret = trip_content(ret)
+    return ret
+
 
 
 def inject(cls:T)->T:

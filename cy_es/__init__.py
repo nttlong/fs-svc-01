@@ -344,3 +344,6 @@ def is_content_text(text):
 
 def convert_to_vn_predict_seg(data, handler, segment_handler,clear_accent_mark_handler):
     return cy_es_x.convert_to_vn_predict_seg(data, handler, segment_handler,clear_accent_mark_handler)
+
+def natural_logic_parse(expr):
+    return cy_es_x.natural_logic_parse(expr)

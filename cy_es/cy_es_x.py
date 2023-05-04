@@ -17,7 +17,7 @@ def get_all_index(client: Elasticsearch) -> List[str]:
 
 
 def __well_form__(item):
-    r = ["'", '"', ";", ":", ".", ",", ">", "<", "?", "+", "-", "*", "/", "%", "$", "#", "@", "\\", "!", "~",
+    r = ["'", '"', ";", ":", ".", ",", ">", "<", "?", "+", "-", "/", "%", "$", "#", "@", "\\", "!", "~",
          "`", "^", "]", "[", "(", ")"]
     ret = ""
     for x in item:
@@ -226,11 +226,21 @@ class DocumentFields:
                 }
             """
             import re
-            item = __well_form__(item)
-
+            # item = __well_form__(item)
+            # if item[0:1]=='*' and item[-1]=='*':
+            #     item="."+item[0:-1] +".*"
+            # elif item[-1]=='*':
+            #     item="^"+item[0:-1] +".*"
+            # elif item[0:1]=='*':
+            #     item="."+item+"$"
+            # ret.__es_expr__ = {
+            #     "regexp": {
+            #         self.__name__: item
+            #     }
+            # }
             ret.__es_expr__ = {
-                "regexp": {
-                    self.__name__: f".*{item}.*"
+                "wildcard":{
+                    self.__name__: item
                 }
             }
             return ret
@@ -1441,8 +1451,7 @@ def __build_search__(fields, content,suggest_handler=None):
     match_fields = []
     if callable(suggest_handler):
         content= content+" "+suggest_handler(content)
-    else:
-        return
+
     for x in fields:
         match_fields+=[x,f"{x}_seg^2",f"{x}_bm25_seg^1"]
     ret.__es_expr__ = {
@@ -1472,11 +1481,21 @@ def __apply_function__(function_name, field_name, owner_caller=None, args=None,s
         ret = DocumentFields(field_name)
         return ret.endswith
     elif function_name == "$$contains":
-        ret = DocumentFields(field_name)
-        return ret.__contains__
+        if isinstance(field_name,dict):
+            if field_name.get("$field") and field_name.get("$value"):
+                ret = DocumentFields(field_name.get("$field"))
+                return ret.__contains__(field_name.get("$value"))
+            else:
+                ret = DocumentFields(field_name)
+                return ret.__contains__
     elif function_name == "$$search":
-        fields = field_name['$fields']
-        content = field_name['$value']
+        if field_name.get("$field") and field_name.get("$value"):
+            fields = field_name['$field']
+            content = field_name['$value']
+        else:
+            fields = field_name['$fields']
+            content = field_name['$value']
+
         return __build_search__(fields, content,suggest_handler)
     else:
         raise NotImplemented("error")
@@ -1546,7 +1565,7 @@ def create_filter_from_dict(expr: dict, owner_caller=None, op=None,suggest_handl
                         ret = create_filter_from_dict(v, op=__map__[k],suggest_handler=suggest_handler)
                         return ret
                     elif isinstance(v, str):
-                        ret = getattr(owner_caller, map_name)(*v)
+                        ret = getattr(owner_caller, map_name)(v)
                         return ret
 
 
@@ -2003,3 +2022,153 @@ def convert_to_vn_predict_seg(data, handler, segment_handler,clear_accent_mark_h
 
     ret, _, _ = add_more_content(data, handler, segment_handler,clear_accent_mark_handler)
     return ret
+
+def natural_logic_parse(expr:str):
+    import ast
+    def __convert_to_logical_text__(expr: str):
+        ret = expr.replace('=', '==')
+        ret = ret.replace('===', '==')
+        ret = ret.replace('>==', '>=')
+        ret = ret.replace('<==', '<=')
+        ret = ret.replace('<>', '!=')
+        ret = ret.replace('!==', '!=')
+        ret = ret.replace(' like ', '<<')
+        ret = ret.replace(' search ', '>>')
+        return ret
+    def __get_op__(node):
+        if isinstance(node, ast.Eq):
+            return "$eq"
+        if isinstance(node, ast.NotEq):
+            return "$ne"
+        if isinstance(node, ast.Gt):
+            return "$gt"
+        if isinstance(node, ast.GtE):
+            return "$gte"
+        if isinstance(node, ast.Lt):
+            return "$lt"
+        if isinstance(node, ast.LtE):
+            return "$lte"
+        raise NotImplemented()
+
+
+    def __get_name_of_ast__(node: ast.Attribute):
+        assert isinstance(node, ast.Attribute) or isinstance(node, ast.Name)
+        if isinstance(node, ast.Attribute):
+            return f"{__get_name_of_ast__(node.value)}.{node.attr}"
+        if isinstance(node, ast.Name):
+            return node.id
+        raise NotImplemented()
+
+    def __resolve_call_node__(node):
+        """
+        Return function name and field name
+        :param node:
+        :return:
+        """
+        assert isinstance(node,ast.Call)
+        func_name = f"$${node.func.id}"
+        field_name = __get_name_of_ast__(node.args[0])
+        return func_name,field_name
+
+    def __parse_logical_expr__(node):
+        if isinstance(node,ast.BinOp) and type(node.op)==ast.LShift:
+            left = __parse_logical_expr__(node.left)
+            right = __parse_logical_expr__(node.right)
+            function_name = None
+            if isinstance(right,str):
+                return {
+                    "$$contains": {
+                        "$field": left,
+                        "$value": right
+                    }
+                }
+
+            else:
+                raise Exception("like operator only apply for text")
+        if isinstance(node,ast.BinOp) and type(node.op)==ast.RShift:
+            if isinstance(node.left,ast.Tuple):
+                left =[]
+                for x in node.left.dims:
+                    left+= [__parse_logical_expr__(x)]
+                right = __parse_logical_expr__(node.right)
+                function_name = None
+                if isinstance(right, str):
+                    return {
+                        "$$search": {
+                            "$fields": left,
+                            "$value": right
+                        }
+                    }
+
+                else:
+                    raise Exception("like operator only apply for text")
+            else:
+                left = __parse_logical_expr__(node.left)
+                right = __parse_logical_expr__(node.right)
+                function_name = None
+                if isinstance(right,str):
+                    return {
+                        "$$search": {
+                            "$fields": [left],
+                            "$value": right
+                        }
+                    }
+
+                else:
+                    raise Exception("like operator only apply for text")
+
+        if isinstance(node, ast.Constant):
+            return node.value
+        if isinstance(node, ast.Expr):
+            return __parse_logical_expr__(node.value)
+        if isinstance(node, ast.BoolOp):
+            left = __parse_logical_expr__(node.values[0])
+            right = __parse_logical_expr__(node.values[1])
+            if type(node.op) == ast.And:
+                return {
+                    "$and": [left, right]
+                }
+            if type(node.op) == ast.Or:
+                return {
+                    "$or": [left, right]
+                }
+            raise NotImplemented()
+        if isinstance(node,ast.Attribute):
+            ret = __get_name_of_ast__(node)
+            return ret
+        if isinstance(node, ast.Compare):
+            if isinstance(node.left, ast.Attribute) or isinstance(node.left, ast.Name):
+                field_name = __get_name_of_ast__(node.left)
+                field_value = __parse_logical_expr__(node.comparators[0])
+                op = __get_op__(node.ops[0])
+                return {
+                    field_name: {
+                        op: field_value
+                    }
+                }
+            elif isinstance(node.left,ast.Call):
+                function_name,  field_name = __resolve_call_node__(node.left)
+                field_value = __parse_logical_expr__(node.comparators[0])
+                op = __get_op__(node.ops[0])
+                ret = {
+                    op:{
+                        function_name:field_name,
+                        "$value": field_value
+                    }
+                }
+                return ret
+
+            raise NotImplemented()
+
+        raise NotImplemented()
+
+
+    def parse_logic(expr: str):
+        fx = __convert_to_logical_text__(expr)
+        ret = ast.parse(fx)
+        if ret.body.__len__() == 1:
+            return __parse_logical_expr__(ret.body[0])
+
+        raise NotImplemented()
+
+    return parse_logic(expr)

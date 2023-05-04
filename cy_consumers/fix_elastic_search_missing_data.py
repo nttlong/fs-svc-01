@@ -9,10 +9,11 @@ import threading
 import time
 from datetime import timezone
 
-import cy_docs
+
 
 working_dir = pathlib.Path(__file__).parent.parent.__str__()
 sys.path.append(working_dir)
+import cy_docs
 import cy_es
 import cy_kit
 from cy_xdoc.services.search_engine import SearchEngine
