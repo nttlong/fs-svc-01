@@ -50,10 +50,12 @@ deployments:
     endpoint: files_clean_up.py
   - name: files-move-tenants
     endpoint: files_move_tenants.py
+
+
+jobs:
   - name: fix-elastic-search-missing-data
     endpoint: fix_elastic_search_missing_data.py
     description: Lỗi này là do mấy cha nội Codx đưa dữ liệu vào sai nên phải fix trước khi tìm
-
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
