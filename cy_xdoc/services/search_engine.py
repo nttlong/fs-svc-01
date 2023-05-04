@@ -31,6 +31,7 @@ class SearchEngine:
         self.similarity_settings_cache = {}
         self.vn = vn
         self.vn_predictor = vn_predictor
+        self.empty_privilege_value = 0
 
     def get_content_field_name(self):
         return self.config.elastic_search.field_content
@@ -84,31 +85,15 @@ class SearchEngine:
 
         content = content or ""
         original_content = content
-        def fix_error(data_privileges):
-            """
-            Lỗi này là do mấy cha nội Codx đưa dữ liệu vào sai nên phải fix trước khi tìm
-            :param data_privileges:
-            :return:
-            """
-            if isinstance(data_privileges,dict):
-                for k,v in data_privileges.items():
-                    if k=="$contains" and v==['']:
-                        data_privileges[k]=['.']
-                    else:
-                        data_privileges[k]= fix_error(v)
-            elif isinstance(data_privileges,list):
-                return [fix_error(x) for x in data_privileges]
-            else:
-                return data_privileges
-            return data_privileges
-        privileges = fix_error(privileges)
+
+        privileges = self.fix_privilges_contains_error(privileges)
         if isinstance(privileges, dict):
             privileges = cy_es.text_lower(privileges)
         content = self.vn_predictor.get_text(content)
         content = original_content + " " + content
         content_boots = self.vn.parse_word_segment(content=content, boot=[3])
 
-        search_expr = (cy_es.buiders.mark_delete == False)|(cy_es.buiders.mark_delete==None)
+        search_expr = (cy_es.buiders.mark_delete == False) | (cy_es.buiders.mark_delete == None)
         if privileges is not None and privileges != {}:
             search_expr = search_expr & cy_es.create_filter_from_dict(
                 filter=
@@ -153,7 +138,7 @@ class SearchEngine:
                 getattr(cy_es.buiders, f"content"),
                 getattr(cy_es.buiders, f"{self.get_content_field_name()}_seg")
             ]
-        if logic_filter is not None and isinstance(logic_filter,dict):
+        if logic_filter is not None and isinstance(logic_filter, dict):
             _logic_filter = cy_es.create_filter_from_dict(
                 logic_filter,
                 suggest_handler=self.vn_predictor.get_text
@@ -161,7 +146,7 @@ class SearchEngine:
             if _logic_filter:
                 search_expr = search_expr & _logic_filter
         highlight_expr = highlight_expr or []
-        highlight_expr+=search_expr.get_highlight_fields()
+        highlight_expr += search_expr.get_highlight_fields()
         print(f"------------{skip}--{page_size}-------------------------")
         ret = cy_es.search(
             client=self.client,
@@ -279,7 +264,7 @@ class SearchEngine:
                         segment_handler=self.vn.parse_word_segment,
                         handler=self.vn_predictor.get_text,
                         clear_accent_mark_handler=self.text_process_service.vn_clear_accent_mark
-                        )
+                    )
                 )
             else:
                 self.make_index_content(
@@ -321,7 +306,7 @@ class SearchEngine:
         if isinstance(data_item, cy_docs.DocumentObject):
             json_data_item = data_item.to_json_convertable()
         elif isinstance(data_item, dict):
-            json_data_item = cy_docs.to_json_convertable(data_item,predict_content_handler=self.vn_predictor.get_text)
+            json_data_item = cy_docs.to_json_convertable(data_item, predict_content_handler=self.vn_predictor.get_text)
         if is_exist:
             es_doc = self.get_doc(
                 app_name=app_name,
@@ -357,7 +342,7 @@ class SearchEngine:
                         handler=self.vn_predictor.get_text,
                         segment_handler=self.vn.parse_word_segment,
                         clear_accent_mark_handler=self.text_process_service.vn_clear_accent_mark
-                    ) ,
+                    ),
                     cy_es.buiders.meta_data << meta
 
                 )
@@ -377,11 +362,11 @@ class SearchEngine:
                 privileges=_Privileges,
                 upload_id=id,
                 data_item=cy_es.convert_to_vn_predict_seg(
-                        json_data_item,
-                        handler=self.vn_predictor.get_text,
-                        segment_handler=self.vn.parse_word_segment,
-                        clear_accent_mark_handler=self.text_process_service.vn_clear_accent_mark
-                    ) ,
+                    json_data_item,
+                    handler=self.vn_predictor.get_text,
+                    segment_handler=self.vn.parse_word_segment,
+                    clear_accent_mark_handler=self.text_process_service.vn_clear_accent_mark
+                ),
                 content=content,
                 meta_info=None,
                 meta=meta,
@@ -401,7 +386,7 @@ class SearchEngine:
         if cy_es.is_content_text(field_value):
             vn_predictor = self.vn_predictor.get_text(field_value)
             vn_seg = self.vn.parse_word_segment(vn_predictor)
-            if vn_predictor!=field_value:
+            if vn_predictor != field_value:
                 cy_es.update_data_fields(
                     index=self.get_index(app_name),
                     id=id,
@@ -420,16 +405,16 @@ class SearchEngine:
             )
 
     def update_by_conditional(self, app_name, conditional, data):
-        if isinstance(conditional,dict):
+        if isinstance(conditional, dict):
             conditional = cy_es.create_filter_from_dict(conditional)
         return cy_es.update_by_conditional(
             client=self.client,
             data_update=cy_es.convert_to_vn_predict_seg(
-                        data,
-                        handler=self.vn_predictor.get_text,
-                        segment_handler=self.vn.parse_word_segment,
-                        clear_accent_mark_handler=self.text_process_service.vn_clear_accent_mark
-                    ),
+                data,
+                handler=self.vn_predictor.get_text,
+                segment_handler=self.vn.parse_word_segment,
+                clear_accent_mark_handler=self.text_process_service.vn_clear_accent_mark
+            ),
             index=self.get_index(app_name),
             conditional=conditional
         )
@@ -443,6 +428,60 @@ class SearchEngine:
             conditional=conditional
         )
 
+    def fix_privilges_error(self, data_privileges):
+        """
+        Lỗi này là do mấy cha nội Codx đưa dữ liệu vào sai nên phải fix trước khi tìm
+        :param data_privileges:
+        :return:
+        """
+        if isinstance(data_privileges, dict):
+            for k, v in data_privileges.items():
+                if isinstance(v, list):
+                    t = []
+                    for x in v:
+                        if x == ".":
+                            t += [self.empty_privilege_value]
+                        if x == "":
+                            t += [self.empty_privilege_value]
+                        else:
+                            t += [x]
+                    data_privileges[k] = t
 
+        elif isinstance(data_privileges, list):
+            return [self.fix_privilges_error(x) for x in data_privileges]
+        else:
+            return data_privileges
+        return data_privileges
 
+    def fix_privilges_list_error(self, privileges):
+        """
+        Lỗi này là do mấy cha nội Codx đưa dữ liệu vào sai nên phải fix trước khi tìm
+        :param privileges:
+        :return:
+        """
+        if isinstance(privileges, list):
+            ret = []
+            for x in privileges:
+                if x.Values == "":
+                    x.Values = self.empty_privilege_value
+                ret += [x]
+            return ret
+        return privileges
 
+    def fix_privilges_contains_error(self, data_privileges):
+        """
+                    Lỗi này là do mấy cha nội Codx đưa dữ liệu vào sai nên phải fix trước khi tìm
+                    :param data_privileges:
+                    :return:
+                    """
+        if isinstance(data_privileges, dict):
+            for k, v in data_privileges.items():
+                if k == "$contains" and v == ['']:
+                    data_privileges[k] = [self.empty_privilege_value]
+                else:
+                    data_privileges[k] = self.fix_privilges_contains_error(v)
+        elif isinstance(data_privileges, list):
+            return [self.fix_privilges_contains_error(x) for x in data_privileges]
+        else:
+            return data_privileges
+        return data_privileges

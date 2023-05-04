@@ -68,6 +68,9 @@ def remove_privileges(
     # from cy_xdoc.controllers.apps import check_app
     # check_app(app_name)
     file_services = cy_kit.singleton(cy_xdoc.services.files.FileServices)
+    from cy_xdoc.services.search_engine import SearchEngine
+    search_engine = cy_kit.singleton(SearchEngine)
+    Data = search_engine.fix_privilges_list_error(Data)
     for upload_id in UploadIds:
         ret = file_services.remove_privileges(
             app_name=app_name,

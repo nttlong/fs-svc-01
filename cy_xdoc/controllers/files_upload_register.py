@@ -55,7 +55,9 @@ async def register_new_upload(app_name: str, Data: RegisterUploadInfo,
     # from cy_xdoc.controllers.apps import check_app
     # check_app(app_name)
     file_service = cy_kit.single(FileServices)
-
+    from cy_xdoc.services.search_engine import SearchEngine
+    search_engine = cy_kit.singleton(SearchEngine)
+    privileges = search_engine.fix_privilges_list_error(Data.Privileges)
     ret = file_service.add_new_upload_info(
         app_name=app_name,
         chunk_size=Data.ChunkSizeInKB * 1024,
@@ -64,7 +66,7 @@ async def register_new_upload(app_name: str, Data: RegisterUploadInfo,
         is_public=Data.IsPublic,
         thumbs_support=Data.ThumbConstraints,
         web_host_root_url=cy_web.get_host_url(),
-        privileges_type=Data.Privileges
+        privileges_type=privileges
 
     )
     return RegisterUploadInfoResult(Data=ret.to_pydantic())

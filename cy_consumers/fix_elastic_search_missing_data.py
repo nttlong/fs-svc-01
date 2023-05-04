@@ -9,6 +9,8 @@ import threading
 import time
 from datetime import timezone
 
+import cy_docs
+
 working_dir = pathlib.Path(__file__).parent.parent.__str__()
 sys.path.append(working_dir)
 import cy_es
@@ -43,38 +45,37 @@ def fix_error(data_privileges):
         return data_privileges
     return data_privileges
 
-
+import cy_xdoc.services.files
+files = cy_kit.singleton(cy_xdoc.services.files.FileServices)
 def fix_app(app_name: str):
     utc_date = datetime.datetime(
         datetime.datetime.now().year,
         datetime.datetime.now().month,
         datetime.datetime.now().day, 23, 59, 59, 999, tzinfo=timezone.utc)
+    qr = files.get_queryable_doc(app_name=app_name)
+
 
     page_index = 0
     page_size = 20
-    filter = (cy_es.DocumentFields("data_item") != None)
-    filter = filter & (cy_es.DocumentFields("data_item").RegisterOn != None)
-    lst = search_engine.full_text_search(
-        app_name=app_name,
-        content=None,
-        page_size=page_size,
-        page_index=page_index,
-        logic_filter= filter & (cy_es.DocumentFields("data_item").RegisterOn <= utc_date),
-        highlight=False,
-        privileges=None,
-        sort=["data_item.RegisterOn:desc"]
-    )
-    print(f'Process app {app_name} total rows {lst.hits.hits.__len__()}')
-    while lst.hits.hits.__len__() > 0:
-        for x in lst.hits.hits:
-            if isinstance(x.get("_source"), dict) and isinstance(x["_source"].get("privileges"), dict):
-                p = x["_source"]["privileges"]
-                p = fix_error(p)
-                print(f'{app_name} fix error data of {x["_id"]}, from {page_index*page_size} to {(page_index+1) * page_size}')
+    lst = qr.context.aggregate().match(
+        qr.fields.RegisterOn<=utc_date
+    ).sort(qr.fields.RegisterOn.desc()).skip(page_size*page_index).limit(page_size).project(
+        qr.fields.Privileges,
+        qr.fields.id
+    ).to_json_convertable()
+    lst = list(lst)
+    print(app_name)
+    while lst.__len__()>0:
+        for x in lst:
+            if x["Privileges"]!={}:
+                privileges = x["Privileges"]
+                privileges = search_engine.fix_privilges_error(privileges)
+                print(privileges)
+                print(x["_id"])
                 try:
                     search_engine.create_or_update_privileges(
                         app_name=app_name,
-                        privileges=p,
+                        privileges=privileges,
                         data_item=None,
                         upload_id=x["_id"]
                     )
@@ -82,21 +83,14 @@ def fix_app(app_name: str):
                 except  Exception as e:
                     print(f'fix error data of {x["_id"]} error')
                     print(e)
-        page_index += 1
-        utc_date = datetime.datetime(
-            datetime.datetime.now().year,
-            datetime.datetime.now().month,
-            datetime.datetime.now().day, 23, 59, 59, 999, tzinfo=timezone.utc)
-
-        lst = search_engine.full_text_search(
-            app_name=app_name,
-            content=None,
-            page_size=page_size,
-            page_index=page_index,
-            logic_filter=filter & (cy_es.DocumentFields("data_item").RegisterOn <= utc_date),
-            highlight=False,
-            privileges=None
-        )
+        page_index+=1
+        lst = qr.context.aggregate().match(
+            qr.fields.RegisterOn <= utc_date
+        ).sort(qr.fields.RegisterOn.desc()).skip(page_size * page_index).limit(page_size).project(
+            qr.fields.Privileges,
+            qr.fields.id
+        ).to_json_convertable()
+        lst = list(lst)
 
 import elasticsearch
 if __name__ == "__main__":
