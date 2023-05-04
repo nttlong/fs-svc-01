@@ -18,7 +18,7 @@ message:
   type: mongodb
   config:
     kafka:
-      host: 192.168.18.36
+      host: ' 192.168.18.36 '
 storage_path: /home/vmadmin/python/v6/file-service-02/storage
 #host_url: https://test.com.vn/lvfile
 db_25:

@@ -676,3 +676,12 @@ class Graceful_Application(object):
     def start(self):
         self.on_run()
 
+
+def trip_content(data):
+    if isinstance(data,dict):
+        for k,v in data.items():
+            if isinstance(v,str):
+                data[k]=v.rstrip(' ').lstrip(' ')
+            elif isinstance(v,dict):
+                data[k] = trip_content(v)
+    return data

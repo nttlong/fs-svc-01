@@ -56,7 +56,9 @@ def must_imlement(interface_class: type):
 
 
 def yaml_config(path: str, apply_sys_args: bool = True):
-    return cy_kit_x.yaml_config(path, apply_sys_args)
+    ret = cy_kit_x.yaml_config(path, apply_sys_args)
+    ret = cy_kit_x.trip_content(ret)
+    return ret
 
 
 def combine_agruments(data):
