@@ -103,77 +103,81 @@ spec:
 ---
 {{- end }}
 ---
-{{- range $key, $value := .Values.jobs}}
+{{- range $key, $value := .Values.cronJobs}}
 ---
 apiVersion: batch/v1
-kind: Job
+kind: CronJob
 metadata:
   name: {{$value.name}}
   namespace: {{$.Values.namespace}}
   annotations:
     description: "{{$value.description | default $.Values.defaults.description }}"
 spec:
-  template:
-    metadata:
-      labels:
-        app: files-{{$value.name}}
+  schedule: {{$value.schedule}}
+  {{if eq $value.numOfPods 1.0}}
+  successfulJobsHistoryLimit: {{$value.numOfPods}}
+  failedJobsHistoryLimit: {{$value.numOfPods}}
+  {{end}}
+  jobTemplate:
     spec:
-      volumes:
-        - name: xdoc-temp-storage
-          nfs:
-            server: {{$.Values.nfs.server}}
-            path: {{$.Values.nfs.directory}}/xdoc-web
-        - name: xdoc-dataset
-          nfs:
-            server: {{$.Values.nfs.server}}
-            path: {{$.Values.nfs.directory}}/dataset
+      template:
+        spec:
+          volumes:
+            - name: xdoc-temp-storage
+              nfs:
+                server: {{$.Values.nfs.server}}
+                path: {{$.Values.nfs.directory}}/xdoc-web
+            - name: xdoc-dataset
+              nfs:
+                server: {{$.Values.nfs.server}}
+                path: {{$.Values.nfs.directory}}/dataset
 
-      initContainers:
-        - name: volume-mount-hack
-          image: busybox
-          command: [
-            "sh",
-            "-c",
-            "mkdir -p /app/brokers",
-            "chmod -R 777 /app/brokers",
-            "chown -R nfsnobody:nfsnobody /app/brokers",
-            "mkdir -p /app/dataset",
-            "chmod -R 777 /app/dataset",
-            "chown -R nfsnobody:nfsnobody /app/dataset",
+          initContainers:
+            - name: volume-mount-hack
+              image: busybox
+              command: [
+                "sh",
+                "-c",
+                "mkdir -p /app/brokers",
+                "chmod -R 777 /app/brokers",
+                "chown -R nfsnobody:nfsnobody /app/brokers",
+                "mkdir -p /app/dataset",
+                "chmod -R 777 /app/dataset",
+                "chown -R nfsnobody:nfsnobody /app/dataset",
 
-          ]
-          volumeMounts:
-            - mountPath: /app/brokers
-              name: xdoc-temp-storage
-            - mountPath: /app/dataset
-              name: xdoc-dataset
-      containers:
-        - args:
-            - python3
-            - /app/cy_consumers/{{$value.endpoint}}
-            - elastic_search.server=$(elastic_search.server)
-            - elastic_search.prefix_index=$(elastic_search.prefix_index)
-            - db.host=$(db.host)
-            - db.port=$(db.port)
-            - admin_db_name=$(admin_db_name)
-            - temp_directory=$(temp_directory)
-            - rabbitmq.server=$(rabbitmq.server)
-            - rabbitmq.port=$(rabbitmq.port)
+              ]
+              volumeMounts:
+                - mountPath: /app/brokers
+                  name: xdoc-temp-storage
+                - mountPath: /app/dataset
+                  name: xdoc-dataset
+          containers:
+            - args:
+                - python3
+                - /app/cy_consumers/{{$value.endpoint}}
+                - elastic_search.server=$(elastic_search.server)
+                - elastic_search.prefix_index=$(elastic_search.prefix_index)
+                - db.host=$(db.host)
+                - db.port=$(db.port)
+                - admin_db_name=$(admin_db_name)
+                - temp_directory=$(temp_directory)
+                - rabbitmq.server=$(rabbitmq.server)
+                - rabbitmq.port=$(rabbitmq.port)
 
-          image: {{ $.Values.image.repository }}:{{ $.Values.image.tag }}
-          envFrom:
-            - configMapRef:
-                name: xdoc-job-config
+              image: {{ $.Values.image.repository }}:{{ $.Values.image.tag }}
+              envFrom:
+                - configMapRef:
+                    name: xdoc-job-config
 
-          name: files-{{$value.name}}
-          imagePullPolicy: IfNotPresent
+              name: files-{{$value.name}}
+              imagePullPolicy: IfNotPresent
 
-          volumeMounts:
-            - mountPath: /app/brokers
-              name: xdoc-temp-storage
-            - mountPath: /app/dataset
-              name: xdoc-dataset
-      restartPolicy: Never
+              volumeMounts:
+                - mountPath: /app/brokers
+                  name: xdoc-temp-storage
+                - mountPath: /app/dataset
+                  name: xdoc-dataset
+          restartPolicy: OnFailure
 ---
 {{- end }}
 #scp -r root@172.16.13.72:/home/vmadmin/python/v6/file-service-02/docker-build/helm/xdoc-job /nttlong/helm/xdoc-job
