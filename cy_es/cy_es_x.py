@@ -159,10 +159,8 @@ class DocumentFields:
 
     def __neg__(self):
         ret = DocumentFields()
-        ret.__es_expr__ = {
-            "bool":
-                {"must_not": self.__es_expr__}
-        }
+        ret.__es_expr__ = {"must_not":{"bool": {"filter": self.__es_expr__}}}
+        ret.__is_bool__= True
         return ret
 
     def startswith(self, item):
@@ -239,7 +237,7 @@ class DocumentFields:
             #     }
             # }
             ret.__es_expr__ = {
-                "wildcard":{
+                "wildcard": {
                     self.__name__: item
                 }
             }
@@ -260,14 +258,65 @@ class DocumentFields:
             }
             """
             ret.__es_expr__ = {
-                "terms": {
-                    self.__name__: item
+                "filter":{
+                    "terms": {
+                        self.__name__: item
+                    },
+
+                },
+                'minimum_should_match':1
+            }
+            ret.__es_expr__ = {
+                "filter": {
+                    "terms": {
+                        self.__name__: item
+                    },
+
                 }
             }
-            self.__is_bool__ = True
-            return ret
+            if '' in item:
+                first = [x for x in item if x != ""]
+                if first.__len__() > 0:
+                    ret.__es_expr__ = {
+                        "filter":{
+                        "terms": {
+                            self.__name__: first
+                        }}
+                    }
+                    fx = DocumentFields(self.__name__)
+                    fx.__es_expr__ = {
+                        "filter":{
+                        "term": {
+                            f"{fx.__name__}.keyword": {
+                                "value": ""
+                            }
+                        }}
+                    }
+                    fx.__is_bool__ = False
+                    fx.__name__ = None
+                    ret.__is_bool__ = False
+                    ret = ret | fx
+                    ret.__is_bool__ = True
+                    return ret
+                else:
+                    fx = DocumentFields(self.__name__)
+                    fx.__es_expr__ = {
+                        "filter":{
+                            "term": {
+                                f"{fx.__name__}.keyword": {
+                                    "value": ""
+                                }
+                            }
+                        }
+                    }
+                    fx.__is_bool__ = True
+                    fx.__name__=None
+                    return  fx
+            else:
+                ret.__is_bool__ = True
+                return ret
         else:
-            raise Exception("Noty support")
+            raise Exception("Not support")
 
     def contains(self, *args):
         ret = DocumentFields()
@@ -1199,8 +1248,13 @@ def search(client: Elasticsearch,
     #             }
     #         }
     # }
-    ret = client.search(index=index, doc_type=doc_type, body=body, sort=_sort)
-    return SearchResult(ret)
+    try:
+        ret = client.search(index=index, doc_type=doc_type, body=body, sort=_sort)
+        return SearchResult(ret)
+    except Exception as e:
+        print(body['query'])
+        print(e)
+        raise e
 
 
 docs = DocumentFields()
@@ -1432,7 +1486,7 @@ def nested(prefix: str, filter):
     return filter
 
 
-def __build_search__(fields, content,suggest_handler=None):
+def __build_search__(fields, content, suggest_handler=None):
     """
 
     :param fields:
@@ -1450,10 +1504,13 @@ def __build_search__(fields, content,suggest_handler=None):
     ret = DocumentFields()
     match_fields = []
     if callable(suggest_handler):
-        content= content+" "+suggest_handler(content)
+        content = content + " " + suggest_handler(content)
 
     for x in fields:
-        match_fields+=[x,f"{x}_seg^2",f"{x}_bm25_seg^1"]
+        if "^" in x:
+            match_fields += [x]
+        else:
+            match_fields += [x, f"{x}_seg^2", f"{x}_bm25_seg^1"]
     ret.__es_expr__ = {
         "multi_match": {
             "fields": fields,
@@ -1464,7 +1521,7 @@ def __build_search__(fields, content,suggest_handler=None):
     return ret
 
 
-def __apply_function__(function_name, field_name, owner_caller=None, args=None,suggest_handler=None):
+def __apply_function__(function_name, field_name, owner_caller=None, args=None, suggest_handler=None):
     if function_name == "$$day":
         ret = DocumentFields(field_name)
         return ret.get_day_of_month()
@@ -1481,7 +1538,7 @@ def __apply_function__(function_name, field_name, owner_caller=None, args=None,s
         ret = DocumentFields(field_name)
         return ret.endswith
     elif function_name == "$$contains":
-        if isinstance(field_name,dict):
+        if isinstance(field_name, dict):
             if field_name.get("$field") and field_name.get("$value"):
                 ret = DocumentFields(field_name.get("$field"))
                 return ret.__contains__(field_name.get("$value"))
@@ -1496,12 +1553,12 @@ def __apply_function__(function_name, field_name, owner_caller=None, args=None,s
             fields = field_name['$fields']
             content = field_name['$value']
 
-        return __build_search__(fields, content,suggest_handler)
+        return __build_search__(fields, content, suggest_handler)
     else:
         raise NotImplemented("error")
 
 
-def create_filter_from_dict(expr: dict, owner_caller=None, op=None,suggest_handler=None):
+def create_filter_from_dict(expr: dict, owner_caller=None, op=None, suggest_handler=None):
     global __map__
 
     if isinstance(expr, dict):
@@ -1521,7 +1578,7 @@ def create_filter_from_dict(expr: dict, owner_caller=None, op=None,suggest_handl
 
         for k, v in expr.items():
             if k[0:2] == "$$":
-                ret = __apply_function__(k, v, owner_caller,suggest_handler=suggest_handler)
+                ret = __apply_function__(k, v, owner_caller, suggest_handler=suggest_handler)
                 if callable(ret) and not isinstance(ret, DocumentFields):
                     ret = ret(expr["$value"])
                     return ret
@@ -1542,6 +1599,20 @@ def create_filter_from_dict(expr: dict, owner_caller=None, op=None,suggest_handl
                     raise Exception(f"{k} is Unknown")
                 if __map__.get(k):
                     map_name = __map__[k]["name"]
+                    if map_name=="__neg__":
+                        ret = create_filter_from_dict(expr["$not"], suggest_handler=suggest_handler)
+                        if not ret.__is_bool__:
+                            __filter__ = DocumentFields()
+                            __filter__.__es_expr__ = {
+                                "filter":ret.__es_expr__
+                            }
+                            ret = __filter__
+                        if hasattr(ret,map_name):
+                            ret= getattr(ret,map_name)()
+                            return ret
+                        else:
+                            raise Exception("Error syntax")
+
                     map_type: __expr_type_enum__ = __map__[k]["_type"]
 
                     if isinstance(v, list):
@@ -1549,10 +1620,10 @@ def create_filter_from_dict(expr: dict, owner_caller=None, op=None,suggest_handl
                             ret = getattr(owner_caller, map_name)(*v)
                             return ret
                         else:
-                            ret = create_filter_from_dict(v[0],suggest_handler=suggest_handler)
+                            ret = create_filter_from_dict(v[0], suggest_handler=suggest_handler)
                             if len(v) > 1:
                                 for i in range(1, len(v)):
-                                    next = create_filter_from_dict(v[i],suggest_handler=suggest_handler)
+                                    next = create_filter_from_dict(v[i], suggest_handler=suggest_handler)
                                     if map_type == __expr_type_enum__.LOGI:
                                         ret = getattr(ret, map_name)(next)
                                     else:
@@ -1562,7 +1633,7 @@ def create_filter_from_dict(expr: dict, owner_caller=None, op=None,suggest_handl
                                         raise NotImplemented
                             return ret
                     elif isinstance(v, dict):
-                        ret = create_filter_from_dict(v, op=__map__[k],suggest_handler=suggest_handler)
+                        ret = create_filter_from_dict(v, op=__map__[k], suggest_handler=suggest_handler)
                         return ret
                     elif isinstance(v, str):
                         ret = getattr(owner_caller, map_name)(v)
@@ -1575,7 +1646,7 @@ def create_filter_from_dict(expr: dict, owner_caller=None, op=None,suggest_handl
                     else:
                         if map_type == __expr_type_enum__.OPER:
                             if isinstance(v, dict):
-                                ret = create_filter_from_dict(v,suggest_handler=suggest_handler)
+                                ret = create_filter_from_dict(v, suggest_handler=suggest_handler)
                                 ret = getattr(ret, map_name)()
                                 return ret
                             elif isinstance(owner_caller, DocumentFields):
@@ -1590,7 +1661,7 @@ def create_filter_from_dict(expr: dict, owner_caller=None, op=None,suggest_handl
             else:
                 if isinstance(v, dict):
                     ret = DocumentFields(k)
-                    ret = create_filter_from_dict(v, ret,suggest_handler=suggest_handler)
+                    ret = create_filter_from_dict(v, ret, suggest_handler=suggest_handler)
                     return ret
                 elif k == "$value" and op is not None and len([x for x in expr.keys() if x.startswith('$$')]) > 0:
 
@@ -1683,6 +1754,20 @@ def get_mapping(client: Elasticsearch, index):
         return None
 
 
+def __fix_empty_value__(data):
+    ret = {}
+    if isinstance(data, dict):
+        for k, v in data.items():
+            if k.endswith('_bm25_seg_vn_predict'):
+                continue
+            if isinstance(v, dict):
+                if v.get('type') == 'text' and isinstance(v.get('fields'), dict) and isinstance(
+                        v['fields'].get('keyword'), dict) and v['fields']['keyword']['type'] == 'keyword':
+                    v['fields']['keyword']['null_value'] = ''
+                else:
+                    __fix_empty_value__(v)
+
+
 def similarity_settings(client: Elasticsearch, index: str, field_name: str, algorithm_type: str, b_value, k1_value):
     try:
         settings = client.indices.get_settings(index=index)
@@ -1708,6 +1793,8 @@ def similarity_settings(client: Elasticsearch, index: str, field_name: str, algo
                     }
                 }
             )
+
+
 
 
     except elasticsearch.exceptions.NotFoundError as e:
@@ -1983,12 +2070,12 @@ def is_content_text(text):
     return False
 
 
-def convert_to_vn_predict_seg(data, handler, segment_handler,clear_accent_mark_handler):
-    def add_more_content(data, handler, segment_handler,clear_accent_mark_handler):
+def convert_to_vn_predict_seg(data, handler, segment_handler, clear_accent_mark_handler):
+    def add_more_content(data, handler, segment_handler, clear_accent_mark_handler):
         if isinstance(data, dict):
             ret = {}
             for k, v in data.items():
-                x, y, z = add_more_content(v, handler, segment_handler,clear_accent_mark_handler)
+                x, y, z = add_more_content(v, handler, segment_handler, clear_accent_mark_handler)
                 if y and y != x:
                     ret[f"{k}_vn_predict"] = y
                 if z:
@@ -2006,11 +2093,12 @@ def convert_to_vn_predict_seg(data, handler, segment_handler,clear_accent_mark_h
                 vn_none_accent_content = clear_accent_mark_handler(data.lower())
                 predict_content = handler(data)
 
-                return data, predict_content, segment_handler(predict_content) + "/n" + segment_handler(data)+"/n"+ vn_none_accent_content
+                return data, predict_content, segment_handler(predict_content) + "/n" + segment_handler(
+                    data) + "/n" + vn_none_accent_content
         elif isinstance(data, list):
             n_list = []
             for item in data:
-                x, y, z = add_more_content(item, handler, segment_handler,clear_accent_mark_handler)
+                x, y, z = add_more_content(item, handler, segment_handler, clear_accent_mark_handler)
                 if y and y != x:
                     n_list += [y]
                 if z:
@@ -2020,21 +2108,27 @@ def convert_to_vn_predict_seg(data, handler, segment_handler,clear_accent_mark_h
         else:
             return data, None, None
 
-    ret, _, _ = add_more_content(data, handler, segment_handler,clear_accent_mark_handler)
+    ret, _, _ = add_more_content(data, handler, segment_handler, clear_accent_mark_handler)
     return ret
 
-def natural_logic_parse(expr:str):
+
+def natural_logic_parse(expr: str):
     import ast
     def __convert_to_logical_text__(expr: str):
+        ret= expr
+        while '  ' in ret:
+            ret = ret.replace('  ', ' ')
         ret = expr.replace('=', '==')
         ret = ret.replace('===', '==')
         ret = ret.replace('>==', '>=')
         ret = ret.replace('<==', '<=')
         ret = ret.replace('<>', '!=')
         ret = ret.replace('!==', '!=')
+        ret = ret.replace('not like ', '/=')
         ret = ret.replace(' like ', '<<')
         ret = ret.replace(' search ', '>>')
         return ret
+
     def __get_op__(node):
         if isinstance(node, ast.Eq):
             return "$eq"
@@ -2050,13 +2144,15 @@ def natural_logic_parse(expr:str):
             return "$lte"
         raise NotImplemented()
 
-
-    def __get_name_of_ast__(node: ast.Attribute):
-        assert isinstance(node, ast.Attribute) or isinstance(node, ast.Name)
+    def __get_name_of_ast__(node):
         if isinstance(node, ast.Attribute):
             return f"{__get_name_of_ast__(node.value)}.{node.attr}"
         if isinstance(node, ast.Name):
             return node.id
+        if isinstance(node, ast.Subscript):
+            return f"{__get_name_of_ast__(node.value)}.{__get_name_of_ast__(node.slice)}"
+        if isinstance(node, ast.Constant):
+            return node.value
         raise NotImplemented()
 
     def __resolve_call_node__(node):
@@ -2065,17 +2161,22 @@ def natural_logic_parse(expr:str):
         :param node:
         :return:
         """
-        assert isinstance(node,ast.Call)
+        assert isinstance(node, ast.Call)
         func_name = f"$${node.func.id}"
         field_name = __get_name_of_ast__(node.args[0])
-        return func_name,field_name
+        return func_name, field_name
 
     def __parse_logical_expr__(node):
-        if isinstance(node,ast.BinOp) and type(node.op)==ast.LShift:
+        if isinstance(node, ast.List):
+            ret = []
+            for x in node.elts:
+                ret += [__parse_logical_expr__(x)]
+            return ret
+        if isinstance(node, ast.BinOp) and type(node.op) == ast.LShift:
             left = __parse_logical_expr__(node.left)
             right = __parse_logical_expr__(node.right)
             function_name = None
-            if isinstance(right,str):
+            if isinstance(right, str) or isinstance(right, list):
                 return {
                     "$$contains": {
                         "$field": left,
@@ -2085,11 +2186,15 @@ def natural_logic_parse(expr:str):
 
             else:
                 raise Exception("like operator only apply for text")
-        if isinstance(node,ast.BinOp) and type(node.op)==ast.RShift:
-            if isinstance(node.left,ast.Tuple):
-                left =[]
+        if isinstance(node, ast.BinOp) and type(node.op) == ast.BitXor:
+            field_name = __parse_logical_expr__(node.left)
+            boost_score = __parse_logical_expr__(node.right)
+            return f"{field_name}^{boost_score}"
+        if isinstance(node, ast.BinOp) and type(node.op) == ast.RShift:
+            if isinstance(node.left, ast.Tuple):
+                left = []
                 for x in node.left.dims:
-                    left+= [__parse_logical_expr__(x)]
+                    left += [__parse_logical_expr__(x)]
                 right = __parse_logical_expr__(node.right)
                 function_name = None
                 if isinstance(right, str):
@@ -2106,7 +2211,7 @@ def natural_logic_parse(expr:str):
                 left = __parse_logical_expr__(node.left)
                 right = __parse_logical_expr__(node.right)
                 function_name = None
-                if isinstance(right,str):
+                if isinstance(right, str):
                     return {
                         "$$search": {
                             "$fields": [left],
@@ -2133,7 +2238,7 @@ def natural_logic_parse(expr:str):
                     "$or": [left, right]
                 }
             raise NotImplemented()
-        if isinstance(node,ast.Attribute):
+        if isinstance(node, ast.Attribute):
             ret = __get_name_of_ast__(node)
             return ret
         if isinstance(node, ast.Compare):
@@ -2146,22 +2251,39 @@ def natural_logic_parse(expr:str):
                         op: field_value
                     }
                 }
-            elif isinstance(node.left,ast.Call):
-                function_name,  field_name = __resolve_call_node__(node.left)
+            elif isinstance(node.left, ast.Call):
+                function_name, field_name = __resolve_call_node__(node.left)
                 field_value = __parse_logical_expr__(node.comparators[0])
                 op = __get_op__(node.ops[0])
                 ret = {
-                    op:{
-                        function_name:field_name,
+                    op: {
+                        function_name: field_name,
                         "$value": field_value
                     }
                 }
                 return ret
 
             raise NotImplemented()
+        if isinstance(node, ast.Name):
+            ret = __get_name_of_ast__(node)
+            return ret
+        if isinstance(node, ast.Subscript):
+            ret = __get_name_of_ast__(node)
+            return ret
+        if isinstance(node,ast.AugAssign) and type(node.op)==ast.Div:
+            left = __parse_logical_expr__(node.target)
+            right = __parse_logical_expr__(node.value)
+            return {
+                "$not":{
+                    "$$contains": {
+                        "$field": left,
+                        "$value": right
+                    }
+                }
+            }
+
 
         raise NotImplemented()
-
 
     def parse_logic(expr: str):
         fx = __convert_to_logical_text__(expr)

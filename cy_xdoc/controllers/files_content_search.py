@@ -1,4 +1,6 @@
 import fastapi
+
+import cy_es
 import cy_xdoc.services.search_engine
 import cy_kit
 import cy_web
@@ -11,6 +13,7 @@ def file_search(app_name: str, content: Optional[str],
                       highlight: Optional[bool],
                       privileges: Optional[dict],
                       logic_filter: Optional[dict],
+                      filter: Optional[str],
                       token = fastapi.Depends(cy_xdoc.auths.Authenticate)):
     """
     <br/>
@@ -23,7 +26,8 @@ def file_search(app_name: str, content: Optional[str],
             page_size: <limit search result>,
             page_index: <page index of result, start value is 0>,
             highlight: <Highlight match content if set true>,
-            privileges: <JSON filter>
+            privileges: <JSON filter>,
+            filter: 'day(data_item.RegisterOn)=22 and (data_item.Filename, content) search "my text"'
 
         }
     </code>
@@ -104,6 +108,27 @@ def file_search(app_name: str, content: Optional[str],
         highlight=False
     search_services:cy_xdoc.services.search_engine.SearchEngine = cy_kit.singleton(cy_xdoc.services.search_engine.SearchEngine)
     # search_result = search_content_of_file(app_name, content, page_size, page_index)
+
+    if filter is not None:
+        if logic_filter:
+            try:
+                logic_filter = {
+                    "$and":[logic_filter,cy_es.natural_logic_parse(filter)]
+                }
+            except Exception as e:
+                return fastapi.Response(
+                    content= f"{filter} is error syntax",
+                    status_code= 501
+                )
+        else:
+            try:
+                logic_filter = cy_es.natural_logic_parse(filter)
+
+            except Exception as e:
+                return fastapi.Response(
+                    content= f"{filter} is error syntax",
+                    status_code= 501
+                )
     search_result=search_services.full_text_search(
         app_name=app_name,
         content =content,

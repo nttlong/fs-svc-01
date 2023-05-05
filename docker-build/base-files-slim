@@ -1,4 +1,4 @@
-FROM nttlong/base-core-slim:rc.2023.019  as git
+FROM nttlong/base-core-slim:rc.2023.020  as git
 ARG TARGETARCH
 RUN pip uninstall torch -y
 RUN pip uninstall torchvision -y
@@ -43,4 +43,4 @@ RUN python3 /app/pre_test_build/cheK_layout_detection.py
 #docker buildx create --name builder --driver docker-container --use
 #docker buildx inspect --bootstrap
 #docker buildx   build -t nttlong/files-service-slim:rc.0.1.1   --platform=linux/amd64,linux/arm64/v8  ./.. -f base-files-slim
-#docker buildx   build -t nttlong/files-service-slim:rc.0.1.2  --platform=linux/amd64,linux/arm64/v8  ./.. -f base-files-slim  --push=true --output type=registry
+#docker buildx   build -t nttlong/files-service-slim:rc.0.1.3  --platform=linux/amd64,linux/arm64/v8  ./.. -f base-files-slim  --push=true --output type=registry

@@ -1,4 +1,4 @@
-FROM nttlong/files-service-slim:rc.0.1.2
+FROM nttlong/files-service-slim:rc.0.1.3
 RUN cd /
 RUN mkdir -p /app
 COPY ./../cy_consumers /app/cy_consumers
