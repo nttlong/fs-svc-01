@@ -286,11 +286,14 @@ class DocumentFields:
                     fx = DocumentFields(self.__name__)
                     fx.__es_expr__ = {
                         "filter":{
-                        "term": {
-                            f"{fx.__name__}.keyword": {
-                                "value": ""
+                            "script":{
+
+                                "script": {
+                                    "source": f"return  doc['{fx.__name__}.keyword'].contains('')",
+                                    "lang": "painless"
+                                }
                             }
-                        }}
+                        }
                     }
                     fx.__is_bool__ = False
                     fx.__name__ = None
@@ -302,15 +305,19 @@ class DocumentFields:
                     fx = DocumentFields(self.__name__)
                     fx.__es_expr__ = {
                         "filter":{
-                            "term": {
-                                f"{fx.__name__}.keyword": {
-                                    "value": ""
+                            "script":{
+
+                                "script": {
+                                    "source": f"return  doc['{fx.__name__}.keyword'].contains('')",
+                                    "lang": "painless"
                                 }
                             }
                         }
                     }
+
                     fx.__is_bool__ = True
                     fx.__name__=None
+
                     return  fx
             else:
                 ret.__is_bool__ = True
