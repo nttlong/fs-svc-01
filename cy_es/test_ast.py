@@ -13,7 +13,8 @@ filter = "day(data_item.RegisterOn)=10 "
 filter ="(content^1) search 'test'  and privileges['1'] like ['DEV']"
 filter ="privileges['1'] like ['dev']"
 filter = "(data_item.FileName^1) search 'Unknown'"
-filter = "data_item.Privileges['7'] like [''] or data_item.Privileges['u'] like ['Guest']"
+filter = "privileges['7'] like [0,'admin']"
+filter = "data_item.FileNameLower search 'sample.pdf'"
 import cy_es
 
 fx = cy_es.natural_logic_parse(filter)
@@ -23,7 +24,7 @@ from cy_xdoc.services.search_engine import SearchEngine
 import cy_kit
 se = cy_kit.singleton(SearchEngine)
 lst =se.full_text_search(
-    app_name="default",
+    app_name="0604230816",
     page_size=400,
     page_index=0,
     logic_filter=fx,

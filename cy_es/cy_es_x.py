@@ -295,11 +295,12 @@ class DocumentFields:
                             }
                         }
                     }
-                    fx.__is_bool__ = False
+                    fx.__is_bool__ = True
                     fx.__name__ = None
-                    ret.__is_bool__ = False
-                    ret = ret | fx
+
+
                     ret.__is_bool__ = True
+                    ret = ret | fx
                     return ret
                 else:
                     fx = DocumentFields(self.__name__)
@@ -321,6 +322,7 @@ class DocumentFields:
                     return  fx
             else:
                 ret.__is_bool__ = True
+
                 return ret
         else:
             raise Exception("Not support")
