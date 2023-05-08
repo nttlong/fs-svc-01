@@ -300,7 +300,8 @@ class DocumentFields:
 
 
                     ret.__is_bool__ = True
-                    ret = ret | fx
+                    fx_check_field = DocumentFields(self.__name__) !=None
+                    ret = fx_check_field & (ret | fx)
                     return ret
                 else:
                     fx = DocumentFields(self.__name__)
@@ -309,7 +310,7 @@ class DocumentFields:
                             "script":{
 
                                 "script": {
-                                    "source": f"return  doc['{fx.__name__}.keyword'].contains('')",
+                                    "source": f"return  return doc['{fx.__name__}.keyword'].contains('')",
                                     "lang": "painless"
                                 }
                             }
@@ -318,12 +319,12 @@ class DocumentFields:
 
                     fx.__is_bool__ = True
                     fx.__name__=None
-
-                    return  fx
+                    fx_check_field = DocumentFields(self.__name__) != None
+                    return  fx_check_field & fx
             else:
                 ret.__is_bool__ = True
-
-                return ret
+                fx_check_field = DocumentFields(self.__name__) != None
+                return fx_check_field & ret
         else:
             raise Exception("Not support")
 
@@ -1260,6 +1261,10 @@ def search(client: Elasticsearch,
     try:
         ret = client.search(index=index, doc_type=doc_type, body=body, sort=_sort)
         return SearchResult(ret)
+    except elasticsearch.exceptions.RequestError as e:
+        print(body['query'])
+        print(e.error)
+        raise e
     except Exception as e:
         print(body['query'])
         print(e)
