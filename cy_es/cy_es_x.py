@@ -10,7 +10,9 @@ from elasticsearch import Elasticsearch
 from typing import List
 import pydantic
 from enum import Enum
-
+import os
+def version()->str:
+    return f"0.0.2{os.path.splitext(__file__)[1]}"
 
 def get_all_index(client: Elasticsearch) -> List[str]:
     return list(client.indices.get_alias("*").keys())
@@ -276,7 +278,7 @@ class DocumentFields:
             }
             if '' in item:
                 first = [x for x in item if x != ""]
-                if first.__len__() > 0:
+                if len(first)> 0:
                     ret.__es_expr__ = {
                         "filter":{
                         "terms": {
@@ -2007,7 +2009,7 @@ def update_by_conditional(
         txt = ""
         p_k = k.replace('.', '_')
         items = k.split('.')
-        if items.__len__() > 1:
+        if len(items) > 1:
             k1 = ""
             for x in items[:-1]:
                 k1 += "." + x
