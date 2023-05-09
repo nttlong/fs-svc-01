@@ -108,12 +108,14 @@ def file_search(app_name: str, content: Optional[str],
         highlight=False
     search_services:cy_xdoc.services.search_engine.SearchEngine = cy_kit.singleton(cy_xdoc.services.search_engine.SearchEngine)
     # search_result = search_content_of_file(app_name, content, page_size, page_index)
+    json_filter = None
 
     if filter is not None:
         if logic_filter:
             try:
+                json_filter = cy_es.natural_logic_parse(filter)
                 logic_filter = {
-                    "$and":[logic_filter,cy_es.natural_logic_parse(filter)]
+                    "$and":[logic_filter,json_filter]
                 }
             except Exception as e:
                 return fastapi.Response(
@@ -122,7 +124,8 @@ def file_search(app_name: str, content: Optional[str],
                 )
         else:
             try:
-                logic_filter = cy_es.natural_logic_parse(filter)
+                json_filter = cy_es.natural_logic_parse(filter)
+                logic_filter = json_filter
 
             except Exception as e:
                 return fastapi.Response(
@@ -161,5 +164,6 @@ def file_search(app_name: str, content: Optional[str],
         total_items=search_result.hits.total,
         max_score=search_result.hits.max_score,
         items=ret_items,
-        text_search=content
+        text_search=content,
+        json_filter = json_filter
     )

@@ -289,7 +289,7 @@ class DocumentFields:
                             "script":{
 
                                 "script": {
-                                    "source": f"return  doc['{fx.__name__}.keyword'].contains('')",
+                                    "source": f"return  doc['{fx.__name__}.keyword'].contains('');",
                                     "lang": "painless"
                                 }
                             }
@@ -310,7 +310,7 @@ class DocumentFields:
                             "script":{
 
                                 "script": {
-                                    "source": f"return  return doc['{fx.__name__}.keyword'].contains('')",
+                                    "source": f"return doc['{fx.__name__}.keyword'].contains('');",
                                     "lang": "painless"
                                 }
                             }
@@ -2295,6 +2295,8 @@ def natural_logic_parse(expr: str):
                     }
                 }
             }
+        if isinstance(node,ast.unaryop):
+            print(node)
 
 
         raise NotImplemented()

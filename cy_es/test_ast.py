@@ -21,6 +21,9 @@ filteres =[
 
 
 ]
+filteres=["not day(data_item.RegisterOn)=10 "]
+filteres =["(content^1,data_item.FileNameLower^100) search 'test' and privileges['7'] like ['']"]
+filteres =["privileges['7'] like ['']"]
 import cy_es
 
 

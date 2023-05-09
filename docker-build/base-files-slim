@@ -1,4 +1,4 @@
-FROM nttlong/base-core-slim:rc.2023.020  as git
+FROM nttlong/base-core-slim:rc.2023.023  as git
 ARG TARGETARCH
 RUN pip uninstall torch -y
 RUN pip uninstall torchvision -y
@@ -6,11 +6,18 @@ RUN pip uninstall torchvision -y
 RUN pip install torch --extra-index-url https://download.pytorch.org/whl/cpu --no-cache-dir
 RUN pip install torchvision==0.15.0 --extra-index-url https://download.pytorch.org/whl/cpu --no-cache-dir
 
+RUN pip install numpy==1.23.5 --no-cache-dir
 FROM git
 COPY ./../docker-build/base-files-slim.req.txt ./base-files-slim.req.txt
 RUN mkdir -p /app/pre_test_build
 COPY ./../pre_test_build/check_torch_version.py /app/re_test_build/check_torch_version.py
-RUN python3 /app/re_test_build/check_torch_version.py
+RUN if [ "$TARGETARCH" = "amd64" ]; then \
+
+     python3 /app/re_test_build/check_torch_version.py;\
+
+
+    fi
+
 
 
 
@@ -43,4 +50,4 @@ RUN python3 /app/pre_test_build/cheK_layout_detection.py
 #docker buildx create --name builder --driver docker-container --use
 #docker buildx inspect --bootstrap
 #docker buildx   build -t nttlong/files-service-slim:rc.0.1.1   --platform=linux/amd64,linux/arm64/v8  ./.. -f base-files-slim
-#docker buildx   build -t nttlong/files-service-slim:rc.0.1.3  --platform=linux/amd64,linux/arm64/v8  ./.. -f base-files-slim  --push=true --output type=registry
+#docker buildx   build -t nttlong/files-service-slim:rc.0.1.4  --platform=linux/amd64,linux/arm64/v8  ./.. -f base-files-slim  --push=true --output type=registry
