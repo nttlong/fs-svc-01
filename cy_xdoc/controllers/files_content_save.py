@@ -91,5 +91,6 @@ def file_content_save(
         id= data.DocId
     )
     data_item["Id"] = data.DocId
-    return data_item.to_json_convertable()
+    import cy_docs
+    return data_item.to_json_convertable() if isinstance(data_item,cy_docs.DocumentObject) else data_item
 
