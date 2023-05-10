@@ -63,6 +63,8 @@ def fix_privilges_error(data_privileges):
                 for x in v:
                     if x == "." or x== 0:
                         t += [""]
+                    else:
+                        t+=[x]
 
                 data_privileges[k] = t
 
@@ -93,7 +95,10 @@ def fix_app(app_name: str):
         for x in lst:
             if x["Privileges"]!={}:
                 privileges = x["Privileges"]
+                print(privileges)
+                print("-------------------fix----------------")
                 privileges = fix_privilges_error(privileges)
+
                 print(privileges)
                 print(x["_id"])
                 try:

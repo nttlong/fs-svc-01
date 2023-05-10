@@ -190,7 +190,10 @@ class SearchEngine:
             body=body
         )
 
-    def make_index_content(self, app_name: str, upload_id: str, data_item: dict, privileges: dict,
+    def make_index_content(self, app_name: str,
+                           upload_id: str,
+                           data_item: dict,
+                           privileges: dict,
                            path_to_file_content: str = None,
                            content: str = None,
                            meta_info=None,
@@ -267,10 +270,13 @@ class SearchEngine:
                     )
                 )
             else:
-                self.make_index_content(
-                    app_name=app_name,
-                    privileges=privileges,
-                    upload_id=upload_id
+                self.update_doc_by_id(
+                    client=self.client,
+                    index=self.get_index(app_name),
+                    id=upload_id,
+                    data=(
+                            cy_es.buiders.privileges << privileges
+                    )
                 )
 
     def is_exist(self, app_name: str, id: str) -> bool:

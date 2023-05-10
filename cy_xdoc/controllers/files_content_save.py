@@ -48,7 +48,13 @@ def file_content_save(
 
     )
     if data_item and data.Privileges:
-        data_item["Privileges"] = data.Privileges
+        json_privilege = {}
+        for x in data.Privileges or []:
+            if json_privilege.get(x.Type.lower()):
+                json_privilege[x.Type.lower()] += x.Values.split(',')
+            else:
+                json_privilege[x.Type.lower()] = x.Values.split(',')
+        data_item["Privileges"] = json_privilege
     else:
         _source = search_engine.get_doc(
             app_name=app_name,
@@ -59,7 +65,7 @@ def file_content_save(
             _source_data_item=_source.source.data_item
         fx= DocUploadRegister()
 
-        import cy_docs
+
         json_privilege = {}
         for x in data.Privileges or []:
             if json_privilege.get(x.Type.lower()):
@@ -85,5 +91,5 @@ def file_content_save(
         id= data.DocId
     )
     data_item["Id"] = data.DocId
-    return data_item
+    return data_item.to_json_convertable()
 
