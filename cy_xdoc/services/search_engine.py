@@ -340,7 +340,7 @@ class SearchEngine:
                 content=content
             )
             _Privileges = json_data_item.get("Privileges") or _Privileges
-            if isinstance(data_item,cy_docs.DocumentObject):
+            if isinstance(_Privileges,cy_docs.DocumentObject):
                 _Privileges = _Privileges.to_json_convertable()
             return cy_es.update_doc_by_id(
                 client=self.client,

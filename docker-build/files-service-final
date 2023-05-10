@@ -16,9 +16,9 @@ RUN mkdir -p /app/production_test
 COPY ./../production_test /app/production_test
 RUN mkdir -p /app/pre_test_build
 COPY ./../pre_test_build /app/pre_test_build
-#RUN cd /app
-#RUN python3 cy_es/setup.py build_ext --inplace
-#RUN cd /
+RUN cd /app
+RUN python3 cy_es/setup.py build_ext --inplace
+RUN cd /
 #RUN python3 pre_test_build/check_cy_es_x.py
 ARG TARGETARCH
 RUN pip uninstall -y gradio
