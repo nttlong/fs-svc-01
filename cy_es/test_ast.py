@@ -21,9 +21,14 @@ filteres =[
 
 
 ]
-filteres=["not day(data_item.RegisterOn)=10 "]
-filteres =["(content^1,data_item.FileNameLower^100) search 'test' and privileges['7'] like ['']"]
-filteres =["privileges['7'] like ['']"]
+filteres +=["not day(data_item.RegisterOn)=10 "]
+filteres +=["(content^1,data_item.FileNameLower^100) search 'test' and privileges['7'] like ['']"]
+filteres +=["privileges['7'] like ['']"]
+filteres +=["(content^1,data_item.FileNameLower^100) search 'test'"]
+filteres +=["((content^100, mata.content^1000)  search 'tai lieu codx') or (filename^10000 search 'docx xlsx pdf')"]
+filteres +=["(content^100, mata.content^1000)  search 'tai lieu codx' or filename^10000 search 'docx xlsx pdf'"]
+filteres +=["not day(data_item.RegisterOn)=10 "]
+filteres +=["not data_item.FileName like '*.jpg*'"]
 import cy_es
 
 

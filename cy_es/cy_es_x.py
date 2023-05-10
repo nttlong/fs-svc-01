@@ -161,7 +161,7 @@ class DocumentFields:
 
     def __neg__(self):
         ret = DocumentFields()
-        ret.__es_expr__ = {"must_not":{"bool": {"filter": self.__es_expr__}}}
+        ret.__es_expr__ = {"must_not":{"bool": {"filter": self.__es_expr__.get("filter") or self.__es_expr__}}}
         ret.__is_bool__= True
         return ret
 
@@ -1721,6 +1721,7 @@ def create_filter_from_dict(expr: dict, owner_caller=None, op=None, suggest_hand
         raise NotImplemented
 
 
+
 def is_exist(client: Elasticsearch, index: str, id: str, doc_type: str = "_doc") -> bool:
     return client.exists(index=index, id=id, doc_type=doc_type)
 
@@ -2204,8 +2205,18 @@ def natural_logic_parse(expr: str):
                 raise Exception("like operator only apply for text")
         if isinstance(node, ast.BinOp) and type(node.op) == ast.BitXor:
             field_name = __parse_logical_expr__(node.left)
-            boost_score = __parse_logical_expr__(node.right)
-            return f"{field_name}^{boost_score}"
+            if isinstance(node.right,ast.BinOp):
+                boost_score = __parse_logical_expr__(node.right.left)
+                content_search = __parse_logical_expr__(node.right.right)
+                return  {
+                    "$$search": {
+                        "$fields": [f"{field_name}^{boost_score}"],
+                        "$value": content_search
+                    }
+                }
+            else:
+                boost_score = __parse_logical_expr__(node.right)
+                return f"{field_name}^{boost_score}"
         if isinstance(node, ast.BinOp) and type(node.op) == ast.RShift:
             if isinstance(node.left, ast.Tuple):
                 left = []
@@ -2297,8 +2308,10 @@ def natural_logic_parse(expr: str):
                     }
                 }
             }
-        if isinstance(node,ast.unaryop):
-            print(node)
+        if isinstance(node,ast.UnaryOp) and type(node.op) ==ast.Not:
+            return  {
+                "$not":__parse_logical_expr__(node.operand)
+            }
 
 
         raise NotImplemented()
