@@ -82,13 +82,16 @@ def file_content_save(
             "SizeInBytes":0,
             "Privileges":json_privilege
         }
+        if data.Privileges is not None:
+            data_item["Privileges"] = json_privilege
 
     search_engine.update_content(
         app_name=app_name,
         content=data.Content,
         data_item= data_item,
         meta = data.MetaData,
-        id= data.DocId
+        id= data.DocId,
+        replace_content=True
     )
     data_item["Id"] = data.DocId
     import cy_docs

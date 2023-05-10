@@ -302,10 +302,12 @@ class SearchEngine:
                 )
             )
 
-    def update_content(self, app_name: str, id: str, content: str, data_item=None, meta: dict = None):
+    def update_content(self, app_name: str, id: str, content: str, data_item=None, meta: dict = None,
+                       replace_content=False):
 
         original_content = content or ""
-        content = self.vn_predictor.get_text(content)
+        content = content or ""
+
         if data_item is None:
             return
         is_exist = self.is_exist(app_name, id=id)
@@ -319,10 +321,16 @@ class SearchEngine:
                 id=id
 
             )
-            old_content = self.vn_predictor.get_text(es_doc.source.content or "")
-            content = content + "\n" + old_content
-            content = original_content + "\n" + content
-            vn_non_accent_content = self.text_process_service.vn_clear_accent_mark(content)
+            if not replace_content:
+                old_content = self.vn_predictor.get_text(es_doc.source.content or "")
+                content = content + "\n" +self.vn_predictor.get_text(content)
+                content = content + "\n" + old_content
+
+                vn_non_accent_content = self.text_process_service.vn_clear_accent_mark(content)
+            elif content and content != "":
+                vn_non_accent_content = self.text_process_service.vn_clear_accent_mark(content)
+                content = content + "\r\n" + self.vn_predictor.get_text(content)
+
             _Privileges = None
             if hasattr(data_item, "Privileges"):
                 _Privileges = data_item.Privileges
@@ -331,6 +339,9 @@ class SearchEngine:
             seg_content = self.vn.parse_word_segment(
                 content=content
             )
+            _Privileges = json_data_item.get("Privileges") or _Privileges
+            _Privileges = _Privileges.to_json_convertable() if isinstance(data_item,
+                                                                          cy_docs.DocumentObject) else _Privileges
             return cy_es.update_doc_by_id(
                 client=self.client,
                 index=self.get_index(app_name),
@@ -433,8 +444,6 @@ class SearchEngine:
             index=self.get_index(app_name),
             conditional=conditional
         )
-
-
 
     def fix_privilges_list_error(self, privileges):
         """
