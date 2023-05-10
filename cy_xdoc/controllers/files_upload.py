@@ -96,12 +96,15 @@ def files_upload(app_name: str, UploadId: str, Index: int, FilePart: UploadFile,
 
 
             )
-            broker.emit(
-                app_name=app_name,
-                message_type=cyx.common.msg.MSG_FILE_UPLOAD,
-                data=upload_item
-            )
-            print(f"rais msg {cyx.common.msg.MSG_FILE_UPLOAD}")
+            try:
+                broker.emit(
+                    app_name=app_name,
+                    message_type=cyx.common.msg.MSG_FILE_UPLOAD,
+                    data=upload_item
+                )
+                print(f"rais msg {cyx.common.msg.MSG_FILE_UPLOAD}")
+            except Exception as e:
+                print(e)
 
         except Exception as e:
             raise e

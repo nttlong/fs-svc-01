@@ -9,8 +9,7 @@ import sys
 __release_mode__ = True
 __working_dir__ = pathlib.Path(__file__).parent.__str__()
 
-
-
+import cy_docs
 
 sys.path.append(__working_dir__)
 import cy_docs_x
@@ -124,3 +123,26 @@ def create_empty_pydantic(_type):
         else:
             ret.__dict__[k] = v()
     return ret
+
+
+def EXPR(expr):
+    """
+    Mongodb expr function use in case {$expr:{$gt:["$Grade1", "$Grade2"]}}
+    :param fx:
+    :return:
+    """
+    assert isinstance(expr, dict) or isinstance(expr,cy_docs_x.Field)
+    if isinstance(expr, dict):
+        ret = cy_docs_x.Field(expr)
+        ret.__data__ = {
+            "$expr": expr
+        }
+        return ret
+    elif isinstance(expr, cy_docs_x.Field):
+        ret = cy_docs_x.Field(init_value=expr.to_mongo_db_expr())
+        ret.__data__ = {
+            "$expr": expr.to_mongo_db_expr()
+        }
+        return ret
+    else:
+        raise Exception(f"{expr} is invalid data type, args in EXPR must be dict or cy_docs_x.Field")

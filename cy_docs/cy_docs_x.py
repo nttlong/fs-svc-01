@@ -1736,3 +1736,17 @@ async def find_file_async(client, db_name: str, rel_file_path: str):
 
     # ret = gridfs.GridFS(__client__.get_database(__db_name__)).get(file_id)
     return ret
+
+def EXPR(expr):
+    if isinstance(expr,dict):
+        ret = Field()
+        ret.__data__ = {
+            "$expr": expr
+        }
+        return ret
+    elif isinstance(expr,Field):
+        ret = Field()
+        ret.__data__ = {
+            "$expr": expr.to_mongo_db_expr()
+        }
+        return ret

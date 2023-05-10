@@ -12,7 +12,7 @@ import pydantic
 from enum import Enum
 import os
 def version()->str:
-    return f"0.0.2{os.path.splitext(__file__)[1]}"
+    return f"0.0.3{os.path.splitext(__file__)[1]}"
 
 def get_all_index(client: Elasticsearch) -> List[str]:
     return list(client.indices.get_alias("*").keys())
@@ -1392,6 +1392,8 @@ def create_doc(client: Elasticsearch, index: str, body, id: str = None, doc_type
     except elasticsearch.RequestError as e:
         e1 = __convert_exception__(e)
         raise e1
+    except elasticsearch.exceptions.ConflictError as e:
+        pass
 
 
 def update_doc_by_id(client: Elasticsearch, index: str, id: str, data, doc_type: str = "_doc"):
@@ -1816,36 +1818,38 @@ def similarity_settings(client: Elasticsearch, index: str, field_name: str, algo
 
     except elasticsearch.exceptions.NotFoundError as e:
         client.indices.create(index=index)
-
-    # settings[index]['settings']['index']['similarity']['bm25_similarity']
-    client.indices.close(index=index)
-    settings = {
-        "index": {
-            "similarity": {
-                "bm25_similarity": {
-                    "type": algorithm_type,
-                    "b": b_value,  # b gần về 0 sẽ bỏ qua độ dài của câu
-                    "k1": k1_value
+    try:
+        # settings[index]['settings']['index']['similarity']['bm25_similarity']
+        client.indices.close(index=index)
+        settings = {
+            "index": {
+                "similarity": {
+                    "bm25_similarity": {
+                        "type": algorithm_type,
+                        "b": b_value,  # b gần về 0 sẽ bỏ qua độ dài của câu
+                        "k1": k1_value
+                    }
                 }
             }
         }
-    }
-    client.indices.put_settings(index=index, body=settings)
-    client.indices.put_mapping(
-        index=index,
-        body=
-        {
-            "properties": {
-                field_name: {
-                    "type": "text",
-                    "similarity": "bm25_similarity",
-                    "fielddata": True
-                }
+        client.indices.put_settings(index=index, body=settings)
+        client.indices.put_mapping(
+            index=index,
+            body=
+            {
+                "properties": {
+                    field_name: {
+                        "type": "text",
+                        "similarity": "bm25_similarity",
+                        "fielddata": True
+                    }
 
+                }
             }
-        }
-    )
-    client.indices.open(index=index)
+        )
+        client.indices.open(index=index)
+    except Exception as e:
+        pass
 
 
 import bson

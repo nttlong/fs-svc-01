@@ -38,7 +38,7 @@ import cy_kit
 se = cy_kit.singleton(SearchEngine)
 for filter in filteres:
     fx = cy_es.natural_logic_parse(filter) #Parse from natural logic to JSON
-    vx = cy_es.create_filter_from_dict(fx) # Parse from JSON to real Elastic Search Expression
+    vx = cy_es.create_filter_from_dict(fx) # Parse from JSON to real ElasticSearch Expression
     lst =se.full_text_search(
         app_name="default",
         page_size=400,
