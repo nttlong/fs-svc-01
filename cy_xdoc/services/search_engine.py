@@ -428,30 +428,7 @@ class SearchEngine:
             conditional=conditional
         )
 
-    def fix_privilges_error(self, data_privileges):
-        """
-        Lỗi này là do mấy cha nội Codx đưa dữ liệu vào sai nên phải fix trước khi tìm
-        :param data_privileges:
-        :return:
-        """
-        if isinstance(data_privileges, dict):
-            for k, v in data_privileges.items():
-                if isinstance(v, list):
-                    t = []
-                    for x in v:
-                        if x == ".":
-                            t += [self.empty_privilege_value]
-                        if x == "":
-                            t += [self.empty_privilege_value]
-                        else:
-                            t += [x]
-                    data_privileges[k] = t
 
-        elif isinstance(data_privileges, list):
-            return [self.fix_privilges_error(x) for x in data_privileges]
-        else:
-            return data_privileges
-        return data_privileges
 
     def fix_privilges_list_error(self, privileges):
         """

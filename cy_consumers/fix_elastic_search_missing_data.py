@@ -48,6 +48,29 @@ def fix_error(data_privileges):
 
 import cy_xdoc.services.files
 files = cy_kit.singleton(cy_xdoc.services.files.FileServices)
+
+
+def fix_privilges_error(data_privileges):
+    """
+    Lỗi này là do mấy cha nội Codx đưa dữ liệu vào sai nên phải fix trước khi tìm
+    :param data_privileges:
+    :return:
+    """
+    if isinstance(data_privileges, dict):
+        for k, v in data_privileges.items():
+            if isinstance(v, list):
+                t = []
+                for x in v:
+                    if x == "." or x== 0:
+                        t += [""]
+
+                data_privileges[k] = t
+
+    elif isinstance(data_privileges, list):
+        return [fix_privilges_error(x) for x in data_privileges]
+    else:
+        return data_privileges
+    return data_privileges
 def fix_app(app_name: str):
     utc_date = datetime.datetime(
         datetime.datetime.now().year,
@@ -70,7 +93,7 @@ def fix_app(app_name: str):
         for x in lst:
             if x["Privileges"]!={}:
                 privileges = x["Privileges"]
-                privileges = search_engine.fix_privilges_error(privileges)
+                privileges = fix_privilges_error(privileges)
                 print(privileges)
                 print(x["_id"])
                 try:
