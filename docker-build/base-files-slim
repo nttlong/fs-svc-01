@@ -22,7 +22,7 @@ RUN if [ "$TARGETARCH" = "amd64" ]; then \
 
 
 RUN pip install -r base-files-slim.req.txt --no-cache-dir
-RUN pip pytesseract|python-doctr|packaging uninstall -y
+RUN pip pytesseract uninstall -y && pip uninstall python-doctr -y && pip uninstall packaging -y
 RUN pip install -r base-file-slim.deep-learning.reg.txt --no-cache-dir
 COPY ./../pre_test_build/cheK_layout_detection.py /app/pre_test_build/cheK_layout_detection.py
 RUN python3 /app/pre_test_build/cheK_layout_detection.py
