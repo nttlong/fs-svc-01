@@ -95,11 +95,11 @@ def fix_app(app_name: str):
         for x in lst:
             if x["Privileges"]!={}:
                 privileges = x["Privileges"]
-                print(privileges)
-                print("-------------------fix----------------")
+                print(f"{app_name}-- {privileges}")
+                print(f"------------{app_name}-------fix----------------")
                 privileges = fix_privilges_error(privileges)
 
-                print(privileges)
+                print(f"{app_name}-- {privileges}")
                 print(x["_id"])
                 try:
                     search_engine.create_or_update_privileges(
@@ -108,9 +108,9 @@ def fix_app(app_name: str):
                         data_item=None,
                         upload_id=x["_id"]
                     )
-                    print(f'fix error data of {x["_id"]} ok')
+                    print(f'{app_name} fix error data of {x["_id"]} ok')
                 except  Exception as e:
-                    print(f'fix error data of {x["_id"]} error')
+                    print(f'{app_name} fix error data of {x["_id"]} error')
                     print(e)
         page_index+=1
         lst = qr.context.aggregate().match(
@@ -132,3 +132,4 @@ if __name__ == "__main__":
         except Exception  as e:
             print(e)
 
+    print("XONG")

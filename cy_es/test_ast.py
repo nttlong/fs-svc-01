@@ -29,6 +29,9 @@ filteres +=["((content^100, mata.content^1000)  search 'tai lieu codx') or (file
 filteres +=["(content^100, mata.content^1000)  search 'tai lieu codx' or filename^10000 search 'docx xlsx pdf'"]
 filteres +=["not day(data_item.RegisterOn)=10 "]
 filteres +=["not data_item.FileName like '*.jpg*'"]
+filteres +=["privileges['p'] like ['BGD-282023'] or privileges['7'] like ['']"]
+filteres +=["privileges['u'] like ['E0007','Guest']"]
+
 import cy_es
 
 

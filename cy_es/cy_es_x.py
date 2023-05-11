@@ -259,74 +259,53 @@ class DocumentFields:
               }
             }
             """
+            # key_words = '+ - && || ! ( ) { } [ ] ^ " ~ * ? : \\'.split(' ')
+            # _item_ = []
+            # for x in item:
+            #     if isinstance(x,str):
+            #         t =''
+            #         for k in x:
+            #             if k in key_words:
+            #                 t+=f'\{k}'
+            #             else:
+            #                 t+=k
+            #
+            #         _item_+=[t]
+            #     else:
+            #         _item_ += [x]
+
+            # ret.__es_expr__ = {
+            #     "filter":{
+            #         "terms": {
+            #             self.__name__: _item_
+            #         },
+            #
+            #     }
+            # }
+            src =""
+
+            for i in range(0,len(item)):
+                src+= f"doc['{self.__name__}.keyword'].contains(params.items[{i}])\n && "
+            src=src.rstrip(' && ')
             ret.__es_expr__ = {
                 "filter":{
-                    "terms": {
-                        self.__name__: item
-                    },
-
-                },
-                'minimum_should_match':1
-            }
-            ret.__es_expr__ = {
-                "filter": {
-                    "terms": {
-                        self.__name__: item
-                    },
-
-                }
-            }
-            if '' in item:
-                first = [x for x in item if x != ""]
-                if len(first)> 0:
-                    ret.__es_expr__ = {
-                        "filter":{
-                        "terms": {
-                            self.__name__: first
-                        }}
-                    }
-                    fx = DocumentFields(self.__name__)
-                    fx.__es_expr__ = {
-                        "filter":{
                             "script":{
 
                                 "script": {
-                                    "source": f"return  doc['{fx.__name__}.keyword'].contains('');",
-                                    "lang": "painless"
+
+                                    "source":f"return  {src};",
+                                    "lang": "painless",
+                                    "params":{
+                                        "items":item
+                                    }
                                 }
                             }
                         }
-                    }
-                    fx.__is_bool__ = True
-                    fx.__name__ = None
+            }
 
-
-                    ret.__is_bool__ = True
-                    fx_check_field = DocumentFields(self.__name__) !=None
-                    ret = fx_check_field & (ret | fx)
-                    return ret
-                else:
-                    fx = DocumentFields(self.__name__)
-                    fx.__es_expr__ = {
-                        "filter":{
-                            "script":{
-
-                                "script": {
-                                    "source": f"return doc['{fx.__name__}.keyword'].contains('');",
-                                    "lang": "painless"
-                                }
-                            }
-                        }
-                    }
-
-                    fx.__is_bool__ = True
-                    fx.__name__=None
-                    fx_check_field = DocumentFields(self.__name__) != None
-                    return  fx_check_field & fx
-            else:
-                ret.__is_bool__ = True
-                fx_check_field = DocumentFields(self.__name__) != None
-                return fx_check_field & ret
+            ret.__is_bool__ = True
+            fx_check_field = DocumentFields(self.__name__) != None
+            return fx_check_field & ret
         else:
             raise Exception("Not support")
 
