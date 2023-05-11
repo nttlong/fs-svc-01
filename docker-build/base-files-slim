@@ -1,29 +1,25 @@
 FROM nttlong/base-core-slim:rc.2023.027  as git
 ARG TARGETARCH
-RUN pip uninstall torch -y
-RUN pip uninstall torchvision -y
+RUN pip uninstall torch -y && pip uninstall torchvision -y
 
-RUN pip install torch --extra-index-url https://download.pytorch.org/whl/cpu --no-cache-dir
-RUN pip install torchvision==0.15.0 --extra-index-url https://download.pytorch.org/whl/cpu --no-cache-dir
 
-RUN pip install numpy==1.23.5 --no-cache-dir
-FROM git
 COPY ./../docker-build/base-files-slim.req.txt ./base-files-slim.req.txt
-COPY ./../docker-buid/base-file-slim.deep-learning.reg.txt ./base-file-slim.deep-learning.reg.txt
+COPY ./../docker-build/base-file-slim.deep-learning.reg.txt ./base-file-slim.deep-learning.reg.txt
 RUN mkdir -p /app/pre_test_build
 COPY ./../pre_test_build/check_torch_version.py /app/re_test_build/check_torch_version.py
-RUN if [ "$TARGETARCH" = "amd64" ]; then \
 
-     python3 /app/re_test_build/check_torch_version.py;\
-
-
-    fi
 
 
 
 RUN pip install -r base-files-slim.req.txt --no-cache-dir
 RUN pip pytesseract uninstall -y && pip uninstall python-doctr -y && pip uninstall packaging -y
 RUN pip install -r base-file-slim.deep-learning.reg.txt --no-cache-dir
+RUN if [ "$TARGETARCH" = "amd64" ]; then \
+
+     python3 /app/re_test_build/check_torch_version.py;\
+
+
+    fi
 COPY ./../pre_test_build/cheK_layout_detection.py /app/pre_test_build/cheK_layout_detection.py
 RUN python3 /app/pre_test_build/cheK_layout_detection.py
 #docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
@@ -31,4 +27,4 @@ RUN python3 /app/pre_test_build/cheK_layout_detection.py
 #docker buildx create --name builder --driver docker-container --use
 #docker buildx inspect --bootstrap
 #docker buildx   build -t nttlong/files-service-slim:rc.0.1.1   --platform=linux/amd64,linux/arm64/v8  ./.. -f base-files-slim
-#docker buildx   build -t nttlong/files-service-slim:rc.0.1.7  --platform=linux/amd64,linux/arm64/v8  ./.. -f base-files-slim  --push=true --output type=registry
+#docker buildx   build -t nttlong/files-service-slim:rc.0.1.8  --platform=linux/amd64,linux/arm64/v8  ./.. -f base-files-slim  --push=true --output type=registry
