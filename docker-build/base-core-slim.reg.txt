@@ -1,4 +1,5 @@
-fastapi   
+
+fastapi
 fastapi-jwt-auth   
 motor~=3.0.0   
 pymongo~=4.1.1   

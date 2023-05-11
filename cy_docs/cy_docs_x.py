@@ -212,7 +212,7 @@ class __BaseField__:
 
 
 class Field(__BaseField__):
-    def __init__(self, init_value: Union[str, dict], oprator: str = None):
+    def __init__(self, init_value: Union[str, dict], oprator: str = None,is_expr = False):
         """
         Init a base field
         :param __name__:
@@ -222,6 +222,7 @@ class Field(__BaseField__):
         self.__has_set_value__ = False
         self.__alias__ = None
         self.__sort__ = 1
+        self.__is_expr__ = is_expr
 
     def reduce(self, data, reduce_type: type = None):
         reduce_type = reduce_type or self.__delegate_type__
