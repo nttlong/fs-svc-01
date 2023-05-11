@@ -12,7 +12,7 @@ import pydantic
 from enum import Enum
 import os
 def version()->str:
-    return f"0.0.4{os.path.splitext(__file__)[1]}"
+    return f"0.0.5{os.path.splitext(__file__)[1]}"
 
 def get_all_index(client: Elasticsearch) -> List[str]:
     return list(client.indices.get_alias("*").keys())

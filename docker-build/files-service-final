@@ -16,10 +16,10 @@ RUN mkdir -p /app/production_test
 COPY ./../production_test /app/production_test
 RUN mkdir -p /app/pre_test_build
 COPY ./../pre_test_build /app/pre_test_build
-#RUN cd /app
-#RUN python3 cy_es/setup.py build_ext --inplace
-#RUN cd /
-#RUN python3 pre_test_build/check_cy_es_x.py
+RUN cd /app
+RUN python3 cy_es/setup.py build_ext --inplace
+RUN cd /
+RUN python3 cy_es/check_cy_es_x.py
 ARG TARGETARCH
 RUN pip uninstall -y gradio
 RUN pip uninstall packaging -y
@@ -46,5 +46,5 @@ RUN cd /app
 #docker buildx create --name builder --driver docker-container --use
 #docker buildx inspect --bootstrap
 #docker buildx   build -t nttlong/files-service-final:rc.0.1.3    --platform=linux/amd64,linux/arm64/v8  ./.. -f files-service-final
-#docker buildx   build -t nttlong/files-service-final:rc.0.5.1.7  --platform=linux/amd64,linux/arm64/v8  ./.. -f files-service-final  --push=true --output type=registry
+#docker buildx   build -t nttlong/files-service-final:rc.0.5.1.8  --platform=linux/amd64,linux/arm64/v8  ./.. -f files-service-final  --push=true --output type=registry
 #docker buildx   build -t nttlong/files-service-final:rc.0.1.4.adm.test.8  --platform=linux/amd64 ./.. -f files-service-final  --push=true --output type=registry
