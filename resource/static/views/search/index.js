@@ -10,6 +10,7 @@ var searchView = await View(import.meta, class SearchView extends BaseScope {
     listOfFiles = []
     highlight=false
     currentAppName = undefined
+    SearchExpr = "conent search '... your content here...'"
     async init() {
         var mainEle = await this.$getElement();
         $(window).resize(()=>{
@@ -36,7 +37,8 @@ var searchView = await View(import.meta, class SearchView extends BaseScope {
                 content: sender.scope.searchContent,
                 page_size:sender.pageSize,
                 page_index:sender.pageIndex,
-                highlight:sender.scope.highlight
+                highlight:sender.scope.highlight,
+                filter: sender.scope.SearchExpr
             }).then(r=>{
                sender.done(r.items);
             });
@@ -45,7 +47,8 @@ var searchView = await View(import.meta, class SearchView extends BaseScope {
             sender.data = api.post(`${sender.scope.currentAppName}/search`, {
                 content: sender.scope.searchContent,
                 page_size:sender.pageSize,
-                page_index:sender.pageIndex
+                page_index:sender.pageIndex,
+                filter: sender.scope.SearchExpr
             }).then(r=>{
                sender.done(r.items);
             });
@@ -59,7 +62,8 @@ var searchView = await View(import.meta, class SearchView extends BaseScope {
                 content: this.searchContent,
                 page_size:20,
                 page_index:page_index,
-                highlight:this.highlight
+                highlight:this.highlight,
+                filter: this.SearchExpr
             });
             this.$applyAsync();
         }
@@ -67,7 +71,8 @@ var searchView = await View(import.meta, class SearchView extends BaseScope {
             this.data = await api.post(`${this.currentAppName}/search`, {
                 content: this.searchContent,
                 page_size:20,
-                page_index:page_index
+                page_index:page_index,
+                filter: this.SearchExpr
             });
             this.$applyAsync();
         }

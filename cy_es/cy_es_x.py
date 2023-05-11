@@ -2328,4 +2328,7 @@ def natural_logic_parse(expr: str):
 
         raise NotImplemented()
 
-    return parse_logic(expr)
+    ret = parse_logic(expr)
+    if not isinstance(ret,dict):
+        raise  Exception(f"'{expr}' is incorrect syntax")
+    return ret

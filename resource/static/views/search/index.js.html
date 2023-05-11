@@ -52,6 +52,12 @@
         }
     </style>
     <div class="header layout-rows">
+        <div class="layout-columns dock full">
+            <div class="layout-rows header-panel">
+            <div class="dock full">
+                <textarea class="dock full" style="padding:10px" ng-model="SearchExpr"></textarea>
+            </div>
+        </div>
         <div class="layout-rows header-panel">
             <div>
                 <span style="margin:4px">highlight</span>
@@ -81,12 +87,19 @@
 
             
         </div>
+
+            </div>
     </div>
+    <style>
+        .full-item-row {
+            width:100% !important
+        }
+    </style>
 
     <div class="dock full" style="margin:15px">
         <div rcmpct-lazy-scroll source="data.items" item-var="p" class="row" on-request-data="doSearchMore" page-size="20">
              <rcmpct-template>
-                 <rcmpct-grid cols="180px 450px 1fr"  class="shadow-box" file-id="{{p.UploadId}}">
+                 <rcmpct-grid cols="180px 450px 1fr"  class="shadow-box full-item-row" file-id="{{p.UploadId}}">
                     <div style="min-width:140px;max-width:140px">
                         <img style="min-width:120px;max-width:120px;margin:10px" ng-src="{{p.ThumbUrl}}" ng-if="p.HasThumb" />
                     </div>
@@ -123,11 +136,18 @@
                     <label>
                         {{p.RegisterOn|date:'dd-MM-yyyy hh:mm:ss'}}
                     </label>
-                    <label ng-if="p.UrlDfOCRSource && p.UrlDfOCRSource!=null">
+                    <label ng-if="p.OcrContentUrl && p.OcrContentUrl!=null">
                         {{$res("OCR content")}}
                     </label>
-                    <a ng-if="p.UrlDfOCRSource && p.UrlDfOCRSource!=null" ng-href="{{p.UrlDfOCRSource}}" target="_blank">
+                    <a ng-if="p.OcrContentUrl && p.OcrContentUrl!=null" ng-href="{{p.OcrContentUrl}}" target="_blank">
                         {{$res("View")}}
+                    </a>
+                    <label>
+                        {{$res("Privileges")}}:
+                    </label>
+                    <a>
+
+                        {{p.privileges}}
                     </a>
 
                 </rcmpct-grid>

@@ -110,7 +110,7 @@ def file_search(app_name: str, content: Optional[str],
     # search_result = search_content_of_file(app_name, content, page_size, page_index)
     json_filter = None
 
-    if filter is not None:
+    if filter is not None and filter.__len__()>0:
         if logic_filter:
             try:
                 json_filter = cy_es.natural_logic_parse(filter)

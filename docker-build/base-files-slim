@@ -22,8 +22,19 @@ RUN if [ "$TARGETARCH" = "arm64" ]; then \
     fi
 
 
+
 ADD ./../pre_test_build /app/pre_test_build
-RUN python3 /app/pre_test_build/check_torch_version.py;
+RUN if [ "$TARGETARCH" = "arm64"]; then \
+    pip uninstall torch -y && \
+    wget https://github.com/KumaTea/pytorch-aarch64/releases/download/v1.11.0/pytorch-1.11.0-py3.9_cpu_0.tar.bz2 && \
+    pip install pytorch-1.11.0-py3.9_cpu_0.tar.bz2 && \
+    rm pytorch-1.11.0-py3.9_cpu_0.tar.bz2 && \
+    python3 /app/pre_test_build/check_torch_version.py; \
+    fi
+RUN if [ "$TARGETARCH" = "amd64"]; then \
+    python3 /app/pre_test_build/check_torch_version.py; \
+    fi
+
 RUN python3 /app/pre_test_build/cheK_layout_detection.py
 RUN rm -fr /app/pre_test_build
 #docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
@@ -31,4 +42,4 @@ RUN rm -fr /app/pre_test_build
 #docker buildx create --name builder --driver docker-container --use
 #docker buildx inspect --bootstrap
 #docker buildx   build -t nttlong/files-service-slim:rc.0.1.1   --platform=linux/amd64,linux/arm64/v8  ./.. -f base-files-slim
-#docker buildx   build -t nttlong/files-service-slim:rc.0.1.8  --platform=linux/amd64,linux/arm64/v8  ./.. -f base-files-slim  --push=true --output type=registry
+#docker buildx   build -t nttlong/files-service-slim:rc.0.1.9  --platform=linux/amd64,linux/arm64/v8  ./.. -f base-files-slim  --push=true --output type=registry
