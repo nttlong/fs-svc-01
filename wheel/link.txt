@@ -1,0 +1,2 @@
+ http://download.pytorch.org/whl/cpu/torch-2.0.1%2Bcpu-cp39-cp39-linux_x86_64.whl
+ https://files.pythonhosted.org/packages/67/5e/4666533b237e93cf95260af379ca0e2d3b41615b358dc78e8ad92dac41ae/pyarrow-12.0.0-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl

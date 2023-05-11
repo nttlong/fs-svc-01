@@ -1,27 +1,31 @@
 FROM nttlong/base-core-slim:rc.2023.027  as git
 ARG TARGETARCH
-RUN pip uninstall torch -y && pip uninstall torchvision -y
+#ADD ./../torch-source /torch-source
+RUN mkdir -p /app/pre_test_build && mkdir -p /tmp-source/amd
+#RUN pip uninstall torch -y && pip uninstall torchvision -y
 
 
 COPY ./../docker-build/base-files-slim.req.txt ./base-files-slim.req.txt
 COPY ./../docker-build/base-file-slim.deep-learning.reg.txt ./base-file-slim.deep-learning.reg.txt
-RUN mkdir -p /app/pre_test_build
-COPY ./../pre_test_build/check_torch_version.py /app/re_test_build/check_torch_version.py
 
-
-
-
-RUN pip install -r base-files-slim.req.txt --no-cache-dir
-RUN pip pytesseract uninstall -y && pip uninstall python-doctr -y && pip uninstall packaging -y
-RUN pip install -r base-file-slim.deep-learning.reg.txt --no-cache-dir
 RUN if [ "$TARGETARCH" = "amd64" ]; then \
-
-     python3 /app/re_test_build/check_torch_version.py;\
-
-
+    pip uninstall torchvision -y && \
+    pip uninstall torch -y && \
+    pip install torch --extra-index-url https://download.pytorch.org/whl/cpu --no-cache-dir && \
+    pip install torchvision==0.15.0 --extra-index-url https://download.pytorch.org/whl/cpu --no-cache-dir && \
+    pip install -r base-files-slim.req.txt --no-cache-dir && \
+    pip install -r base-file-slim.deep-learning.reg.txt --no-cache-dir;\
     fi
-COPY ./../pre_test_build/cheK_layout_detection.py /app/pre_test_build/cheK_layout_detection.py
+RUN if [ "$TARGETARCH" = "arm64" ]; then \
+    pip install -r base-files-slim.req.txt --no-cache-dir && \
+    pip install -r base-file-slim.deep-learning.reg.txt --no-cache-dir;\
+    fi
+
+
+ADD ./../pre_test_build /app/pre_test_build
+RUN python3 /app/pre_test_build/check_torch_version.py;
 RUN python3 /app/pre_test_build/cheK_layout_detection.py
+RUN rm -fr /app/pre_test_build
 #docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 #docker buildx rm builder
 #docker buildx create --name builder --driver docker-container --use
