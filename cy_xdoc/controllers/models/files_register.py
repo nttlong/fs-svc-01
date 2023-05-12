@@ -33,6 +33,7 @@ class RegisterUploadInfo:
     IsPublic: Optional[bool]
     ThumbConstraints: Optional[str]
     Privileges: Optional[List[PrivilegesType]]
+    meta_data: Optional[dict]
 
 
 @cy_web.model()

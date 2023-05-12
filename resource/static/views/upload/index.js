@@ -10,6 +10,7 @@ var uploadFileView = await View(import.meta, class UploadFileView extends BaseSc
         tags:[],
         IsPublic:true
     }
+    meta_text = JSON.stringify({})
     async init(){
 
     }
@@ -49,6 +50,16 @@ var uploadFileView = await View(import.meta, class UploadFileView extends BaseSc
             return;
         }
         var fileUpload = file.files[0];
+        var meta_data = {}
+        try {
+            this.meta_text = this.meta_text|| '{}'
+            meta_data = eval("()=>{ return "+this.meta_text+"}")()
+
+        }
+        catch (ex) {
+            alert(ex);
+            return;
+        }
         try {
             var reg = await api.post(`${this.appName}/files/register`, {
                 Data: {
@@ -57,7 +68,8 @@ var uploadFileView = await View(import.meta, class UploadFileView extends BaseSc
                     ChunkSizeInKB: 1024 * 10,
                     IsPublic: this.data.IsPublic||false,
                     ThumbConstraints:"700,350,200,120",
-                    Privileges: this.data.tags
+                    Privileges: this.data.tags,
+                    meta_data: meta_data
                 }
             });
             if (reg.Error) {

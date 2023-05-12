@@ -92,7 +92,8 @@ def files_upload(app_name: str, UploadId: str, Index: int, FilePart: UploadFile,
                 app_name = app_name,
                 id = UploadId,
                 content= "",
-                data_item= upload_item
+                data_item= upload_item,
+                update_meta=False
 
 
             )

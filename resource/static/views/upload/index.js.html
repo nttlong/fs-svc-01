@@ -7,6 +7,18 @@
             padding:2px !important;
             margin-bottom: 4px !important;
         }
+        .tags fieldset {
+            border: solid 1px #0c0c0c !important
+        }
+        .tags fieldset legend {
+            width: auto !important;
+            line-height:0px !important;
+            margin: 4px !important;
+            margin-left: 20px !important;
+            font-size: 16px !important;
+            padding:8px !important;
+
+        }
     </style>
     <div class="layout-columns">
         <div>
@@ -39,52 +51,65 @@
 
     </rcmpct-grid>
         </div>
+        <div class="dock full layout-columns">
+            <div class="tags dock full">
+                <fieldset>
+                    <legend ><label>Tags</label></legend>
+                    <div style="height:200px;overflow-y:auto">
+                        <table class="table bordered">
+                            <thead>
+                            <tr>
+                            <th>
 
-        <div class="tags">
-            <fieldset>
-                <legend style="font-size:8pt">Tags</legend>
-                <div style="height:400px; overflow-y:auto">
-                    <table class="table bordered">
-                        <thead>
-                        <tr>
-                        <th>
-
-                            <span>
-                                Object type
-                            </span>
-                        </th>
-                        <th>
-                            <span>
-                                Value
-                            </span>
-                        </th>
-                            <th width="40">
-                                <button class="btn btn-primary btn-xs btn-sm" ng-click="doAddTag()">
-                                    <i class="bi bi plus"></i>
-                                    +
-                                </button>
+                                <span>
+                                    Object type
+                                </span>
                             </th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                            <tr ng-repeat="p in data.tags">
-                                <td>
-                                    <input type="text" ng-model="p.Type">
-                                </td>
-                                <td>
-                                    <input type="text" ng-model="p.Values">
-                                </td>
+                            <th>
+                                <span>
+                                    Value
+                                </span>
+                            </th>
+                                <th width="40">
+                                    <button class="btn btn-primary btn-xs btn-sm" ng-click="doAddTag()">
+                                        <i class="bi bi plus"></i>
+                                        +
+                                    </button>
+                                </th>
                             </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="p in data.tags">
+                                    <td>
+                                        <input type="text" ng-model="p.Type">
+                                    </td>
+                                    <td>
+                                        <input type="text" ng-model="p.Values">
+                                    </td>
+                                </tr>
 
-                        </tbody>
-                    </table>
-                </div>
-            </fieldset>
+                            </tbody>
+                        </table>
+                    </div>
+                </fieldset>
+            </div>
+            <div class="tags dock full">
+                <fieldset class="dock full">
+                    <legend ><label>Meta</label></legend>
+                    <div style="height:200px" class="layout-columns">
+                        <textarea style="width:100%;padding:8px;border:none !important" class="dock full" ng-model="meta_text">
+
+                        </textarea>
+                    </div>
+
+                    </fieldset>
+            </div>
         </div>
+
     </div>
 
     <div>
-        <div class="layout-rows">
+        <div class="layout-rows" style="margin-top:4px">
             <div class="dock full">
 
             </div>

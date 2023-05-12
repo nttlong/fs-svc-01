@@ -8,8 +8,8 @@
                                 <b style="margin-right:20px">{{key}}</b>
                             </td>
                             <td  valign="top">:</td>
-                            <td ng-if="key!='AvailableThumbs'">
-                                <span ng-if="key!='ClientPrivileges'">{{value}}</span>
+                            <td ng-if="key!='AvailableThumbs'" width="100%">
+                                <input ng-if="key!='ClientPrivileges'" type="text" value="{{value}}" style="border:none;width:100%" readonly="readonly"/>
 
                                 <table class="table bordered" ng-if="key=='ClientPrivileges'">
                                     <thead>

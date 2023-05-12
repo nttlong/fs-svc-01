@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
-file=f"/home/vmadmin/python/v6/file-service-02/temp-data/Whisng.mp4"
-file_out ="/home/vmadmin/python/v6/file-service-02/temp-data/Wishing.mp4"
+file=f"/home/vmadmin/python/v6/file-service-02/temp-data/Red Dead Redemption 2 2023-05-03 15-27-09.mp4"
+file_out ="/home/vmadmin/python/v6/file-service-02/temp-data/Red Dead Redemption.mp4"
 import os, ffmpeg
 def compress_video(video_full_path, output_file_name, target_size):
     # Reference: https://en.wikipedia.org/wiki/Bit_rate#Encoding_bit_rate

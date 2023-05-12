@@ -223,7 +223,7 @@ class SearchEngine:
                 clear_accent_mark_handler=self.text_process_service.vn_clear_accent_mark
             ),
             data_item=cy_es.convert_to_vn_predict_seg(
-                data_item,
+                data_item or {},
                 segment_handler=self.vn.parse_word_segment,
                 handler=self.vn_predictor.get_text,
                 clear_accent_mark_handler=self.text_process_service.vn_clear_accent_mark
@@ -244,7 +244,7 @@ class SearchEngine:
         del meta_info
         del vn_non_accent_content
 
-    def create_or_update_privileges(self, app_name, upload_id, data_item: dict, privileges):
+    def create_or_update_privileges(self, app_name, upload_id, data_item: dict, privileges,meta_data:dict=None):
         is_exist = self.is_exist(app_name, id=upload_id)
 
         if is_exist:
@@ -253,7 +253,8 @@ class SearchEngine:
                 index=self.get_index(app_name),
                 id=upload_id,
                 data=(
-                        cy_es.buiders.privileges << privileges
+                        cy_es.buiders.privileges << privileges,
+                        cy_es.buiders.meta_data <<meta_data
                 )
             )
         else:
@@ -267,16 +268,16 @@ class SearchEngine:
                         segment_handler=self.vn.parse_word_segment,
                         handler=self.vn_predictor.get_text,
                         clear_accent_mark_handler=self.text_process_service.vn_clear_accent_mark
-                    )
+                    ),
+                    meta=meta_data
                 )
             else:
-                self.update_doc_by_id(
-                    client=self.client,
-                    index=self.get_index(app_name),
-                    id=upload_id,
-                    data=(
-                            cy_es.buiders.privileges << privileges
-                    )
+                self.make_index_content(
+                    app_name=app_name,
+                    privileges=privileges,
+                    upload_id=upload_id,
+                    data_item=None,
+                    meta=meta_data
                 )
 
     def is_exist(self, app_name: str, id: str) -> bool:
@@ -303,7 +304,8 @@ class SearchEngine:
             )
 
     def update_content(self, app_name: str, id: str, content: str, data_item=None, meta: dict = None,
-                       replace_content=False):
+                       replace_content=False,
+                       update_meta = True):
 
         original_content = content or ""
         content = content or ""
@@ -342,28 +344,51 @@ class SearchEngine:
             _Privileges = json_data_item.get("Privileges") or _Privileges
             if isinstance(_Privileges,cy_docs.DocumentObject):
                 _Privileges = _Privileges.to_json_convertable()
-            return cy_es.update_doc_by_id(
-                client=self.client,
-                index=self.get_index(app_name),
-                id=id,
-                data=(
-                    cy_es.buiders.privileges << _Privileges,
-                    getattr(cy_es.buiders, f"{self.get_content_field_name()}_bm25_seg") << seg_content,
-                    getattr(cy_es.buiders, f"{self.get_content_field_name()}_seg") << seg_content,
-                    getattr(cy_es.buiders, f"{self.get_content_field_name()}_lower") << self.vn.parse_word_segment(
-                        content=content.lower()),
-                    cy_es.buiders.vn_non_accent_content << vn_non_accent_content,
-                    cy_es.buiders.content << content,
-                    cy_es.buiders.data_item << cy_es.convert_to_vn_predict_seg(
-                        json_data_item,
-                        handler=self.vn_predictor.get_text,
-                        segment_handler=self.vn.parse_word_segment,
-                        clear_accent_mark_handler=self.text_process_service.vn_clear_accent_mark
-                    ),
-                    cy_es.buiders.meta_data << meta
+            if update_meta:
+                return cy_es.update_doc_by_id(
+                    client=self.client,
+                    index=self.get_index(app_name),
+                    id=id,
+                    data=(
+                        cy_es.buiders.privileges << _Privileges,
+                        getattr(cy_es.buiders, f"{self.get_content_field_name()}_bm25_seg") << seg_content,
+                        getattr(cy_es.buiders, f"{self.get_content_field_name()}_seg") << seg_content,
+                        getattr(cy_es.buiders, f"{self.get_content_field_name()}_lower") << self.vn.parse_word_segment(
+                            content=content.lower()),
+                        cy_es.buiders.vn_non_accent_content << vn_non_accent_content,
+                        cy_es.buiders.content << content,
+                        cy_es.buiders.data_item << cy_es.convert_to_vn_predict_seg(
+                            json_data_item,
+                            handler=self.vn_predictor.get_text,
+                            segment_handler=self.vn.parse_word_segment,
+                            clear_accent_mark_handler=self.text_process_service.vn_clear_accent_mark
+                        ),
+                        cy_es.buiders.meta_data << meta
 
+                    )
                 )
-            )
+            else:
+                return cy_es.update_doc_by_id(
+                    client=self.client,
+                    index=self.get_index(app_name),
+                    id=id,
+                    data=(
+                        cy_es.buiders.privileges << _Privileges,
+                        getattr(cy_es.buiders, f"{self.get_content_field_name()}_bm25_seg") << seg_content,
+                        getattr(cy_es.buiders, f"{self.get_content_field_name()}_seg") << seg_content,
+                        getattr(cy_es.buiders, f"{self.get_content_field_name()}_lower") << self.vn.parse_word_segment(
+                            content=content.lower()),
+                        cy_es.buiders.vn_non_accent_content << vn_non_accent_content,
+                        cy_es.buiders.content << content,
+                        cy_es.buiders.data_item << cy_es.convert_to_vn_predict_seg(
+                            json_data_item,
+                            handler=self.vn_predictor.get_text,
+                            segment_handler=self.vn.parse_word_segment,
+                            clear_accent_mark_handler=self.text_process_service.vn_clear_accent_mark
+                        )
+
+                    )
+                )
         else:
             content = original_content + "\n" + content
             _Privileges = None

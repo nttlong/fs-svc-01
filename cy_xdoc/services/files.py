@@ -138,7 +138,8 @@ class FileServices:
                             chunk_size: int,
                             thumbs_support: str,
                             web_host_root_url: str,
-                            privileges_type):
+                            privileges_type,
+                            meta_data:dict=None):
 
         server_file_name_only = ""
         for x in client_file_name:
@@ -192,7 +193,9 @@ class FileServices:
             doc.fields.LastModifiedOn << datetime.datetime.utcnow(),
             doc.fields.SizeInBytes << file_size,
             doc.fields.Privileges << privileges_server,
-            doc.fields.ClientPrivileges << privileges_client
+            doc.fields.ClientPrivileges << privileges_client,
+            doc.fields.meta_data << meta_data
+
         )
 
         @cy_kit.thread_makeup()
@@ -201,7 +204,8 @@ class FileServices:
                 app_name=app_name,
                 upload_id=id,
                 data_item=doc.context @ id,
-                privileges=privileges_server
+                privileges=privileges_server,
+                meta_data= meta_data
 
             )
 

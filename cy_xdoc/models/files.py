@@ -298,7 +298,10 @@ class DocUploadRegister:
     Cau hinh tai file
     dic={relative file path:{__module__}:{__class name__}}
     """
-
+    meta_data: typing.Optional[dict]
+    """
+    Phan bo sung danh cho cac ung dung khac
+    """
 
 
 
