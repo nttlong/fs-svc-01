@@ -12,7 +12,7 @@ import pydantic
 from enum import Enum
 import os
 def version()->str:
-    return f"0.0.5{os.path.splitext(__file__)[1]}"
+    return f"0.0.6{os.path.splitext(__file__)[1]}"
 
 def get_all_index(client: Elasticsearch) -> List[str]:
     return list(client.indices.get_alias("*").keys())
@@ -2114,6 +2114,7 @@ def convert_to_vn_predict_seg(data, handler, segment_handler, clear_accent_mark_
 
 def natural_logic_parse(expr: str):
     import ast
+    expr = expr.replace('\n',' ').replace('\t',' ')
     def __convert_to_logical_text__(expr: str):
         ret= expr
         while '  ' in ret:
