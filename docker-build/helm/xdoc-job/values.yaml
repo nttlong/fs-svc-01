@@ -15,7 +15,7 @@ image:
   repository: nttlong/files-service-final
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "rc.0.4.6"
+  tag: "rc.0.5.1.11"
 deployments:
   - name: files-upload
     endpoint: files_upload.py
@@ -52,12 +52,12 @@ deployments:
     endpoint: files_move_tenants.py
 
 
-cronJobs:
-  - name: fix-elastic-search-missing-data
-    endpoint: fix_elastic_search_missing_data.py
-    description: Lỗi này là do mấy cha nội Codx đưa dữ liệu vào sai nên phải fix trước khi tìm
-    schedule: "00 00 * * *"
-    numOfPods: 1
+#cronJobs:
+#  - name: fix-elastic-search-missing-data
+#    endpoint: fix_elastic_search_missing_data.py
+#    description: Lỗi này là do mấy cha nội Codx đưa dữ liệu vào sai nên phải fix trước khi tìm
+#    schedule: "00 00 * * *"
+#    numOfPods: 1
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious

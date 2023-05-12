@@ -254,7 +254,7 @@ class SearchEngine:
                 id=upload_id,
                 data=(
                         cy_es.buiders.privileges << privileges,
-                        cy_es.buiders.meta_data <<meta_data
+                        cy_es.buiders.meta_info <<meta_data
                 )
             )
         else:
@@ -269,7 +269,7 @@ class SearchEngine:
                         handler=self.vn_predictor.get_text,
                         clear_accent_mark_handler=self.text_process_service.vn_clear_accent_mark
                     ),
-                    meta=meta_data
+                    meta_info=meta_data
                 )
             else:
                 self.make_index_content(
@@ -277,7 +277,7 @@ class SearchEngine:
                     privileges=privileges,
                     upload_id=upload_id,
                     data_item=None,
-                    meta=meta_data
+                    meta_info=meta_data
                 )
 
     def is_exist(self, app_name: str, id: str) -> bool:
@@ -329,10 +329,14 @@ class SearchEngine:
                 content = content + "\n" + old_content
 
                 vn_non_accent_content = self.text_process_service.vn_clear_accent_mark(content)
-            elif content and content != "":
-                vn_non_accent_content = self.text_process_service.vn_clear_accent_mark(content)
-                content = content + "\r\n" + self.vn_predictor.get_text(content)
-
+            else:
+                if content and content != "":
+                    vn_non_accent_content = self.text_process_service.vn_clear_accent_mark(content)
+                    content = content + "\r\n" + self.vn_predictor.get_text(content)
+                else:
+                    content = es_doc.source.content or ""
+                    vn_non_accent_content = self.text_process_service.vn_clear_accent_mark(content)
+                    content = content + "\r\n" + self.vn_predictor.get_text(content)
             _Privileges = None
             if hasattr(data_item, "Privileges"):
                 _Privileges = data_item.Privileges
@@ -363,7 +367,7 @@ class SearchEngine:
                             segment_handler=self.vn.parse_word_segment,
                             clear_accent_mark_handler=self.text_process_service.vn_clear_accent_mark
                         ),
-                        cy_es.buiders.meta_data << meta
+                        cy_es.buiders.meta_info << meta
 
                     )
                 )
@@ -410,8 +414,7 @@ class SearchEngine:
                     clear_accent_mark_handler=self.text_process_service.vn_clear_accent_mark
                 ),
                 content=content,
-                meta_info=None,
-                meta=meta,
+                meta_info=meta,
                 mark_delete=_mark_delete,
 
             )
