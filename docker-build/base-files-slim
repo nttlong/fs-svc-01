@@ -1,4 +1,4 @@
-FROM nttlong/base-core-slim:rc.2023.027  as git
+FROM nttlong/base-core-slim:rc.2023.028  as git
 ARG TARGETARCH
 #ADD ./../torch-source /torch-source
 RUN mkdir -p /app/pre_test_build && mkdir -p /tmp-source/amd
@@ -42,4 +42,4 @@ RUN rm -fr /app/pre_test_build
 #docker buildx create --name builder --driver docker-container --use
 #docker buildx inspect --bootstrap
 #docker buildx   build -t nttlong/files-service-slim:rc.0.1.1   --platform=linux/amd64,linux/arm64/v8  ./.. -f base-files-slim
-#docker buildx   build -t nttlong/files-service-slim:rc.0.1.9  --platform=linux/amd64,linux/arm64/v8  ./.. -f base-files-slim  --push=true --output type=registry
+#docker buildx   build -t nttlong/files-service-slim:rc.0.2.0  --platform=linux/amd64,linux/arm64/v8  ./.. -f base-files-slim  --push=true --output type=registry

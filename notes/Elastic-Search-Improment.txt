@@ -1,0 +1,39 @@
+//Cập nhật trên thuộc tính field cũ hoặc thêm field mới
+UPDATE or ADD property mới
+PUT http://localhost:9200/langson-legal/_mapping
+{
+  "properties": {
+    "legalTitle2": {
+      "type": "text",
+      "similarity": "bm25_similarity",
+      "fielddata": true,
+      "analyzer": "content_analyzer"
+    }
+  }
+}
+
+// Sao chép dữ liệu từ field tới field khác
+UPDATE from field to another field
+POST http://localhost:9200/langson-legal/_update_by_query
+{
+  "query": {
+    "match_all": {}
+  },
+  "script": "ctx._source.legalTitle2 = ctx._source.legalTitle;"
+}
+
+
+// Cập nhật cài đắt, Close index trước khi cài đặt
+UPDATE setting
+PUT http://localhost:9200/langson-legal/_settings
+{
+  "index": {
+    "similarity": {
+      "bm25_similarity": {
+        "type": "BM25",
+        "b": 0, // b gần về 0 sẽ bỏ qua độ dài của câu
+        "k1": 10
+      }
+    }
+  }
+}
