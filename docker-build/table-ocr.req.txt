@@ -3,5 +3,27 @@ gradio
 doctr
 python-doctr
 rapidfuzz
+python-Levenshtein==0.12.0
+timm
+
+numpy==1.23.5
+grpcio
+doctr
+deepdoctection
+easyocr
+ghostscript
+
+git+https://github.com/huggingface/datasets.git@7b2af47647152d39a3acade256da898cb396e4d9
+git+https://github.com/huggingface/transformers.git@60d51ef5123d949fd8c59cd4d3254e711541d278
+doctr==1.9.0
+git+https://github.com/deepdoctection/deepdoctection.git@f251dca0df9d051fe133ba489d42c6ae2b27597a
+git+https://github.com/facebookresearch/detectron2.git@4aca4bdaa9ad48b8e91d7520e0d0815bb8ca0fb1
+pytesseract
+python-doctr==0.6.0
+rapidfuzz
+
+
+git+https://github.com/maxbachmann/rapidfuzz.git
+git+https://github.com/deepdoctection/deepdoctection.git
 #  pip install -r docker-build/table-ocr.req.txt
 #  python /home/vmadmin/python/v6/file-service-02/production_test/test_table_ocr_services.py
