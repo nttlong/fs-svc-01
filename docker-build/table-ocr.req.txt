@@ -1,0 +1,7 @@
+bson
+gradio
+doctr
+python-doctr
+rapidfuzz
+#  pip install -r docker-build/table-ocr.req.txt
+#  python /home/vmadmin/python/v6/file-service-02/production_test/test_table_ocr_services.py
