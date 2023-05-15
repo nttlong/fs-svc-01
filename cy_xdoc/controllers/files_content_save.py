@@ -89,7 +89,7 @@ def file_content_save(
         app_name=app_name,
         content=data.Content,
         data_item= data_item,
-        meta = data.MetaData,
+        meta_info = data.MetaData,
         id= data.DocId,
         replace_content=True
     )

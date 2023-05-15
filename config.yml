@@ -116,7 +116,7 @@ timeout_keep_alive: 5
 tika_server: http://localhost:12345
 temp_directory: ./brokers/tmp-files
 rabbitmq:
-  port: 31672
+  port: 30672
   server: 172.16.7.91
 broker:
   is_use: true

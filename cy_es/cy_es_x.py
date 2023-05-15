@@ -1408,6 +1408,23 @@ def update_doc_by_id(client: Elasticsearch, index: str, id: str, data, doc_type:
         return data_update
     except elasticsearch.exceptions.NotFoundError as e:
         return None
+    except Exception as e:
+        for k in list(data_update.keys()):
+            try:
+                client.update(
+                    index=index,
+                    id=id,
+                    doc_type=doc_type,
+                    body=dict(
+                        doc= {
+                            k: data_update[k]
+                        }
+                    )
+
+                )
+            except Exception as e:
+                continue
+        return data_update
 
 
 def create_index(client: Elasticsearch, index: str, body: typing.Union[dict, type]):

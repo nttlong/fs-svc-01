@@ -205,11 +205,19 @@ class FileServices:
                 upload_id=id,
                 data_item=doc.context @ id,
                 privileges=privileges_server,
-                meta_data= meta_data
+                meta_info= meta_data
 
             )
 
-        search_engine_create_or_update_privileges().start()
+        self.search_engine.create_or_update_privileges(
+            app_name=app_name,
+            upload_id=id,
+            data_item=doc.context @ id,
+            privileges=privileges_server,
+            meta_info=meta_data
+
+        )
+
         return cy_docs.DocumentObject(
             NumOfChunks=num_of_chunks,
             ChunkSizeInBytes=chunk_size,

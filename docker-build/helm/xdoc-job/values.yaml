@@ -15,7 +15,7 @@ image:
   repository: nttlong/files-service-final
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "rc.0.5.1.11"
+  tag: "rc.0.5.1.14"
 deployments:
   - name: files-upload
     endpoint: files_upload.py

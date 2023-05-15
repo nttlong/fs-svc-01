@@ -74,7 +74,7 @@ def on_receive_msg(msg_info: MessageInfo):
         app_name=msg_info.AppName,
         id=msg_info.Data["_id"],
         content=content,
-        meta=info,
+        meta_data=info,
         data_item=upload_item
     )
     print(f"{full_file_path} was updated to search engine")
