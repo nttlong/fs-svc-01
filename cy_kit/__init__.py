@@ -211,9 +211,28 @@ def singleton(cls: T) -> T:
     """
         Create singleton if Class \n
         Example: \n
-            a = cy_kit.single(A) \n
-            b = cy_kit.single(A) \n
+            a = cy_kit.singleton(A) \n
+            b = cy_kit.singleton(A) \n
             print(a==b) //'true' \n
+    --------------------------- \n
+    Example:
+    class A:
+        def hello():
+            print ('Hello my name is "A"')
+    class B:
+        def hello():
+            print ('Hello my name is "B"')
+    the first code bellow:
+        a = cy_kit.singleton(A)
+        a.hello() // thou will see Hello my name is "A"
+    the second code bellow
+        cy_kit.config_provider(
+            from_class=A,
+            implement_class = A
+
+        )
+        a = cy_kit.singleton(A)
+        a.hello() // thou will see Hello my name is "B"
     :param cls:
     :return:
     """
