@@ -1,3 +1,55 @@
+"""
+This is a crucial library when developer use Python to interact with Elasticsearch \n
+Specially, for real complex  Elasticsearch filter the developer can not control the Filter with Elasticsearch format\n
+    Đây là một thư viện quan trọng khi nhà phát triển sử dụng Python để tương tác với Elaticsearch \n
+Đặc biệt, đối với bộ lọc Elaticsearch phức tạp thực sự, nhà phát triển không thể kiểm soát Bộ lọc có định dạng Elaticsearch\n
+Example:\n
+print(cy_es.DocumentFields("data_item").code==1 \n
+Will change to \n
+         { \n
+         "query": { \n
+          "term": { \n
+           "data_item.code": 1 \n
+          }
+         }
+        }
+-------------------------- \n
+Or Developer can use \n
+
+fx=cy_es.buiders.data_item.code==1 \n
+print(fx) \n
+----------------------------------------- \n
+Check data_item of document is existing then filter data-item.FileName contains '*.mp4' ? \n
+fx = (cy_es.buiders.data_item != None) & (cy_es.buiders.data_item) \n
+will generate ES filter like : \
+    {
+     "query": {
+      "bool": {
+       "must": [
+        {
+         "bool": {
+          "must": {
+           "exists": {
+            "field": "data_item"
+           }
+          }
+         }
+        },
+        {
+         "wildcard": {
+          "data_item.FileName": "*.mp4"
+         }
+        }
+       ]
+      }
+     }
+    }
+
+--------------------------------------------------------------\n
+or:
+fx= cy_es.parse_expr("data_item !=None and data_item.code=1")
+
+"""
 import datetime
 import pathlib
 import sys
@@ -40,7 +92,13 @@ def select(client: Elasticsearch, index: str, doc_type: str = "_doc", fields=[],
         limit=limit
     )
 
+
 __cache__settings_max_result_window___ = {}
+"""
+Cache index settings
+"""
+
+
 def search(client: Elasticsearch,
            index: str,
            filter,
@@ -52,12 +110,11 @@ def search(client: Elasticsearch,
            doc_type="_doc",
            logic_filter=None):
     global __cache__settings_max_result_window___
-    if __cache__settings_max_result_window___.get(index)== None:
-
+    if __cache__settings_max_result_window___.get(index) is None:
         client.indices.put_settings(index=index,
-                                body={"index": {
-                                    "max_result_window": 50000000
-                                }})
+                                    body={"index": {
+                                        "max_result_window": 50000000
+                                    }})
         __cache__settings_max_result_window___[index] = True
     return cy_es_x.search(
         client=client,
@@ -225,10 +282,10 @@ def nested(field_name: str, filter: dict):
     return cy_es_x.nested(prefix=field_name, filter=filter)
 
 
-def create_filter_from_dict(filter: dict,suggest_handler= None):
+def create_filter_from_dict(filter: dict, suggest_handler=None):
     if filter == {}:
         return None
-    return cy_es_x.create_filter_from_dict(filter,suggest_handler=suggest_handler)
+    return cy_es_x.create_filter_from_dict(filter, suggest_handler=suggest_handler)
 
 
 def is_exist(client: Elasticsearch, index: str, id: str, doc_type: str = "_doc") -> bool:
@@ -342,12 +399,23 @@ def is_content_text(text):
     return cy_es_x.is_content_text(text)
 
 
-def convert_to_vn_predict_seg(data, handler, segment_handler,clear_accent_mark_handler):
-    ret = cy_es_x.convert_to_vn_predict_seg(data, handler, segment_handler,clear_accent_mark_handler)
+def convert_to_vn_predict_seg(data, handler, segment_handler, clear_accent_mark_handler):
+    ret = cy_es_x.convert_to_vn_predict_seg(data, handler, segment_handler, clear_accent_mark_handler)
     return ret
+
 
 def natural_logic_parse(expr):
     ret = cy_es_x.natural_logic_parse(expr)
-    if not isinstance(ret,dict):
-        raise  Exception(f"'{expr}' is incorrect syntax")
+    if not isinstance(ret, dict):
+        raise Exception(f"'{expr}' is incorrect syntax")
+    return ret
+
+
+def parse_expr(expr: str, suggest_handler=None) -> DocumentFields:
+    ret_dict = cy_es_x.natural_logic_parse(expr)
+    ret = cy_es_x.create_filter_from_dict(
+        expr=ret_dict,
+        suggest_handler=suggest_handler,
+
+    )
     return ret

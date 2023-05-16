@@ -103,6 +103,34 @@ def __check_is_painless_expr__(__es_expr__):
 
 
 class DocumentFields:
+    """
+    ElasticcSearch document gearing \n
+    Help Developer build ElasticSearch filter with real Python code
+    Example:
+        filter = (DocumentFields("my_doc")!=None) & (DocumentFields("my_doc").Code=="XYZ")
+        will generate
+        {
+                 "query": {
+                  "bool": {
+                   "must": [
+                    {
+                     "bool": {
+                      "must": {
+                       "exists": {
+                        "field": "MyDoc"
+                       }
+                      }
+                     }
+                    },
+                    {
+                     "term": {
+                      "MyDoc.Code": "xyz"
+                     }
+                    }
+                   ]
+                  }
+                 }
+    """
     def __init__(self, name: str = None):
         self.__name__ = name
         self.__es_expr__ = None

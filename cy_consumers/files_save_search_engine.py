@@ -1,4 +1,4 @@
-#MSG_FILE_SAVE_OCR_PDF
+# MSG_FILE_SAVE_OCR_PDF
 # python /home/vmadmin/python/v6/file-service-02/cy_consumers/files_save_default_thumb.py temp_directory=./brokers/tmp rabbitmq.server=172.16.7.91 rabbitmq.port=31672
 import os
 import pathlib
@@ -15,6 +15,7 @@ from cyx.common.brokers import Broker
 from cyx.common import config
 from cyx.media.contents import ContentsServices
 import json
+
 log_dir = os.path.join(
     pathlib.Path(__file__).parent.__str__(),
     "logs"
@@ -22,7 +23,7 @@ log_dir = os.path.join(
 )
 logs = cy_kit.create_logs(
     log_dir=log_dir,
-    name= pathlib.Path(__file__).stem
+    name=pathlib.Path(__file__).stem
 )
 if isinstance(config.get('rabbitmq'), dict):
     cy_kit.config_provider(
@@ -38,6 +39,7 @@ msg = cy_kit.singleton(MessageService)
 
 content_services = cy_kit.singleton(ContentsServices)
 content, info = content_services.get_text(__file__)
+
 
 def on_receive_msg(msg_info: MessageInfo):
     # try:
