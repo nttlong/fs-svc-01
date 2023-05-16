@@ -200,5 +200,14 @@ class QueryableCollection(Generic[T]):
         return cy_docs.expr(self.__cls__)
 
 
-def queryable_doc(client: pymongo.MongoClient, db_name: str, instance_tye: T) -> QueryableCollection[T]:
+def queryable_doc(
+        client: pymongo.MongoClient,
+        db_name: str, instance_tye: T,
+        document_name: str = None) -> \
+QueryableCollection[T]:
+    if document_name is None and not hasattr(instance_tye, "__document_name__"):
+        raise Exception(f"{instance_tye} was not {cy_docs.define}")
+    if isinstance(document_name, str) and not hasattr(instance_tye, "__document_name__"):
+        ret_type = cy_docs.define(name=document_name)(instance_tye)
+        return QueryableCollection[T](ret_type, client, db_name)
     return QueryableCollection[T](instance_tye, client, db_name)
