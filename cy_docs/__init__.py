@@ -6,6 +6,7 @@ import bson
 import pymongo.mongo_client
 import ctypes
 import sys
+
 __release_mode__ = True
 __working_dir__ = pathlib.Path(__file__).parent.__str__()
 
@@ -28,37 +29,54 @@ def expr(cls: T) -> T:
     ret = cy_docs_x.fields[cls]
 
     return ret
+
+
 def get_doc(collection_name: str, client: pymongo.mongo_client.MongoClient, indexes: List[str] = [],
             unique_keys: List[str] = []):
+    return getattr(cy_docs_x, "Document")(collection_name, client, indexes=indexes, unique_keys=unique_keys)
 
-    return getattr(cy_docs_x,"Document")(collection_name, client,indexes=indexes,unique_keys=unique_keys)
-def define(name:str,indexes:List[str]=[],uniques:List[str]=[]):
-    return getattr(cy_docs_x,"document_define")(name,indexes,uniques)
-fields=cy_docs_x.fields
+
+def define(name: str, indexes: List[str] = [], uniques: List[str] = []):
+    return getattr(cy_docs_x, "document_define")(name, indexes, uniques)
+
+
+fields = cy_docs_x.fields
 """
 For any expression
 """
+
+
 def context(client, cls):
-    return cy_docs_x.context(client,cls)
+    return cy_docs_x.context(client, cls)
+
 
 def concat(*args): return cy_docs_x.Funcs.concat(*args)
-def exists(field):return cy_docs_x.Funcs.exists(field)
-def is_null(field):return cy_docs_x.Funcs.is_null(field)
-def is_not_null(field):return cy_docs_x.Funcs.is_not_null(field)
-def not_exists(field):return cy_docs_x.Funcs.not_exists(field)
-
-DocumentObject=cy_docs_x.DocumentObject
 
 
-def file_get(client:pymongo.MongoClient, db_name:str, file_id):
+def exists(field): return cy_docs_x.Funcs.exists(field)
+
+
+def is_null(field): return cy_docs_x.Funcs.is_null(field)
+
+
+def is_not_null(field): return cy_docs_x.Funcs.is_not_null(field)
+
+
+def not_exists(field): return cy_docs_x.Funcs.not_exists(field)
+
+
+DocumentObject = cy_docs_x.DocumentObject
+
+
+def file_get(client: pymongo.MongoClient, db_name: str, file_id):
     return cy_docs_x.file_get(client, db_name, file_id)
 
 
 async def get_file_async(client, db_name, file_id):
-    return await cy_docs_x.get_file_async(client,db_name,file_id)
+    return await cy_docs_x.get_file_async(client, db_name, file_id)
 
 
-def create_file(client:pymongo.MongoClient,db_name, file_name,content_type:str, chunk_size, file_size):
+def create_file(client: pymongo.MongoClient, db_name, file_name, content_type: str, chunk_size, file_size):
     return cy_docs_x.create_file(
         client=client,
         file_size=file_size,
@@ -68,13 +86,17 @@ def create_file(client:pymongo.MongoClient,db_name, file_name,content_type:str, 
         content_type=content_type
     )
 
-def file_chunk_count(client :pymongo.MongoClient, db_name: str, file_id: bson.ObjectId)->int:
+
+def file_chunk_count(client: pymongo.MongoClient, db_name: str, file_id: bson.ObjectId) -> int:
     return cy_docs_x.file_chunk_count(
         client=client,
         db_name=db_name,
         file_id=file_id
     )
-def file_add_chunk(client :pymongo.MongoClient, db_name: str, file_id: bson.ObjectId,chunk_index:int, chunk_data: bytes):
+
+
+def file_add_chunk(client: pymongo.MongoClient, db_name: str, file_id: bson.ObjectId, chunk_index: int,
+                   chunk_data: bytes):
     return cy_docs_x.file_add_chunk(
         client=client,
         db_name=db_name,
@@ -82,7 +104,9 @@ def file_add_chunk(client :pymongo.MongoClient, db_name: str, file_id: bson.Obje
         chunk_index=chunk_index,
         chunk_data=chunk_data
     )
-def file_add_chunks(client :pymongo.MongoClient, db_name: str, file_id: bson.ObjectId, data: bytes):
+
+
+def file_add_chunks(client: pymongo.MongoClient, db_name: str, file_id: bson.ObjectId, data: bytes):
     return cy_docs_x.file_add_chunks(
         client=client,
         db_name=db_name,
@@ -90,16 +114,18 @@ def file_add_chunks(client :pymongo.MongoClient, db_name: str, file_id: bson.Obj
         data=data
     )
 
-def to_json_convertable(data,predict_content_handler=None):
-    return cy_docs_x.to_json_convertable(data,predict_content_handler)
+
+def to_json_convertable(data, predict_content_handler=None):
+    return cy_docs_x.to_json_convertable(data, predict_content_handler)
 
 
-def file_get_iter_contents(client:pymongo.MongoClient, db_name:str, files_id:bson.ObjectId, from_chunk_index:int, num_of_chunks:int):
+def file_get_iter_contents(client: pymongo.MongoClient, db_name: str, files_id: bson.ObjectId, from_chunk_index: int,
+                           num_of_chunks: int):
     return cy_docs_x.file_get_iter_contents(
         client=client,
         db_name=db_name,
         files_id=files_id,
-        from_chunk_index_index= from_chunk_index,
+        from_chunk_index_index=from_chunk_index,
         num_of_chunks=num_of_chunks
     )
 
@@ -108,8 +134,10 @@ def get_file_info_by_id(client, db_name, files_id):
     return cy_docs_x.get_file_info_by_id(
         client=client,
         db_name=db_name,
-        files_id = files_id
+        files_id=files_id
     )
+
+
 DocumentObject = cy_docs_x.DocumentObject
 
 
@@ -117,8 +145,9 @@ def create_empty_pydantic(_type):
     import pydantic
 
     ret = pydantic.BaseModel()
-    for k,v in _type.__annotations__.items():
-        if hasattr(v,"__args__") and isinstance(v.__args__,tuple) and len(v.__args__)==2 and v.__args__[1]== type(None):
+    for k, v in _type.__annotations__.items():
+        if hasattr(v, "__args__") and isinstance(v.__args__, tuple) and len(v.__args__) == 2 and v.__args__[1] == type(
+                None):
             ret.__dict__[k] = None
         else:
             ret.__dict__[k] = v()
@@ -131,7 +160,7 @@ def EXPR(expr):
     :param fx:
     :return:
     """
-    assert isinstance(expr, dict) or isinstance(expr,cy_docs_x.Field)
+    assert isinstance(expr, dict) or isinstance(expr, cy_docs_x.Field)
     if isinstance(expr, dict):
         ret = cy_docs_x.Field(expr)
         ret.__data__ = {
@@ -146,3 +175,30 @@ def EXPR(expr):
         return ret
     else:
         raise Exception(f"{expr} is invalid data type, args in EXPR must be dict or cy_docs_x.Field")
+
+
+class QueryableCollection(Generic[T]):
+    def __init__(self, cls, client: pymongo.MongoClient, db_name: str):
+        self.__cls__ = cls
+        self.__client__ = client
+        self.__db_name__ = db_name
+
+    @property
+    def context(self):
+        """
+        Query context full Mongodb Access
+        :return:
+        """
+        ret = cy_docs.context(
+            client=self.__client__,
+            cls=self.__cls__
+        )[self.__db_name__]
+        return ret
+
+    @property
+    def fields(self) -> T:
+        return cy_docs.expr(self.__cls__)
+
+
+def queryable_doc(client: pymongo.MongoClient, db_name: str, instance_tye: T) -> QueryableCollection[T]:
+    return QueryableCollection[T](instance_tye, client, db_name)

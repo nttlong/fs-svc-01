@@ -19,31 +19,34 @@ import cy_xdoc.services.search_engine
 import cyx.common.base
 import cyx.common.cacher
 
+
 class FileServices:
     """
     The service access to FileUploadRegister MongoDb Collection
     """
+
     def __init__(self,
                  file_storage_service: cyx.common.file_storage.FileStorageService = cy_kit.inject(
                      cyx.common.file_storage.FileStorageService),
                  search_engine=cy_kit.inject(cy_xdoc.services.search_engine.SearchEngine),
                  db_connect=cy_kit.inject(cyx.common.base.DbConnect),
-                 cacher = cy_kit.inject(cyx.common.cacher.CacherService)):
+                 cacher=cy_kit.inject(cyx.common.cacher.CacherService)):
 
         self.file_storage_service: cyx.common.file_storage.FileStorageService = file_storage_service
         self.search_engine = search_engine
         self.db_connect = db_connect
         self.cacher = cacher
-        self.cache_type=f"{DocUploadRegister.__module__}.{DocUploadRegister.__name__}"
-    def get_queryable_doc(self,app_name:str)->cyx.common.base.DbCollection[DocUploadRegister]:
+        self.cache_type = f"{DocUploadRegister.__module__}.{DocUploadRegister.__name__}"
+
+    def get_queryable_doc(self, app_name: str) -> cyx.common.base.DbCollection[DocUploadRegister]:
         """
-        MongoDb DocUploadRegister Collection as Queyable
+        MongoDb DocUploadRegister Collection as Queryable
         :param app_name: Tenant of Mongodb database
         :return:
         """
         doc = self.db_connect.db(app_name).doc(DocUploadRegister)
         return doc
-    
+
     def get_list(self, app_name, root_url, page_index: int, page_size: int, field_search: str = None,
                  value_search: str = None):
 
@@ -139,7 +142,7 @@ class FileServices:
                             thumbs_support: str,
                             web_host_root_url: str,
                             privileges_type,
-                            meta_data:dict=None):
+                            meta_data: dict = None):
 
         server_file_name_only = ""
         for x in client_file_name:
@@ -205,7 +208,7 @@ class FileServices:
                 upload_id=id,
                 data_item=doc.context @ id,
                 privileges=privileges_server,
-                meta_info= meta_data
+                meta_info=meta_data
 
             )
 
@@ -236,13 +239,13 @@ class FileServices:
     def get_upload_register(self, app_name: str, upload_id: str):
         return self.db_connect.db(app_name).doc(DocUploadRegister).context @ upload_id
 
-
     def get_upload_register_with_cache(self, app_name, upload_id):
         ret = self.cacher.get_by_key(self.cache_type, f"{app_name}/{upload_id}")
         if not ret:
-            ret = self.get_upload_register(app_name,upload_id)
-            self.cacher.add_to_cache(self.cache_type,f"{app_name}/{upload_id}",ret)
+            ret = self.get_upload_register(app_name, upload_id)
+            self.cacher.add_to_cache(self.cache_type, f"{app_name}/{upload_id}", ret)
         return ret
+
     def remove_upload(self, app_name, upload_id):
         upload = self.db_connect.db(app_name).doc(DocUploadRegister).context @ upload_id
         delete_file_list = upload.AvailableThumbs or []
@@ -257,8 +260,6 @@ class FileServices:
         ret = doc.context.delete(cy_docs.fields._id == upload_id)
         self.cacher.remove_from_cache(self.cache_type, f"{app_name}/{upload_id}")
         return
-
-
 
     def do_copy(self, app_name, upload_id):
 
@@ -434,7 +435,7 @@ class FileServices:
             for x in privileges_type_from_client:
                 if check_types.get(x.Type.lower().strip()) is None:
                     privilege_item = privilege_context.context @ (
-                                privilege_context.fields.Name == x.Type.lower().strip())
+                            privilege_context.fields.Name == x.Type.lower().strip())
                     """
                     Bo sung thong tin vao danh sach cac dac quyen va cac gia tri de tham khao
     
@@ -485,7 +486,7 @@ class FileServices:
         )
 
     def update_main_thumb_id(self, app_name, upload_id, main_thumb_id):
-        if isinstance(main_thumb_id,str):
+        if isinstance(main_thumb_id, str):
             main_thumb_id = bson.ObjectId(main_thumb_id)
         doc_context = self.db_connect.db(app_name).doc(DocUploadRegister)
         doc_context.context.update(
@@ -494,15 +495,15 @@ class FileServices:
             doc_context.fields.HasThumb << True
         )
 
-    def update_available_thumbs(self, upload_id:str, app_name:str, available_thumbs: typing.List[str]):
+    def update_available_thumbs(self, upload_id: str, app_name: str, available_thumbs: typing.List[str]):
         doc_context = self.db_connect.db(app_name).doc(DocUploadRegister)
         doc_context.context.update(
             doc_context.fields.id == upload_id,
             doc_context.fields.AvailableThumbs << available_thumbs
         )
 
-    def update_ocr_info(self, app_name:str, upload_id:str, ocr_file_id:typing.Union[str,bson.ObjectId]):
-        if isinstance(ocr_file_id,str):
+    def update_ocr_info(self, app_name: str, upload_id: str, ocr_file_id: typing.Union[str, bson.ObjectId]):
+        if isinstance(ocr_file_id, str):
             ocr_file_id = bson.ObjectId(ocr_file_id)
         doc_context = self.db_connect.db(app_name).doc(DocUploadRegister)
         doc_context.context.update(
@@ -510,7 +511,3 @@ class FileServices:
             doc_context.fields.OCRFileId << ocr_file_id
 
         )
-
-
-
-

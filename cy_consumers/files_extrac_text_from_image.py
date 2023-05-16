@@ -19,7 +19,6 @@ from cyx.common import config
 from cyx.common.temp_file import TempFiles
 from cyx.easy_ocr import EasyOCRService
 
-
 temp_file = cy_kit.singleton(TempFiles)
 
 if isinstance(config.get('rabbitmq'), dict):
@@ -42,7 +41,6 @@ logs = cy_kit.create_logs(
     log_dir=log_dir,
     name=pathlib.Path(__file__).stem
 )
-
 
 
 def on_receive_msg(msg_info: MessageInfo):
@@ -74,8 +72,8 @@ def on_receive_msg(msg_info: MessageInfo):
             upload_id=msg_info.Data["_id"]
         )
         if upload_item:
-            content = easy_service.get_text( image_file=full_file)
-            if content=="":
+            content = easy_service.get_text(image_file=full_file)
+            if content == "":
                 msg.delete(msg_info)
                 return
             search_engine.update_content(
@@ -95,8 +93,6 @@ def on_receive_msg(msg_info: MessageInfo):
         print(f"Generate pdf from {full_file} is error:\n")
         print(e)
         return
-
-
 
 
 msg.consume(

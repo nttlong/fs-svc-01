@@ -1,5 +1,6 @@
 """
-Use easyocr to OCR an image
+Use easyocr to OCR an image \n
+EasyOCRService is Class
 """
 import os.path
 import pathlib
@@ -29,6 +30,17 @@ class DouTextInfo:
 
 
 class EasyOCRService:
+    """
+    This is a service use: \n
+    cyx.vn_predictor.VnPredictor and cyx.common.TempFiles \n
+    cyx.vn_predictor.VnPredictor was written in C# and compiler by dot net core 5.0 \n
+    cyx.common.TempFiles is a manager of temp-file-processing \n
+
+    Đây là cách sử dụng dịch vụ: \n
+    cyx.vn_predictor.VnPredictor và cyx.common.TempFiles \n
+    cyx.vn_predictor.VnPredictor được viết bằng C# và trình biên dịch bởi dot net core 5.0 \n
+    cyx.common.TempFiles là trình quản lý xử lý tệp tạm thời \n
+    """
     def __init__(
             self,
             vn_predict=cy_kit.singleton(VnPredictor),
