@@ -58,9 +58,9 @@ class LibreOfficeService:
 
         return ret_file
 
-    def extract_page(self, file_path, page_number):
+    def extract_pages(self, file_path):
         """
-                Generate image of file by using libre office
+                Generate image of file by using libreoffice
                 :param file_path:
                 :return:
                 """
