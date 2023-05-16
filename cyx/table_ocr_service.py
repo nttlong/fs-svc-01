@@ -224,7 +224,7 @@ class TableOCRService:
         else:
             html = None
 
-        return dp.viz(show_table_structure=False), layout_items_str, html, out
+        return dp.viz(show_table_structure=True), layout_items_str, html, out
 
     def analyze_image(self, image: numpy.ndarray):
         df = DataFromList(lst=[image])
