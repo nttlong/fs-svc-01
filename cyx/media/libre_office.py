@@ -1,5 +1,6 @@
 import pathlib
 import shutil
+import typing
 
 from cyx.common.base import config
 import subprocess
@@ -58,7 +59,7 @@ class LibreOfficeService:
 
         return ret_file
 
-    def extract_pages(self, file_path):
+    def convert_to_pdf(self, file_path):
         """
                 Generate image of file by using libreoffice
                 :param file_path:
@@ -66,7 +67,9 @@ class LibreOfficeService:
                 """
         filename_only = pathlib.Path(file_path).stem
         file_extension = os.path.splitext(file_path)[1][1:]
-        ret_file = os.path.join(self.output_dir, f"{filename_only}.{file_extension}")
+        ret_file = os.path.join(self.output_dir, f"{filename_only}.pdf")
+        if os.path.isfile(ret_file):
+            return ret_file
         if os.path.isfile(ret_file):
             return ret_file
 
@@ -76,8 +79,8 @@ class LibreOfficeService:
         user_profile_id = str(uuid.uuid4())  # Tạo user profile giả, nếu kg có điều này LibreOffice chỉ tạo 1 instance,
         # kg xử lý song song được
         full_user_profile_path = os.path.join(self.user_profile_dir, user_profile_id)
-        #convert longfile.pdf[0-1,3] output.pdf //libre office convert
-        #pdf:draw_pdf_Export:{"PageRange":{"type":"string","value":"2-"}}
+        # convert longfile.pdf[0-1,3] output.pdf //libre office convert
+        # pdf:draw_pdf_Export:{"PageRange":{"type":"string","value":"2-"}}
         pid = subprocess.Popen(
             [
                 self.libre_office_path,
@@ -94,5 +97,23 @@ class LibreOfficeService:
         )
 
         ret = pid.wait()  # Đợi
+        if ret == 0:
+            return ret_file
+        else:
+            return None
 
-        return ret_file
+    def extract_pages_content(self, file_path) -> typing.List[str]:
+        pdf_file = self.convert_to_pdf(file_path)
+        ret =[]
+        if pdf_file:
+            import fitz
+            from PIL import Image
+            # Opening the PDF file and creating a handle for it
+            file_handle = fitz.open(pdf_file)
+            for x in file_handle:
+                ret+=[x.get_text()]
+            os.remove(pdf_file)
+        return ret
+
+            # The page no. denoted by the index would be loaded
+            # The index within the square brackets is the page number

@@ -10,8 +10,9 @@ class FileInformationService:
         self.libre_office_service = libre_office_service
         self.temp_file = temp_file
 
-    def get_one_page(self, file_path: str, page_number: int) -> str:
-        self.libre_office_service.extract_page(file_path, page_number)
+    def get_pages_content(self, file_path: str) -> str:
+        ret = self.libre_office_service.extract_pages_content(file_path)
+        return ret
 
     def get_total_pages(self, file_path: str) -> int:
         from tika import parser
