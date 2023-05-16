@@ -82,7 +82,7 @@ class LibreOfficeService:
             [
                 self.libre_office_path,
                 '--headless',
-                '--convert-to', 'pdf:draw_pdf_Export:{"PageRange":{"type":"string","value":"2-"}}',
+                '--convert-to', 'pdf',
                 f"--accept={uno}",
                 f"-env:UserInstallation=file://{full_user_profile_path.replace(os.sep, '/')}",
                 '--outdir',
