@@ -320,6 +320,25 @@ def wildcard(field: DocumentFields, content: str):
 
 
 def update_doc_by_id(client: Elasticsearch, index: str, id: str, data, doc_type: str = "_doc"):
+    """
+    Update document \n
+    Example: \n
+        cy_es.update_doc_by_id(
+                client=self.client,
+                index=self.get_index(app_name),
+                id=upload_id,
+                data=(
+                    cy_es.buiders.privileges << privileges,
+                    cy_es.buiders.meta_info << meta_info
+                )
+        )
+    :param client:
+    :param index:
+    :param id:
+    :param data:
+    :param doc_type:
+    :return:
+    """
     return cy_es_x.update_doc_by_id(
         client=client,
         index=index,
