@@ -1,3 +1,7 @@
+"""
+This library has only one Class SearchEngine
+
+"""
 import pathlib
 import typing
 
