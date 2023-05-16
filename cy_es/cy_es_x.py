@@ -1111,6 +1111,18 @@ def get_docs(client: Elasticsearch, index: str, doc_type: str = "_doc", limit=10
 
 def select(client: Elasticsearch, index: str, doc_type: str = "_doc", fields=[], filter=None, sort=None, skip=0,
            limit=1000) -> SearchResult:
+    """
+    Select some field in Elasticsearch index
+    :param client:
+    :param index:
+    :param doc_type:
+    :param fields:
+    :param filter: is Dictionary or DocumentFields
+    :param sort:
+    :param skip:
+    :param limit:
+    :return:
+    """
     _select_fields_ = []
     if isinstance(fields, dict):
         _select_fields_ = list(fields.keys())
@@ -1171,6 +1183,12 @@ def select(client: Elasticsearch, index: str, doc_type: str = "_doc", fields=[],
 
 
 def get_map_struct(client: Elasticsearch, index: str):
+    """
+    get mapping of Elasticsearch index
+    :param client:
+    :param index:
+    :return:
+    """
     map = get_mapping(client, index)
     map_index = map[index]['mappings']
 
@@ -2111,6 +2129,21 @@ def text_lower(filter):
 
 
 def create_dict_from_key_path_value(field_path: str, value):
+    """
+    Convert key, value pair to Dict \n
+    Example:
+        create_dict_from_key_path_value("a.b.c",1) \n
+        {
+            "a":{
+                "b":{
+                    "c": 1
+                }
+            }
+        }
+    :param field_path:
+    :param value:
+    :return:
+    """
     if not "." in field_path:
         return {
             field_path: value
@@ -2126,8 +2159,31 @@ def create_dict_from_key_path_value(field_path: str, value):
         }
 
 
-def update_data_fields(client: Elasticsearch, index: str, id: str, field_path=None, field_value=None, keys_values=None,
-                       doc_type="_doc"):
+def update_data_fields(
+        client: Elasticsearch, index: str,
+        id: str,
+        field_path=None,
+        field_value=None,
+        keys_values=None,
+        doc_type="_doc"):
+    """
+    Update part of Elasticsearch document \n
+    Example:
+        update_data_fields(client,id,field_path="data_item.FileName",field_value="My File.mp4") \n
+        update_data_fields(client,id,keys_values={
+            "data_item":{
+                "FileName":"My File.mp4"
+            }
+        }) \n
+    :param client:
+    :param index:
+    :param id:
+    :param field_path:
+    :param field_value:
+    :param keys_values:
+    :param doc_type:
+    :return:
+    """
     try:
 
         keys_values = keys_values or {
@@ -2157,6 +2213,19 @@ def update_data_fields(client: Elasticsearch, index: str, id: str, field_path=No
 
 
 def flattern_dict(data, prefix=None):
+    """
+    Unwind all neat data to tabular data
+    Example: d={
+            "a":{
+                "b":c
+            }
+    } -> {
+        "a.b":c
+    }
+    :param data:
+    :param prefix:
+    :return:
+    """
     if not isinstance(data, dict):
         raise Exception("data must be dict")
     ret = {}
@@ -2182,6 +2251,18 @@ def update_by_conditional(
         conditional,
         doc_type="_doc"
 ):
+    """
+    Update Elasticsearch by conditional\n
+    conditional is DocumentFields or JSON dictionary\n
+    Cập nhật Elaticsearch theo điều kiện\n
+    có điều kiện là từ điển DocumentFields hoặc JSON
+    :param client:
+    :param index:
+    :param data_update:
+    :param conditional:
+    :param doc_type:
+    :return:
+    """
     _data_update = to_json_convertable(data_update)
     body = {}
 
@@ -2238,6 +2319,15 @@ def update_by_conditional(
 
 
 def delete_by_conditional(client: Elasticsearch, index: str, conditional, doc_type="_doc"):
+    """
+    Delete documents by conditional \n
+    conditional is DocumentFields or JSON dictionary
+    :param client:
+    :param index:
+    :param conditional:
+    :param doc_type:
+    :return:
+    """
     body = {}
 
     if isinstance(conditional, DocumentFields):
@@ -2257,6 +2347,11 @@ import uuid
 
 
 def __is_date__(str_date):
+    """
+    Check is text in datetime format
+    :param str_date:
+    :return:
+    """
     try:
         datetime.datetime.strptime(str_date[0:26] + 'Z', '%Y-%m-%dT%H:%M:%S.%fZ')
         return True
@@ -2272,6 +2367,15 @@ def __is_date__(str_date):
         return False
 
 
+def check_is_date(str_date: str) -> bool:
+    """
+        Check is text in datetime format
+        :param str_date:
+        :return:
+        """
+    return __is_date__(str_date)
+
+
 def __is_valid_uuid__(value):
     try:
         uuid.UUID(value)
@@ -2281,13 +2385,36 @@ def __is_valid_uuid__(value):
         return False
 
 
+def check_is_guid(str_value: str) -> bool:
+    """
+    Check text is in GUID format
+    :param str_value:
+    :return:
+    """
+    return __is_valid_uuid__(str_value)
+
+
 def is_content_text(text):
+    """
+    Check text is meaning text
+    :param text:
+    :return:
+    """
     if isinstance(text, str) and not __is_date__(text) and not __is_valid_uuid__(text):
         return True
     return False
 
 
 def convert_to_vn_predict_seg(data, handler, segment_handler, clear_accent_mark_handler):
+    """
+    Apply vn predict to Dictionary data \n
+
+    :param data:
+    :param handler:
+    :param segment_handler:
+    :param clear_accent_mark_handler:
+    :return:
+    """
     def add_more_content(data, handler, segment_handler, clear_accent_mark_handler):
         if isinstance(data, dict):
             ret = {}
@@ -2330,10 +2457,21 @@ def convert_to_vn_predict_seg(data, handler, segment_handler, clear_accent_mark_
 
 
 def natural_logic_parse(expr: str):
+    """
+    Parse Expression Logic like a=b and c=d in to JSON like { "$and":[{ "a":{"$eq":b}},{"b":{"$eq":d}}] }
+    :param expr:
+    :return:
+    """
     import ast
     expr = expr.replace('\n', ' ').replace('\t', ' ')
 
     def __convert_to_logical_text__(expr: str):
+        """
+        Pre process change = into == or something the programming language can undestand \n
+        Thay đổi quá trình trước = thành == hoặc thứ gì đó mà ngôn ngữ lập trình không thể hiểu được
+        :param expr:
+        :return:
+        """
         ret = expr
         while '  ' in ret:
             ret = ret.replace('  ', ' ')
@@ -2349,6 +2487,11 @@ def natural_logic_parse(expr: str):
         return ret
 
     def __get_op__(node):
+        """
+        get operator
+        :param node:
+        :return:
+        """
         if isinstance(node, ast.Eq):
             return "$eq"
         if isinstance(node, ast.NotEq):
@@ -2364,6 +2507,16 @@ def natural_logic_parse(expr: str):
         raise NotImplemented()
 
     def __get_name_of_ast__(node):
+        """
+        Convert AST to field name \n
+        Example:
+        Convert data_item.code -> "data_item.code" or data_item['code'] into data_item.code \n
+        Chuyển đổi AST thành tên trường \n
+        Ví dụ:
+        Chuyển data_item.code -> "data_item.code" hoặc data_item['code'] thành data_item.code
+        :param node:
+        :return:
+        """
         if isinstance(node, ast.Attribute):
             return f"{__get_name_of_ast__(node.value)}.{node.attr}"
         if isinstance(node, ast.Name):
@@ -2386,6 +2539,11 @@ def natural_logic_parse(expr: str):
         return func_name, field_name
 
     def __parse_logical_expr__(node):
+        """
+        Parse Expression Logic like a=b and c=d in to JSON like { "$and":[{ "a":{"$eq":b}},{"b":{"$eq":d}}] }
+        :param node:
+        :return:
+        """
         if isinstance(node, ast.List):
             ret = []
             for x in node.elts:
@@ -2518,6 +2676,13 @@ def natural_logic_parse(expr: str):
         raise NotImplemented()
 
     def parse_logic(expr: str):
+        """
+        Parse expr into DocumentFields \n
+        Example:
+        "(day(data_item.CreatedOn)=2) and (code=1)" -> (DocumentFields("data_item").CreatedOn==2)&(DocumentFields("Code")==1)
+        :param expr:
+        :return:
+        """
         fx = __convert_to_logical_text__(expr)
         ret = ast.parse(fx)
         if ret.body.__len__() == 1:

@@ -83,11 +83,37 @@ def create_index(client: Elasticsearch, index: str, body=None):
 
 
 def get_map_struct(client: Elasticsearch, index: str) -> dict:
+    """
+    get mapping of Elasticsearch index
+    :param client:
+    :param index:
+    :return:
+    """
     return cy_es_x.get_map_struct(client, index)
 
 
-def select(client: Elasticsearch, index: str, doc_type: str = "_doc", fields=[], filter=None, sort=None, skip=0,
-           limit=1000):
+def select(
+        client: Elasticsearch,
+        index: str,
+        doc_type: str = "_doc",
+        fields=[],
+        filter: typing.Union[dict,DocumentFields] = None ,
+        sort=None,
+        skip=0,
+        limit=1000):
+    """
+    Select some field in Elasticsearch index \n
+    Chọn một số trường trong chỉ mục Elaticsearch
+    :param client:
+    :param index:
+    :param doc_type:
+    :param fields: List of fields Example ["a","b.c"]
+    :param filter:
+    :param sort:
+    :param skip:
+    :param limit:
+    :return:
+    """
     return cy_es_x.select(
         client=client,
         index=index,
@@ -116,6 +142,24 @@ def search(client: Elasticsearch,
            sort=None,
            doc_type="_doc",
            logic_filter=None):
+    """
+    Search content in ElasticSearch \n
+    Example:
+        search(client,index,filter={ "code":{"$eq":1}  })
+        search(client,index,logic_filter={ "code":{"$eq":1}  })
+
+    :param client:
+    :param index:
+    :param filter:
+    :param excludes:
+    :param skip:
+    :param limit:
+    :param highlight:
+    :param sort:
+    :param doc_type:
+    :param logic_filter:
+    :return:
+    """
     global __cache__settings_max_result_window___
     if __cache__settings_max_result_window___.get(index) is None:
         client.indices.put_settings(index=index,
