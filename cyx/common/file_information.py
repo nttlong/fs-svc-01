@@ -1,14 +1,18 @@
 import cy_kit
 from cyx.media.libre_office import LibreOfficeService
 from cyx.common.temp_file import TempFiles
+
+
 class FileInformationService:
     def __init__(self,
                  libre_office_service=cy_kit.singleton(LibreOfficeService),
-                 temp_file = cy_kit.singleton(TempFiles)):
+                 temp_file=cy_kit.singleton(TempFiles)):
         self.libre_office_service = libre_office_service
         self.temp_file = temp_file
-    def get_one_page(self, file_path: str,page_number:int)->str:
-        self.libre_office_service.extract_page(file_path,page_number)
+
+    def get_one_page(self, file_path: str, page_number: int) -> str:
+        self.libre_office_service.extract_page(file_path, page_number)
+
     def get_total_pages(self, file_path: str) -> int:
         from tika import parser
 
@@ -23,7 +27,7 @@ class FileInformationService:
         #         os.kill(x.pid, signal.SIGKILL)
         if ret.get('metadata'):
             metadata = ret.get('metadata')
-            if isinstance(metadata,dict):
+            if isinstance(metadata, dict):
 
                 return int(metadata.get("xmpTPg:NPages") or 1)
 
