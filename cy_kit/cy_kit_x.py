@@ -191,6 +191,35 @@ class VALUE_DICT(dict):
 
 
 def yaml_config(full_path_to_yaml_file: str, apply_sys_args: bool = True):
+    """
+            Load yaml file , read content then parse to Dictionary.
+        If thou set apply_sys_args is True.
+        The arguments when thou start application will be applied to return Dictionary
+            Tải tệp yaml, đọc nội dung rồi phân tích thành Từ điển.
+        Nếu bạn đặt apply_sys_args là True.
+        Các đối số khi bạn khởi động ứng dụng sẽ được áp dụng để trả về Từ điển
+        Example: \n
+            Yaml content is " my_value: value 1 " in file test.yml \n
+            thou create python app looks like below: \n
+                ret = yaml_config("test.yml", false) //will return {my_value:'value 1'} \n
+                print(ret.my_value) \n
+            and in command line exec: \n
+            python my_app.py\n
+            Thou will see value 1 \n
+        The other case in command line exec:\n
+            python my_app.py my_value='value 2' \n
+            Thou will see value 2 \n
+        ------------------------------------------------------------------------- \n
+
+        Example: \n
+            Yaml content is " my_value: value 1 "
+            call yaml_config(..., false) will return {my_value:'value 1'}
+
+        :param path:
+        :param apply_sys_args:
+        :return:
+        """
+
     if not os.path.isfile(full_path_to_yaml_file):
         raise Exception(f"{full_path_to_yaml_file} was not found")
     if __cache_yam_dict__.get(full_path_to_yaml_file) is None:
@@ -255,6 +284,21 @@ def __dict_of_dicts_merge__(x, y):
 
 
 def combine_agruments(data):
+    """
+        Get all arguments when thou start python App and apply to data \n
+        Example: \n
+        ret = combine_agruments({a:1}) \n
+        Will return {a:1} if thou start App without args \n
+        And return {a:1,b:2} if thou start App with args is b=1
+        ----------------------------------------------------------\n
+        Nhận tất cả các đối số khi bạn khởi động Ứng dụng python và áp dụng cho dữ liệu \n
+        Ví dụ: \n
+        ret = Combine_agruments({a:1}) \n
+        Sẽ trả về {a:1} nếu bạn khởi động Ứng dụng mà không có đối số \n
+        Và trả về {a:1,b:2} nếu bạn khởi động Ứng dụng với args is b=1
+    :param data:
+    :return:
+    """
     ret = {}
     for x in sys.argv:
         if x.split('=').__len__() == 2:
@@ -678,6 +722,18 @@ class Graceful_Application(object):
 
 
 def trip_content(data):
+    """
+        Remove any white space in left and right of data if data is text
+        In the case of data is Dictionary.
+        The method will detect all values in data and remove any white space in left and right
+        -----------------------------------------------------------\n
+        Xóa mọi khoảng trắng ở bên trái và bên phải của dữ liệu nếu dữ liệu là văn bản
+        Trong trường hợp dữ liệu là Dictionary.
+        Phương pháp này sẽ phát hiện tất cả các giá trị trong dữ liệu và xóa mọi khoảng trắng ở bên trái và bên phải
+        :param data:
+        :return:
+    """
+
     if isinstance(data,dict):
         for k,v in data.items():
             if isinstance(v,str):

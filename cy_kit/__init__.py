@@ -40,49 +40,17 @@ Example:
 
 The purpose of config_provider is help thou needn't re-modify thou's source code, just define a new class and
 implement all methods by another way
+-------------------------------------------------------- \n
 
-
+check_implement : will check if class had the both-same method an argument of each method
+------------------------------------------------------------------------------- \n
+create_logs: create log dir and log file
+---------------------------------------------------------------------- \n
+get_runtime_type: If thou use cy_kit.config_provider the runtime Type of instance was changed.
+In order to get real Type of instance call the methde
+-------------------------------------------------------------
 Thư viện hỗ trợ thực sự hữu ích theo cách mà một Lớp tạo một thể hiện.\n
-Danh sách phương pháp:\n
--------------------------------------------------- -------------------------------------------------- -------\N
-| phương pháp | mô tả \n
-|_____________________________________________________________________________________________________________________________ \n
-| độc thân | Tạo một phiên bản duy nhất của Lớp \n
-| | Ví dụ: ClassA()==ClassA() // luôn đúng \n
-| | Điều đó có nghĩa là. Nếu bạn đã gọi hàng nghìn lần Khởi tạo lớp chỉ một \n
-| | tạo ví dụ \n
-|_____________________________________________________________________________________________________________________________ \n
-| ví dụ | Tạo phiên bản của Lớp \n
-| | ví dụ: ClassA() == ClassB() // luôn sai. \N
-| | Điều đó có nghĩa là mỗi khi bạn gọi Khởi tạo lớp, \n
-| | phiên bản mới sẽ tạo \n
-|________________________________________________________________________________________________________________________________ \n
 
-Phương pháp quan trọng nhất trong thư viện là "config_provider"
-Bạn có thể tạo một số Lớp giống nhau ở cả tên phương thức và đối số, nhưng sự khác biệt về Thực hiện Phương thức.
-Sau đó, bạn có thể sử dụng một trong những Lớp đó trong thời gian chạy.
-Ví dụ:
-    hạng A:
-        chắc chắn xin chào():
-            print('Xin chào, tên tôi là "A"')
-    lớp B:
-        chắc chắn xin chào():
-            print('Xin chào, tên tôi là "B"')
-    mã đầu tiên dưới đây:
-        a = cy_kit.single(A)
-        a.hello() // bạn sẽ thấy Xin chào tên tôi là "A"
-    mã thứ hai dưới đây
-        cy_kit.config_provider(
-            from_class=A,
-            thực hiện_class = A
-
-        )
-        a = cy_kit.single(A)
-        a.hello() // bạn sẽ thấy Xin chào tên tôi là "B"
-
-
-Mục đích của config_provider là giúp bạn không cần sửa đổi lại mã nguồn của mình, chỉ cần định nghĩa một lớp mới và
-thực hiện tất cả các phương pháp bằng cách khác
 
 """
 import os.path
@@ -104,6 +72,15 @@ T = TypeVar('T')
 
 
 def single(cls: T) -> T:
+    """
+    Create singleton if Class \n
+    Example: \n
+        a = cy_kit.single(A) \n
+        b = cy_kit.single(A) \n
+        print(a==b) //'true' \n
+    :param cls:
+    :return:
+    """
     return cy_kit_x.resolve_singleton(cls)
 
 
@@ -114,7 +91,9 @@ def instance(cls: T) -> T:
 def config_provider(from_class: type, implement_class: type):
     cy_kit_x.config_provider(from_class, implement_class)
 
+
 from typing import Generic
+
 
 # class Provider(Generic[T]):
 #     def __init__(self,__cls__:type):
@@ -125,8 +104,6 @@ from typing import Generic
 #         if self.__ins__  is None:
 #             self.__ins__ = cy_kit_x.provider(self.__cls__)
 #         return self.__ins__
-
-
 
 
 def provider(cls: T) -> T:
@@ -141,17 +118,61 @@ def check_implement(from_class: type, implement_class: T) -> T:
 def must_imlement(interface_class: type):
     return cy_kit_x.must_implement(interface_class)
 
+
 def trip_content(data):
-    if isinstance(data,dict):
-        for k,v in data.items():
-            if isinstance(v,str):
-                data[k]=v.rstrip(' ').lstrip(' ')
-            elif isinstance(v,dict):
+    """
+    Remove any white space in left and right of data if data is text
+    In the case of data is Dictionary.
+    The method will detect all values in data and remove any white space in left and right
+    -----------------------------------------------------------\n
+    Xóa mọi khoảng trắng ở bên trái và bên phải của dữ liệu nếu dữ liệu là văn bản
+    Trong trường hợp dữ liệu là Dictionary.
+    Phương pháp này sẽ phát hiện tất cả các giá trị trong dữ liệu và xóa mọi khoảng trắng ở bên trái và bên phải
+    :param data:
+    :return:
+    """
+    if hasattr(cy_kit_x,"trip_content") and callable(cy_kit_x.trip_content):
+        return cy_kit_x.trip_content(data)
+    if isinstance(data, dict):
+        for k, v in data.items():
+            if isinstance(v, str):
+                data[k] = v.rstrip(' ').lstrip(' ')
+            elif isinstance(v, dict):
                 data[k] = trip_content(v)
     return data
+
+
 def yaml_config(path: str, apply_sys_args: bool = True):
+    """
+        Load yaml file , read content then parse to Dictionary.
+    If thou set apply_sys_args is True.
+    The arguments when thou start application will be applied to return Dictionary
+        Tải tệp yaml, đọc nội dung rồi phân tích thành Từ điển.
+    Nếu bạn đặt apply_sys_args là True.
+    Các đối số khi bạn khởi động ứng dụng sẽ được áp dụng để trả về Từ điển
+    Example: \n
+        Yaml content is " my_value: value 1 " in file test.yml \n
+        thou create python app looks like below: \n
+            ret = yaml_config("test.yml", false) //will return {my_value:'value 1'} \n
+            print(ret.my_value) \n
+        and in command line exec: \n
+        python my_app.py\n
+        Thou will see value 1 \n
+    The other case in command line exec:\n
+        python my_app.py my_value='value 2' \n
+        Thou will see value 2 \n
+    ------------------------------------------------------------------------- \n
+
+    Example: \n
+        Yaml content is " my_value: value 1 "
+        call yaml_config(..., false) will return {my_value:'value 1'}
+
+    :param path:
+    :param apply_sys_args:
+    :return:
+    """
     ret = cy_kit_x.yaml_config(path, apply_sys_args)
-    if hasattr(cy_kit_x,"trip_content"):
+    if hasattr(cy_kit_x, "trip_content"):
         ret = cy_kit_x.trip_content(ret)
     else:
         ret = trip_content(ret)
@@ -159,38 +180,83 @@ def yaml_config(path: str, apply_sys_args: bool = True):
 
 
 def combine_agruments(data):
+    """
+    Get all arguments when thou start python App and apply to data \n
+    Example: \n
+    ret = combine_agruments({a:1}) \n
+    Will return {a:1} if thou start App without args \n
+    And return {a:1,b:2} if thou start App with args is b=1
+    ----------------------------------------------------------\n
+    Nhận tất cả các đối số khi bạn khởi động Ứng dụng python và áp dụng cho dữ liệu \n
+    Ví dụ: \n
+    ret = Combine_agruments({a:1}) \n
+    Sẽ trả về {a:1} nếu bạn khởi động Ứng dụng mà không có đối số \n
+    Và trả về {a:1,b:2} nếu bạn khởi động Ứng dụng với args is b=1
+    :param data:
+    :return:
+    """
     ret = cy_kit_x.combine_agruments(data)
-    if hasattr(cy_kit_x,"trip_content"):
+    if hasattr(cy_kit_x, "trip_content"):
         ret = cy_kit_x.trip_content(ret)
     else:
         ret = trip_content(ret)
     return ret
 
 
-
-def inject(cls:T)->T:
+def inject(cls: T) -> T:
     return cy_kit_x.inject(cls)
-def singleton(cls:T)->T:
+
+
+def singleton(cls: T) -> T:
+    """
+        Create singleton if Class \n
+        Example: \n
+            a = cy_kit.single(A) \n
+            b = cy_kit.single(A) \n
+            print(a==b) //'true' \n
+    :param cls:
+    :return:
+    """
     return cy_kit_x.singleton(cls)
-def scope(cls:T)->T:
+
+
+def scope(cls: T) -> T:
     return cy_kit_x.scope(cls)
 
 
 def thread_makeup():
     return cy_kit_x.thread_makeup()
+
+
 def get_local_host_ip():
     return cy_kit_x.get_local_host_ip()
 
 
-def create_logs(log_dir:str, name:str):
-    return cy_kit_x.create_logs(log_dir,name)
+def create_logs(log_dir: str, name: str):
+    """
+    Create log file
+    :param log_dir: where log locate? this is full path tio dir
+    :param name: sub folder in log_dir. where log.txt will be located
+    :return:
+    """
+    return cy_kit_x.create_logs(log_dir, name)
 
 
 def get_runtime_type(injector_instance):
+    """
+    If thou create an instance of Class by calling cy_kit.singleton. The real Type of instance could be changed at runtime
+    To determine a real Type of Instance call this method
+    ----------------------------------------------------\n
+    Nếu bạn tạo một thể hiện của Lớp bằng cách gọi cy_kit.singleton. Loại phiên bản thực có thể được thay đổi trong thời gian chạy
+    Để xác định Loại trường hợp thực, hãy gọi phương thức này
+    :param injector_instance:
+    :return:
+    """
+
     return cy_kit_x.get_runtime_type(injector_instance)
 
 
-def singleton_from_path(injector_path:str):
+def singleton_from_path(injector_path: str):
     """
 
     :param injector_path: <module>:<class name>
@@ -201,9 +267,13 @@ def singleton_from_path(injector_path:str):
 
 def to_json(data):
     return cy_kit_x.to_json(data)
+
+
 def clean_up():
     try:
         cy_kit_x.clean_up()
     except Exception as e:
         pass
+
+
 Graceful_Application = cy_kit_x.Graceful_Application
