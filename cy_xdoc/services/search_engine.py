@@ -38,12 +38,41 @@ class SearchEngine:
         self.empty_privilege_value = 0
 
     def get_content_field_name(self):
+        """
+        File-Service use Elasticsearch document with below struct: \n
+        {
+            content:"..." //  text of any document will store here \n
+            data_item: Dictionary // meta info when user upload or create blog
+
+        }
+        The method will return cy_es.DocumentFields("content")
+        :return:
+        """
         return self.config.elastic_search.field_content
 
     def delete_index(self, app_name):
+        """
+        Delete index
+        :param app_name:
+        :return:
+        """
         self.client.indices.delete(index=self.get_index(app_name))
 
     def get_index(self, app_name):
+        """
+        Get index from app_name \n
+        File-Service serves for multi  tenants. Each Tenant was represented by app_name \n
+        File-Service will automatically create an Index according to  app_name and prefix \n
+        prefix in YAML file config.yml at elastic_search.prefix_index (default value is 'lv-codx')
+        Example: app_name is 'my-app' -> Elasticsearch Index Name is lv-codx_my-app \n
+        Nhận chỉ mục từ app_name \n
+        Dịch vụ tệp phục vụ cho nhiều người thuê. Mỗi Đối tượng thuê được đại diện bởi app_name \n
+        Dịch vụ tệp sẽ tự động tạo Chỉ mục theo tên ứng dụng và tiền tố \n
+        tiền tố trong tệp YAML config.yml tại elastic_search.prefix_index (giá trị mặc định là 'lv-codx')
+        Ví dụ: app_name là 'my-app' -> Tên chỉ mục Elaticsearch là lv-codx_my-app
+        :param app_name:
+        :return:
+        """
         if app_name == "admin":
             app_name = self.config.admin_db_name
         index_name = f"{self.prefix_index}_{app_name}"
@@ -60,6 +89,12 @@ class SearchEngine:
         return index_name
 
     def delete_doc(self, app_name, id: str):
+        """
+        Delete Elasticsearch by id in application
+        :param app_name:
+        :param id:
+        :return:
+        """
         return cy_es.delete_doc(
             client=self.client,
             index=self.get_index(app_name),
@@ -67,6 +102,14 @@ class SearchEngine:
         )
 
     def mark_delete(self, app_name, id, mark_delete_value):
+        """
+        Some documents in Elasticsearch not show in any search. So, mark those documents is deleted \n
+        Một số tài liệu trong Elaticsearch không hiển thị trong bất kỳ tìm kiếm nào. Vì vậy, hãy đánh dấu những tài liệu đó đã bị xóa
+        :param app_name:
+        :param id:
+        :param mark_delete_value:
+        :return:
+        """
         ret = cy_es.update_doc_by_id(
             client=self.client,
             id=id,
@@ -86,7 +129,30 @@ class SearchEngine:
                          privileges: dict,
                          sort: typing.List[str] = ["data_item.RegisterOn:desc"],
                          logic_filter=None):
+        """
+        There are many ways to search in Elasticsearch \n
+        Search only content: \n
+            full_text_search(app_name,content="my content search") \n
+        or use logic_filter for searhing: \n
+            full_text_search(app_name,content=None,logic_filter={
+                    "$$search":{
+                        "$fields":["conent"],
+                        "$value":"my content search"
+                    }
+                }
+            )
 
+
+        :param app_name:
+        :param content:
+        :param page_size:
+        :param page_index:
+        :param highlight:
+        :param privileges:
+        :param sort:
+        :param logic_filter:
+        :return:
+        """
         content = content or ""
         original_content = content
 
@@ -169,9 +235,27 @@ class SearchEngine:
         return ret
 
     def get_doc(self, app_name: str, id: str, doc_type: str = "_doc"):
+        """
+        get document by id
+
+        :param app_name:
+        :param id:
+        :param doc_type:
+        :return:
+        """
         return cy_es.get_doc(client=self.client, id=id, doc_type=doc_type, index=self.get_index(app_name))
 
     def copy(self, app_name: str, from_id: str, to_id: str, attach_data, run_in_thread: bool = True):
+        """
+        Copy ES doc into new
+        :param app_name:
+        :param from_id:
+        :param to_id:
+        :param attach_data:
+        :param run_in_thread:
+        :return:
+        """
+
         @cy_kit.thread_makeup()
         def copy_elastics_search(app_name: str, from_id: str, to_id: str, attach_data):
             es_doc = self.get_doc(id=from_id, app_name=app_name)
@@ -203,6 +287,31 @@ class SearchEngine:
                            meta_info=None,
                            mark_delete=False,
                            meta_data=None):
+        """
+        Make index content: \n
+        File-Service use Elasticsearch Document with struct below:
+            {
+                _id: upload_id // use upload_id
+                content: // any content of document here
+                data_item: // data_item get from Mongodb File-Service
+                meta_info: // any information come from another application in which use File-Service \n
+                            //bất kỳ thông tin nào đến từ một ứng dụng khác sử dụng Dịch vụ tệp
+
+                meta_data: // The  file information which was generated by OS or software create file \n
+                           // Thông tin tệp được tạo bởi hệ điều hành hoặc phần mềm tạo tệp
+            }
+        :param app_name: representative app_name of tenant
+        :param upload_id: id of Upload file
+        :param data_item: data was created when end-user upload file or create blog
+        :param privileges: privileges tags use to restrict un-allow access document from en-user \n thẻ đặc quyền sử dụng để hạn chế không cho phép truy cập tài liệu từ người dùng
+
+        :param path_to_file_content: full path to file content if content of ES document get from file, please set path_to_file_content
+        :param content: if content of ES document does not get from file, please set content here
+        :param meta_info: any information come from another application in which use File-Service
+        :param mark_delete:
+        :param meta_data: The  file information which was generated by OS or software create file
+        :return:
+        """
         file_name = None
         if path_to_file_content is not None:
             content, meta_info = self.file_content_extractor_service.get_text(path_to_file_content)
@@ -251,7 +360,17 @@ class SearchEngine:
     def create_or_update_privileges(
             self,
             app_name, upload_id, data_item: dict, privileges,
-            meta_info:dict=None):
+            meta_info: dict = None):
+        """
+        Create or update privileges tag
+        if upload_id is not None
+        :param app_name:
+        :param upload_id:
+        :param data_item:
+        :param privileges:
+        :param meta_info:
+        :return:
+        """
         is_exist = self.is_exist(app_name, id=upload_id)
 
         if is_exist:
@@ -260,8 +379,8 @@ class SearchEngine:
                 index=self.get_index(app_name),
                 id=upload_id,
                 data=(
-                        cy_es.buiders.privileges << privileges,
-                        cy_es.buiders.meta_info <<meta_info
+                    cy_es.buiders.privileges << privileges,
+                    cy_es.buiders.meta_info << meta_info
                 )
             )
         else:
@@ -316,7 +435,7 @@ class SearchEngine:
                        meta_info: dict = None,
                        meta_data: dict = None,
                        replace_content=False,
-                       update_meta = True):
+                       update_meta=True):
 
         original_content = content or ""
         content = content or ""
@@ -336,7 +455,7 @@ class SearchEngine:
             )
             if not replace_content:
                 old_content = self.vn_predictor.get_text(es_doc.source.content or "")
-                content = content + "\n" +self.vn_predictor.get_text(content)
+                content = content + "\n" + self.vn_predictor.get_text(content)
                 content = content + "\n" + old_content
 
                 vn_non_accent_content = self.text_process_service.vn_clear_accent_mark(content)
@@ -357,7 +476,7 @@ class SearchEngine:
                 content=content
             )
             _Privileges = json_data_item.get("Privileges") or _Privileges
-            if isinstance(_Privileges,cy_docs.DocumentObject):
+            if isinstance(_Privileges, cy_docs.DocumentObject):
                 _Privileges = _Privileges.to_json_convertable()
             meta_info = (meta_info or es_doc.source.get('meta_info')) or json_data_item.get('meta_data')
             meta_data = meta_data or es_doc.source['meta_data']
