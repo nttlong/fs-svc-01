@@ -1,3 +1,90 @@
+"""
+The library support real useful the way one Class create an instance.\n
+The methods list:\n
+-----------------------------------------------------------------------------------------------------------\n
+| method                    |   description  \n
+|__________________________________________________________________________________________________________ \n
+| single                    |   Create single instance of Class \n
+|                           |   Examaple: ClassA()==ClassA() // is always True \n
+|                           |   That means. If thou called thousand time Initialize of Class just only one \n
+|                           |     instance create \n
+|__________________________________________________________________________________________________________ \n
+| instance                  | Create instance of Class \n
+|                           | instance: ClassA() == ClassB() // is always false. \n
+|                           | That mean everytime thou call Initialize of Class, \n
+|                           |     the new instance will create \n
+|_____________________________________________________________________________________________________________ \n
+
+The most importance method in the library is "config_provider"
+Thou could make several Class with the same in the both method name and args, but difference Implementation of Method.
+Then thou can  one of those Class in runtime.
+Example:
+    class A:
+        def hello():
+            print ('Hello my name is "A"')
+    class B:
+        def hello():
+            print ('Hello my name is "B"')
+    the first code bellow:
+        a = cy_kit.single(A)
+        a.hello() // thou will see Hello my name is "A"
+    the second code bellow
+        cy_kit.config_provider(
+            from_class=A,
+            implement_class = A
+
+        )
+        a = cy_kit.single(A)
+        a.hello() // thou will see Hello my name is "B"
+
+
+The purpose of config_provider is help thou needn't re-modify thou's source code, just define a new class and
+implement all methods by another way
+
+
+Thư viện hỗ trợ thực sự hữu ích theo cách mà một Lớp tạo một thể hiện.\n
+Danh sách phương pháp:\n
+-------------------------------------------------- -------------------------------------------------- -------\N
+| phương pháp | mô tả \n
+|_____________________________________________________________________________________________________________________________ \n
+| độc thân | Tạo một phiên bản duy nhất của Lớp \n
+| | Ví dụ: ClassA()==ClassA() // luôn đúng \n
+| | Điều đó có nghĩa là. Nếu bạn đã gọi hàng nghìn lần Khởi tạo lớp chỉ một \n
+| | tạo ví dụ \n
+|_____________________________________________________________________________________________________________________________ \n
+| ví dụ | Tạo phiên bản của Lớp \n
+| | ví dụ: ClassA() == ClassB() // luôn sai. \N
+| | Điều đó có nghĩa là mỗi khi bạn gọi Khởi tạo lớp, \n
+| | phiên bản mới sẽ tạo \n
+|________________________________________________________________________________________________________________________________ \n
+
+Phương pháp quan trọng nhất trong thư viện là "config_provider"
+Bạn có thể tạo một số Lớp giống nhau ở cả tên phương thức và đối số, nhưng sự khác biệt về Thực hiện Phương thức.
+Sau đó, bạn có thể sử dụng một trong những Lớp đó trong thời gian chạy.
+Ví dụ:
+    hạng A:
+        chắc chắn xin chào():
+            print('Xin chào, tên tôi là "A"')
+    lớp B:
+        chắc chắn xin chào():
+            print('Xin chào, tên tôi là "B"')
+    mã đầu tiên dưới đây:
+        a = cy_kit.single(A)
+        a.hello() // bạn sẽ thấy Xin chào tên tôi là "A"
+    mã thứ hai dưới đây
+        cy_kit.config_provider(
+            from_class=A,
+            thực hiện_class = A
+
+        )
+        a = cy_kit.single(A)
+        a.hello() // bạn sẽ thấy Xin chào tên tôi là "B"
+
+
+Mục đích của config_provider là giúp bạn không cần sửa đổi lại mã nguồn của mình, chỉ cần định nghĩa một lớp mới và
+thực hiện tất cả các phương pháp bằng cách khác
+
+"""
 import os.path
 import pathlib
 import sys
