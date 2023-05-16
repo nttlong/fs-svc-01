@@ -11,8 +11,11 @@ from typing import List
 import pydantic
 from enum import Enum
 import os
-def version()->str:
+
+
+def version() -> str:
     return f"0.0.6{os.path.splitext(__file__)[1]}"
+
 
 def get_all_index(client: Elasticsearch) -> List[str]:
     return list(client.indices.get_alias("*").keys())
@@ -131,6 +134,7 @@ class DocumentFields:
                   }
                  }
     """
+
     def __init__(self, name: str = None):
         self.__name__ = name
         self.__es_expr__ = None
@@ -189,8 +193,8 @@ class DocumentFields:
 
     def __neg__(self):
         ret = DocumentFields()
-        ret.__es_expr__ = {"must_not":{"bool": {"filter": self.__es_expr__.get("filter") or self.__es_expr__}}}
-        ret.__is_bool__= True
+        ret.__es_expr__ = {"must_not": {"bool": {"filter": self.__es_expr__.get("filter") or self.__es_expr__}}}
+        ret.__is_bool__ = True
         return ret
 
     def startswith(self, item):
@@ -310,25 +314,25 @@ class DocumentFields:
             #
             #     }
             # }
-            src =""
+            src = ""
 
-            for i in range(0,len(item)):
-                src+= f"doc['{self.__name__}.keyword'].contains(params.items[{i}])\n && "
-            src=src.rstrip(' && ')
+            for i in range(0, len(item)):
+                src += f"doc['{self.__name__}.keyword'].contains(params.items[{i}])\n && "
+            src = src.rstrip(' && ')
             ret.__es_expr__ = {
-                "filter":{
-                            "script":{
+                "filter": {
+                    "script": {
 
-                                "script": {
+                        "script": {
 
-                                    "source":f"return  {src};",
-                                    "lang": "painless",
-                                    "params":{
-                                        "items":item
-                                    }
-                                }
+                            "source": f"return  {src};",
+                            "lang": "painless",
+                            "params": {
+                                "items": item
                             }
                         }
+                    }
+                }
             }
 
             ret.__is_bool__ = True
@@ -1444,7 +1448,7 @@ def update_doc_by_id(client: Elasticsearch, index: str, id: str, data, doc_type:
                     id=id,
                     doc_type=doc_type,
                     body=dict(
-                        doc= {
+                        doc={
                             k: data_update[k]
                         }
                     )
@@ -1456,7 +1460,17 @@ def update_doc_by_id(client: Elasticsearch, index: str, id: str, data, doc_type:
 
 
 def create_index(client: Elasticsearch, index: str, body: typing.Union[dict, type]):
+    """
+    Create new index if not exist
+    :param client:
+    :param index:
+    :param body:
+    :return:
+    """
     if client.indices.exists(index=index):
+        """
+        if exist return
+        """
         return
     if inspect.isclass(body) and body not in [str, datetime.datetime, int, bool, float, int]:
         ret = client.indices.create(index=index, body=get_map(body))
@@ -1466,6 +1480,14 @@ def create_index(client: Elasticsearch, index: str, body: typing.Union[dict, typ
 
 
 def delete_doc(client: Elasticsearch, index: str, id: str, doc_type: str = "_doc"):
+    """
+    Delete doc if exist
+    :param client:
+    :param index:
+    :param id:
+    :param doc_type:
+    :return:
+    """
     try:
         ret = client.delete(index=index, id=id, doc_type=doc_type)
         return ret
@@ -1474,6 +1496,9 @@ def delete_doc(client: Elasticsearch, index: str, id: str, doc_type: str = "_doc
 
 
 class __expr_type_enum__(Enum):
+    """
+    Private enum
+    """
     CALL = 1
     """
     Function call
@@ -1499,9 +1524,21 @@ __map__ = {
     "$gte": dict(name="__ge__", _type=__expr_type_enum__.OPER),
     "$ne": dict(name="__ne__", _type=__expr_type_enum__.OPER)
 }
+"""
+private const map operator to python class operator \n
+toán tử bản đồ const riêng cho toán tử lớp python
+
+"""
 
 
 def __all_primitive__(x):
+    """
+    Check data type is primitive type \n
+    Kiểm tra kiểu dữ liệu là kiểu nguyên thủy
+
+    :param x:
+    :return:
+    """
     if type(x) in [str, int, float, bool, datetime.datetime]:
         return True
     elif isinstance(x, list):
@@ -1512,6 +1549,15 @@ def __all_primitive__(x):
 
 
 def nested(prefix: str, filter):
+    """
+    re-format filter with prefix \n
+    Example: \n
+        d = {"a$":1}
+        nested("+",d)-> {"a+":1}
+    :param prefix:
+    :param filter:
+    :return:
+    """
     ret = {}
     if isinstance(filter, dict):
         for k, v in filter.items():
@@ -1564,6 +1610,35 @@ def __build_search__(fields, content, suggest_handler=None):
 
 
 def __apply_function__(function_name, field_name, owner_caller=None, args=None, suggest_handler=None):
+    """
+    Private method \n
+    Apply Function Call to DocumentFields
+    The filter in JSON format (the JON format which use is pre compiler in to DocumentFields format) will change to DocumentFields format \n
+    Phương thức riêng \n
+    Áp dụng lệnh gọi hàm cho DocumentFields
+    Bộ lọc ở định dạng JSON (định dạng JON sử dụng trình biên dịch trước ở định dạng DocumentFields) sẽ chuyển sang định dạng DocumentFields \n
+    Exmaple: \n
+        json = {
+                 "$$day": {
+                    "$field":"MyDate",
+                    "$value": 22
+                 }
+            }
+        will compiler to : DocumentFields.day(DocumentFields("Mydate"))==22 \n
+    suggest_handler: An external function (JAVA or C# ,...) will convert Vietnamese none accents to Vietnamese with accents \n
+    suggest_handler pair with $$search. It help $$search search Vietnamese non accents \n
+    suggest_handler: Một hàm bên ngoài (JAVA hoặc C#,...) sẽ chuyển tiếng Việt không dấu sang tiếng Việt có dấu \n
+    cặp suggest_handler với $$search. Nó giúp $$search tìm kiếm tiếng Việt không dấu \n
+    The function can be convert are:
+    $$day ,$$month, $$year, $$first, $$last, $$contains, $$search
+
+    :param function_name:
+    :param field_name:
+    :param owner_caller:
+    :param args:
+    :param suggest_handler: An external function (properly in JAVA or C# ,...) will convert Vietnamese none accents to Vietnamese with accent
+    :return:
+    """
     if function_name == "$$day":
         ret = DocumentFields(field_name)
         return ret.get_day_of_month()
@@ -1597,10 +1672,35 @@ def __apply_function__(function_name, field_name, owner_caller=None, args=None, 
 
         return __build_search__(fields, content, suggest_handler)
     else:
-        raise NotImplemented("error")
+        raise Exception("Error syntax")
 
 
 def create_filter_from_dict(expr: dict, owner_caller=None, op=None, suggest_handler=None):
+    """
+    JSON Dictionary Filter use in Front-End like Web Browser
+    Transform JSON Dictionary Filter into DocumentFields Filter \n
+    Bộ lọc từ điển JSON sử dụng trong Front-End như Trình duyệt web
+    Chuyển đổi Bộ lọc từ điển JSON thành Bộ lọc DocumentFields \n
+    Example: \n
+        {
+            "$and":[
+                    {
+                    "$eq":{
+                            "$$day":"data_item.CreatedOn","$value":2}},
+                            {
+                                "code":{"$eq":1}
+                            }
+                ]
+        }
+        ->
+       (DocumentFields.day(DocumentFields("data_item").CreatedOn)==2)& \n
+       (DocumentFields("code")==1)
+    :param expr:
+    :param owner_caller:
+    :param op:
+    :param suggest_handler:
+    :return:
+    """
     global __map__
 
     if isinstance(expr, dict):
@@ -1641,16 +1741,16 @@ def create_filter_from_dict(expr: dict, owner_caller=None, op=None, suggest_hand
                     raise Exception(f"{k} is Unknown")
                 if __map__.get(k):
                     map_name = __map__[k]["name"]
-                    if map_name=="__neg__":
+                    if map_name == "__neg__":
                         ret = create_filter_from_dict(expr["$not"], suggest_handler=suggest_handler)
                         if not ret.__is_bool__:
                             __filter__ = DocumentFields()
                             __filter__.__es_expr__ = {
-                                "filter":ret.__es_expr__
+                                "filter": ret.__es_expr__
                             }
                             ret = __filter__
-                        if hasattr(ret,map_name):
-                            ret= getattr(ret,map_name)()
+                        if hasattr(ret, map_name):
+                            ret = getattr(ret, map_name)()
                             return ret
                         else:
                             raise Exception("Error syntax")
@@ -1747,17 +1847,38 @@ def create_filter_from_dict(expr: dict, owner_caller=None, op=None, suggest_hand
         raise NotImplemented
 
 
-
 def is_exist(client: Elasticsearch, index: str, id: str, doc_type: str = "_doc") -> bool:
+    """
+    Check is exist doc with id
+    :param client:
+    :param index:
+    :param id:
+    :param doc_type:
+    :return:
+    """
     return client.exists(index=index, id=id, doc_type=doc_type)
 
 
 def count(client: Elasticsearch, index: str):
+    """
+    Count all document in Elasticsearch
+    :param client:
+    :param index:
+    :return:
+    """
     ret = client.count(index=index)
     return ret.get('count', 0)
 
 
 def clone_index(client: Elasticsearch, from_index, to_index, segment_size=100):
+    """
+    Clone index to new index
+    :param client:
+    :param from_index:
+    :param to_index:
+    :param segment_size:
+    :return:
+    """
     total_docs = count(client=client, index=from_index)
 
     i = 0
@@ -1780,6 +1901,13 @@ def clone_index(client: Elasticsearch, from_index, to_index, segment_size=100):
 
 
 def put_mapping(client: Elasticsearch, index, body):
+    """
+    Put mapping
+    :param client:
+    :param index:
+    :param body:
+    :return:
+    """
     return client.indices.put_mapping(
         index=index,
         body=body.get('mappings', body),
@@ -1788,6 +1916,12 @@ def put_mapping(client: Elasticsearch, index, body):
 
 
 def get_mapping(client: Elasticsearch, index):
+    """
+    get mapping
+    :param client:
+    :param index:
+    :return:
+    """
     try:
         return client.indices.get_mapping(
             index=index,
@@ -1798,6 +1932,14 @@ def get_mapping(client: Elasticsearch, index):
 
 
 def __fix_empty_value__(data):
+    """
+    ElasticSearch use null value somehow incorrect with language programming \n
+    Example: default Null Value of text in ElasticSearch is "" \n
+    Tìm kiếm đàn hồi sử dụng giá trị null bằng cách nào đó không chính xác với lập trình ngôn ngữ \n
+    Ví dụ: Giá trị Null mặc định của văn bản trong Tìm kiếm đàn hồi là ""
+    :param data:
+    :return:
+    """
     ret = {}
     if isinstance(data, dict):
         for k, v in data.items():
@@ -1812,6 +1954,18 @@ def __fix_empty_value__(data):
 
 
 def similarity_settings(client: Elasticsearch, index: str, field_name: str, algorithm_type: str, b_value, k1_value):
+    """
+    A similarity (scoring / ranking model) defines how matching documents are scored. Similarity is per field, meaning that via the mapping one can define a different similarity per field.
+
+Configuring a custom similarity is considered an expert feature and the builtin similarities are most likely sufficient as is described in similarity.
+    :param client:
+    :param index:
+    :param field_name:
+    :param algorithm_type:
+    :param b_value:
+    :param k1_value:
+    :return:
+    """
     try:
         settings = client.indices.get_settings(index=index)
         settings_index = settings[index]
@@ -1880,6 +2034,16 @@ import bson
 
 
 def to_json_convertable(data):
+    """
+    Sometime Dictionary Data can not portable to Front-End, Such as Dictionary Data contains BSON value.
+
+    The method will fix it. \n
+    Đôi khi Dữ liệu từ điển không thể di chuyển sang Front-End, chẳng hạn như Dữ liệu từ điển chứa giá trị BSON.
+
+    Phương pháp sẽ sửa chữa nó.
+    :param data:
+    :return:
+    """
     if isinstance(data, dict):
         ret = {}
         for k, v in data.items():
@@ -1900,7 +2064,7 @@ def to_json_convertable(data):
 
 def es_func_get_day(field):
     """
-
+    Call dayOfMonth of ElasticSearch
     :return:
     """
 
@@ -1915,9 +2079,17 @@ def es_func_get_day(field):
                 f"doc.{DocumentFields.__name__}.date.dayOfMonth"
             }
         )
+        return ret
+    raise NotImplemented()
 
 
 def text_lower(filter):
+    """
+    Detect Filter if it has text then lower-case those text \n
+    Phát hiện Bộ lọc nếu nó có văn bản thì viết thường những văn bản đó
+    :param filter:
+    :return:
+    """
     if isinstance(filter, dict):
         ret = {}
         for k, v in filter.items():
@@ -2159,9 +2331,10 @@ def convert_to_vn_predict_seg(data, handler, segment_handler, clear_accent_mark_
 
 def natural_logic_parse(expr: str):
     import ast
-    expr = expr.replace('\n',' ').replace('\t',' ')
+    expr = expr.replace('\n', ' ').replace('\t', ' ')
+
     def __convert_to_logical_text__(expr: str):
-        ret= expr
+        ret = expr
         while '  ' in ret:
             ret = ret.replace('  ', ' ')
         ret = expr.replace('=', '==')
@@ -2234,10 +2407,10 @@ def natural_logic_parse(expr: str):
                 raise Exception("like operator only apply for text")
         if isinstance(node, ast.BinOp) and type(node.op) == ast.BitXor:
             field_name = __parse_logical_expr__(node.left)
-            if isinstance(node.right,ast.BinOp):
+            if isinstance(node.right, ast.BinOp):
                 boost_score = __parse_logical_expr__(node.right.left)
                 content_search = __parse_logical_expr__(node.right.right)
-                return  {
+                return {
                     "$$search": {
                         "$fields": [f"{field_name}^{boost_score}"],
                         "$value": content_search
@@ -2326,22 +2499,21 @@ def natural_logic_parse(expr: str):
         if isinstance(node, ast.Subscript):
             ret = __get_name_of_ast__(node)
             return ret
-        if isinstance(node,ast.AugAssign) and type(node.op)==ast.Div:
+        if isinstance(node, ast.AugAssign) and type(node.op) == ast.Div:
             left = __parse_logical_expr__(node.target)
             right = __parse_logical_expr__(node.value)
             return {
-                "$not":{
+                "$not": {
                     "$$contains": {
                         "$field": left,
                         "$value": right
                     }
                 }
             }
-        if isinstance(node,ast.UnaryOp) and type(node.op) ==ast.Not:
-            return  {
-                "$not":__parse_logical_expr__(node.operand)
+        if isinstance(node, ast.UnaryOp) and type(node.op) == ast.Not:
+            return {
+                "$not": __parse_logical_expr__(node.operand)
             }
-
 
         raise NotImplemented()
 
@@ -2354,6 +2526,6 @@ def natural_logic_parse(expr: str):
         raise NotImplemented()
 
     ret = parse_logic(expr)
-    if not isinstance(ret,dict):
-        raise  Exception(f"'{expr}' is incorrect syntax")
+    if not isinstance(ret, dict):
+        raise Exception(f"'{expr}' is incorrect syntax")
     return ret

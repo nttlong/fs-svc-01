@@ -68,6 +68,13 @@ buiders = cy_es_x.docs
 
 
 def create_index(client: Elasticsearch, index: str, body=None):
+    """
+    Create new index if not exist
+    :param client:
+    :param index:
+    :param body:
+    :return:
+    """
     return cy_es_x.create_index(
         index=index,
         body=body,
