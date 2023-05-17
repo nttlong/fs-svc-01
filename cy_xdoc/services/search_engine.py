@@ -54,6 +54,8 @@ class SearchEngine:
         self.text_process_service = text_process_service
         self.file_content_extractor_service = file_content_extractor_service
         self.similarity_settings_cache = {}
+        #"index.mapping.total_fields.limit": 2000
+        self.__index_mapping_total_fields_limit = {}
         self.vn = vn
         self.vn_predictor = vn_predictor
         self.empty_privilege_value = 0
@@ -107,6 +109,26 @@ class SearchEngine:
                 field_name=self.get_content_field_name(),
                 algorithm_type="BM25", b_value=0, k1_value=10)
             self.similarity_settings_cache[app_name] = True
+        if self.__index_mapping_total_fields_limit.get(app_name) is None:
+            """
+            Defining too many fields in an index is a condition that can lead to a mapping explosion, which can 
+            cause out of memory errors and difficult situations to recover from. This is quite common with dynamic 
+            mappings. Every time a document contains new fields, those will end up in the index’s mappings
+            ---------------------------------------------------
+            Xác định quá nhiều trường trong một chỉ mục là một điều kiện có thể dẫn đến bùng nổ ánh xạ, có thể
+            gây ra lỗi bộ nhớ và các tình huống khó phục hồi. Điều này khá phổ biến với động
+            ánh xạ. Mỗi khi một tài liệu chứa các trường mới, chúng sẽ xuất hiện trong ánh xạ của chỉ mục
+            """
+            try:
+                ret = self.client.indices.put_settings(index=index_name, body={
+                    "index.mapping.total_fields.limit": 1000000
+
+                    })
+                self.__index_mapping_total_fields_limit[app_name] = ret
+            except Exception as e:
+                """
+                """
+                self.__index_mapping_total_fields_limit[app_name] = e
         return index_name
 
     def delete_doc(self, app_name, id: str):
