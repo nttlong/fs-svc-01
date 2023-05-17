@@ -92,7 +92,13 @@ class SearchEngine:
         Dịch vụ tệp phục vụ cho nhiều người thuê. Mỗi Đối tượng thuê được đại diện bởi app_name \n
         Dịch vụ tệp sẽ tự động tạo Chỉ mục theo tên ứng dụng và tiền tố \n
         tiền tố trong tệp YAML config.yml tại elastic_search.prefix_index (giá trị mặc định là 'lv-codx')
-        Ví dụ: app_name là 'my-app' -> Tên chỉ mục Elaticsearch là lv-codx_my-app
+        Ví dụ: app_name là 'my-app' -> Tên chỉ mục Elasticsearch là lv-codx_my-app \n
+        Importance: many Elasticsearch settings will be applied in this method, such as : \n
+            see link https://www.elastic.co/guide/en/elasticsearch/reference/current/index-modules.html \n
+            max_result_window  see link  \n
+            similarityedit see link https://www.elastic.co/guide/en/elasticsearch/reference/current/similarity.html
+
+
         :param app_name:
         :return:
         """
