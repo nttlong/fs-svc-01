@@ -247,6 +247,16 @@ class FileServices:
         return ret
 
     def remove_upload(self, app_name, upload_id):
+        """
+        Remove Upload File. The method also delete all Thumbnail Files, Main File, OCR File and main thumbnail file
+        finally remove Elasticsearch document \n
+        Xóa tệp tải lên. Phương pháp này cũng xóa tất cả các Tệp hình thu nhỏ, Tệp chính, Tệp OCR và tệp hình thu nhỏ chính
+        cuối cùng xóa tài liệu Elaticsearch
+
+        :param app_name:
+        :param upload_id:
+        :return:
+        """
         upload = self.db_connect.db(app_name).doc(DocUploadRegister).context @ upload_id
         delete_file_list = upload.AvailableThumbs or []
         delete_file_list_by_id = []
