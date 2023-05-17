@@ -3,6 +3,32 @@ This consumer will receive message 'files.upload' from broker. Then generate som
 other consumer
 ---------------------------------------------------------
 Consumer này sẽ nhận được tin nhắn 'files.upload' từ broker. Sau đó, tạo một số thông điệp và phổ biến chúng đến Consumer khác
+--------------------------------------------
+
+MSG_FILE_UPLOAD
+├── MSG_FILE_GENERATE_IMAGE_FROM_VIDEO (*here*)
+│   ├── MSG_FILE_GENERATE_PDF_FROM_IMAGE
+│   │   └── MSG_FILE_OCR_CONTENT
+│   │       └── MSG_FILE_UPDATE_SEARCH_ENGINE_FROM_FILE
+│   └── MSG_FILE_GENERATE_THUMBS
+│       ├── MSG_FILE_SAVE_DEFAULT_THUMB
+│       └── MSG_FILE_SAVE_CUSTOM_THUMB
+├── MSG_FILE_EXTRACT_TEXT_FROM_VIDEO
+├── MSG_FILE_GENERATE_IMAGE_FROM_OFFICE
+│   └── MSG_FILE_GENERATE_THUMBS
+│       ├── MSG_FILE_SAVE_DEFAULT_THUMB
+│       └── MSG_FILE_SAVE_CUSTOM_THUMB
+├── MSG_FILE_GENERATE_IMAGE_FROM_PDF
+│   └── MSG_FILE_OCR_CONTENT
+│       └── MSG_FILE_UPDATE_SEARCH_ENGINE_FROM_FILE
+├── MSG_FILE_GENERATE_PDF_FROM_IMAGE
+│   └── MSG_FILE_OCR_CONTENT
+│       └── MSG_FILE_UPDATE_SEARCH_ENGINE_FROM_FILE
+├── MSG_FILE_GENERATE_THUMBS
+│   ├── MSG_FILE_SAVE_DEFAULT_THUMB
+│   └── MSG_FILE_SAVE_CUSTOM_THUMB
+└── MSG_FILE_OCR_CONTENT
+    └── MSG_FILE_UPDATE_SEARCH_ENGINE_FROM_FILE
 
 """
 
@@ -218,7 +244,35 @@ def on_receive_msg(msg_info: MessageInfo):
         logs.exception(e)
         print(e)
 
+def get_scree():
+    messge_to_screen  =f"\n" \
+                        f"MSG_FILE_UPLOAD\n" \
+                        f"├── MSG_FILE_GENERATE_IMAGE_FROM_VIDEO\n" \
+                        f"│   ├── MSG_FILE_GENERATE_PDF_FROM_IMAGE\n" \
+                        f"│   │   └── MSG_FILE_OCR_CONTENT\n" \
+                        f"│   │       └── MSG_FILE_UPDATE_SEARCH_ENGINE_FROM_FILE\n" \
+                        f"│   └── MSG_FILE_GENERATE_THUMBS\n" \
+                        f"│       ├── MSG_FILE_SAVE_DEFAULT_THUMB\n" \
+                        f"│       └── MSG_FILE_SAVE_CUSTOM_THUMB\n" \
+                        f"├── MSG_FILE_EXTRACT_TEXT_FROM_VIDEO\n" \
+                        f"├── MSG_FILE_GENERATE_IMAGE_FROM_OFFICE\n" \
+                        f"│   └── MSG_FILE_GENERATE_THUMBS\n" \
+                        f"│       ├── MSG_FILE_SAVE_DEFAULT_THUMB\n" \
+                        f"│       └── MSG_FILE_SAVE_CUSTOM_THUMB\n" \
+                        f"├── MSG_FILE_GENERATE_IMAGE_FROM_PDF\n" \
+                        f"│   └── MSG_FILE_OCR_CONTENT\n" \
+                        f"│       └── MSG_FILE_UPDATE_SEARCH_ENGINE_FROM_FILE\n" \
+                        f"├── MSG_FILE_GENERATE_PDF_FROM_IMAGE\n" \
+                        f"│   └── MSG_FILE_OCR_CONTENT\n" \
+                        f"│       └── MSG_FILE_UPDATE_SEARCH_ENGINE_FROM_FILE\n" \
+                        f"├── MSG_FILE_GENERATE_THUMBS\n" \
+                        f"│   ├── MSG_FILE_SAVE_DEFAULT_THUMB\n" \
+                        f"│   └── MSG_FILE_SAVE_CUSTOM_THUMB\n" \
+                        f"└── MSG_FILE_OCR_CONTENT\n" \
+                        f"    └── MSG_FILE_UPDATE_SEARCH_ENGINE_FROM_FILE"
+    return messge_to_screen
 
+print(get_scree())
 msg.consume(
     msg_type=cyx.common.msg.MSG_FILE_UPLOAD,
     handler=on_receive_msg

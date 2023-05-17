@@ -7,7 +7,7 @@ import pathlib
 import sys
 from datetime import datetime
 from time import sleep
-
+import cy_consumers
 working_dir = pathlib.Path(__file__).parent.parent.__str__()
 sys.path.append(working_dir)
 import cy_kit
