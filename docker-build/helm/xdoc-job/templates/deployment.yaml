@@ -115,6 +115,7 @@ metadata:
 spec:
   schedule: {{$value.schedule}}
   {{if eq $value.numOfPods 1.0}}
+
   successfulJobsHistoryLimit: {{$value.numOfPods}}
   failedJobsHistoryLimit: {{$value.numOfPods}}
   {{end}}

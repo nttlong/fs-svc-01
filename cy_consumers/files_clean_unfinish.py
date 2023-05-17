@@ -12,6 +12,8 @@ sys.path.append(pathlib.Path(__file__).parent.parent.__str__())
 import cy_docs
 import cy_kit
 from cy_xdoc.services.apps import AppServices
+
+
 def clean_app(app_name: str, day_ago: int = 2):
     """
     Remove all unfinished files were create at the past someday
@@ -56,7 +58,6 @@ def clean_app(app_name: str, day_ago: int = 2):
             print(e)
 
 
-
 if __name__ == "__main__":
     apps_service = cy_kit.singleton(AppServices)
     while True:
@@ -65,7 +66,7 @@ if __name__ == "__main__":
             print(f"Process {x['Name']}")
             try:
                 clean_app(x["Name"])
-            except Exception  as e:
+            except Exception as e:
                 print(e)
-        time.sleep(2*24*60*50) # wait until the next 2 days
+        time.sleep(2 * 24 * 60 * 50)  # wait until the next 2 days
         print(f"I am waiting until the next 2 days")

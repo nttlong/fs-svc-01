@@ -15,7 +15,7 @@ image:
   repository: nttlong/files-service-final
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "rc.0.5.1.15"
+  tag: "rc.0.5.2.2"
 deployments:
   - name: files-upload
     endpoint: files_upload.py
@@ -50,6 +50,12 @@ deployments:
     endpoint: files_clean_up.py
   - name: files-move-tenants
     endpoint: files_move_tenants.py
+  - name: files-clean-unfinished
+    endpoint: files_clean_unfinish.py
+    replicate: 1
+  - name: fix-hanger-content
+    endpoint: fix_hanger_content.py
+    replicate: 1
 
 
 #cronJobs:
