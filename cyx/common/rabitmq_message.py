@@ -25,7 +25,18 @@ logs = cy_kit.create_logs(
 
 
 class RabitmqMsg:
+    """
+    Definition RabbitMQ Producer and Consumer \n
+    Định nghĩa RabbitMQ Producer và Consumer
+
+    """
     def __try_connect__(self):
+        """
+        Sometime RabbitMQ was fail with unknown reason. The function will re-connect \n
+        Đôi khi RabbitMQ bị lỗi mà không rõ lý do. Function sẽ kết nối lại
+
+        :return:
+        """
 
         try:
             if not self.__channel__ or not self.__channel__.connection.is_open:
@@ -75,7 +86,7 @@ class RabitmqMsg:
 
     def consume(self, handler, msg_type: str):
         """
-        somehow to implement thy source here ...
+        Start RabbitMQ consumer.
         """
         self.__try_connect__()
         self.msg_type = msg_type
@@ -105,11 +116,22 @@ class RabitmqMsg:
         try:
             self.__channel__.start_consuming()
         except pika.exceptions.ConnectionClosedByBroker as e:
+            """
+            Sometime RabbitMQ wasc fail with unknown reason. The function will re-connect
+            Đôi khi RabbitMQ bị lỗi mà không rõ lý do. Chức năng sẽ kết nối lại
+
+            """
             time.sleep(1)
             print(f"re-connect {self.__server__}")
             ok = False
             count = 0
             while not ok and count < 10:
+                """
+                Try reconnect ten times, time after time is 5 seconds
+                Thử kết nối lại mười lần, hết lần này đến lần khác là 5 giây
+
+
+                """
                 count += 1
                 self.__channel__ = None
                 self.__try_connect__()

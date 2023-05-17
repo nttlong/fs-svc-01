@@ -84,6 +84,12 @@ class MessageService:
         return "unknown"
 
     def consume(self, handler, msg_type: str):
+        """
+        Start Consumer
+        :param handler:
+        :param msg_type:
+        :return:
+        """
         pass
 
     def delete(self, item: MessageInfo):
