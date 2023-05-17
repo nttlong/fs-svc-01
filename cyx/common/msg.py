@@ -1,17 +1,61 @@
 MSG_FILE_UPLOAD = "files.upload"
+"""
+Whenever file was uploaded, the message would be raised
+  
+"""
 MSG_FILE_GENERATE_IMAGE_FROM_VIDEO = "files.upload.generate.image.from.video"
+"""
+Get one frame in video file then create new image from that frame \n
+Nhận một khung hình trong tệp video, sau đó tạo hình ảnh mới từ khung hình đó
+
+"""
 MSG_FILE_EXTRACT_TEXT_FROM_VIDEO = "files.extract.text.from.video"
+"""
+Detect frame in video file if that frame contains readable text.
+Use readable text for Content Search \n
+Phát hiện khung trong tệp video nếu khung đó chứa văn bản có thể đọc được.
+Sử dụng văn bản có thể đọc được cho Tìm kiếm Nội dung
+"""
 MSG_FILE_GENERATE_IMAGE_FROM_OFFICE = "files.upload.generate.image.from.office"
+"""
+    Tell Consumer generate an image file from Office file or Office file readable or Office file compatibility format \n
+    tạo tệp hình ảnh từ tệp Office hoặc tệp Office có thể đọc được hoặc định dạng tương thích với tệp Office
+"""
 MSG_FILE_GENERATE_IMAGE_FROM_PDF = "files.upload.generate.image.from.pdf"
+"""
+Tell Consumer generate an image file from PDF file \n
+Nói  Consumer tạo một file hình ảnh từ tệp PDF
+"""
 MSG_FILE_GENERATE_PDF_FROM_IMAGE = "files.upload.generate.pdf"
+"""
+File-Service will collect any readable-content from any material \n
+Include image file. This message will tel a certain Consumer convert image file int PDF file with readable-content \n
+Dịch vụ tệp sẽ thu thập mọi nội dung có thể đọc được từ mọi tài liệu \n
+Bao gồm tập tin hình ảnh. Message sẽ gọi cho một Consumer nhất định chuyển đổi tệp hình ảnh thành tệp PDF có nội dung có thể đọc được
+"""
 MSG_FILE_GENERATE_THUMBS = "files.upload.generate.thumbs"
+"""
+Generate some thumbnail according to file  with thumbnail-size-infor in message's body \n
+Tạo một số hình thu nhỏ theo tệp với thông tin kích thước hình thu nhỏ trong nội dung thư
+"""
 MSG_FILE_OCR_CONTENT = "files.upload.ocr.content"
+"""
+Tell Consumer make OCR file from PDF file \n
+Nói Consumer tạo tệp OCR từ tệp PDF
+"""
 MSG_FILE_SAVE_DEFAULT_THUMB = "files.upload.save.default.thumb"
 MSG_FILE_SAVE_CUSTOM_THUMB = "files.upload.save.custom.thumb"
 MSG_FILE_SAVE_OCR_PDF = "files.upload.save.ocr.pdf"
 MSG_FILE_UPDATE_SEARCH_ENGINE_FROM_FILE = "files.upload.update.search.from.file"
+"""
+Human-readable-content file could be used for Search Content Engine
+The message will force another Comumser to do that \n
+Tệp nội dung con người có thể đọc được có thể được sử dụng cho Search Content Engine
+Tin nhắn sẽ buộc một Conumser khác làm điều đó
+"""
 MSG_FILE_EXTRACT_TEXT_FROM_IMAGE = "files.upload.extract.text.from.file"
 MSG_FILE_MOVE_TENANT = "files.move.tenant"
+MSG_FILE_PAGES_CONTENT = "files.pages.content"
 import datetime
 from typing import List
 

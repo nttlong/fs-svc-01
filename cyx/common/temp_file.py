@@ -135,6 +135,12 @@ class TempFiles:
 
     def get_path(self, app_name, upload_id, file_ext) -> str:
         """
+        Get Full path file in tenant with root temporary directory in get_root_dir()
+        Example: get_path( app_name ='my-app',upload_id='123',file_ext='txt')
+        will return /app/temp/my-app/123.txt if get_root_dir() return /app/temp
+
+        Note: The method also check if file is exist or not. If the file is not exist the method try get real file from MongoDb
+        Lưu ý: Method này cũng kiểm tra xem tệp có tồn tại hay không. Nếu tệp không tồn tại, Method lấy tệp thực từ MongoDb
 
         :param app_name:
         :param upload_id:
@@ -147,6 +153,10 @@ class TempFiles:
             os.makedirs(app_dir, exist_ok=True)
         ret = os.path.join(app_dir, f"{upload_id}.{file_ext}")
         if not os.path.isfile(ret):
+            """
+            if file is not exist in temp folder
+            get it from Mongodb
+            """
             try:
                 fs = self.files_services.get_main_file_of_upload(
                     app_name=app_name,
