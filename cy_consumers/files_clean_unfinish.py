@@ -1,3 +1,8 @@
+"""
+    Remove all unfinished files were create at the past someday
+    Xóa tất cả các tệp chưa hoàn thành đã được tạo vào một ngày nào đó trong quá khứ
+    Time after time is 2 days
+"""
 import datetime
 import pathlib
 import sys
