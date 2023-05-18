@@ -25,7 +25,7 @@ deepdoctection_analyzer = None
 
 class DoctrService:
     def __init__(self):
-        self.__lan__ = "vie+eng"
+        self.__lan__ ="vie" # "vie+eng"
         self.__has_init__ = False
 
     def __build__(self):
@@ -34,6 +34,8 @@ class DoctrService:
         self.__has_init__ = True
         global working_dir
         global lib_path
+
+
         self.dataset_model_path = os.path.abspath(
             os.path.join(lib_path, "dataset-model", "model_final_inf_only.pt")
         )
@@ -58,7 +60,9 @@ class DoctrService:
 
         global deepdoctection_analyzer
         if deepdoctection_analyzer is None:
-
+            dd.set_tesseract_path('/bin/tesseract')
+            if not dd.tesseract_available():
+                raise Exception("tesseract is not available")
             deepdoctection_analyzer = dd.get_dd_analyzer(
                 language=self.__lan__
 

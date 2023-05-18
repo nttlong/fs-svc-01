@@ -1,6 +1,8 @@
 import sys
 import pathlib
 
+from deepdoctection import ModelCatalog
+
 working_path = pathlib.Path(__file__).parent.parent.__str__()
 sys.path.append(working_path)
 
@@ -11,17 +13,24 @@ os.environ["HF_HUB_OFFLINE"]="true"
 os.environ["XDG_CACHE_HOME"]=f"{working_path}/dataset"
 os.environ["DOCTR_CACHE_DIR"]=f"{working_path}/dataset/doctr"
 import cy_kit
+import deepdoctection as dd
+
+dd.set_tesseract_path('xxxx')
 from cyx.doctr_service import DoctrService
 
 doc_tr_service = cy_kit.singleton(DoctrService)
 
-import deepdoctection as dd
+
 from deepdoctection.datapoint import Image as dd_image
 from deepdoctection.dataflow.serialize import DataFromList
 import deepdoctection
 import numpy
 
+import deepdoctection.extern.tessocr
+from deepdoctection.utils.file_utils import _TESS_PATH
+#import pytesseract.pytesseract
 
+deepdoctection.extern.tessocr.set_config_by_yaml(f"/home/vmadmin/python/v6/file-service-02/dataset/deepdoctection/configs/dd/conf_tesseract-1.yaml")
 class TableOCRService:
     def __init__(
             self,
@@ -56,6 +65,9 @@ class TableOCRService:
             # os.path.join(working_path, self._DD_ONE)
             self._DD_ONE
         )
+        print("--------------------------------------------------")
+        print(self.cfg)
+        print("--------------------------------------------------")
         self.cfg.freeze(freezed=False)
         self.cfg.DEVICE = "cpu"
         self.cfg.freeze()
@@ -78,7 +90,7 @@ class TableOCRService:
             self.categories_layout,
             device=self.cfg.DEVICE
         )
-
+        dd.tesseract_available()
         # cell detector
         self.cell_config_path = dd.ModelCatalog.get_full_path_configs(self.cfg.CONFIG.D2CELL)
         self.cell_weights_path = dd.ModelDownloadManager.maybe_download_weights_and_configs(self.cfg.WEIGHTS.D2CELL)
@@ -108,14 +120,24 @@ class TableOCRService:
             self.categories_item,
             device=self.cfg.DEVICE
         )
-
+        path_weights_tl = dd.ModelDownloadManager.maybe_download_weights_and_configs("doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt")
+        categories = ModelCatalog.get_profile("doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt").categories
         # word detector
-        self.det = dd.DoctrTextlineDetector()
+        self.det = dd.DoctrTextlineDetector("db_resnet50", path_weights_tl, categories, "cpu")
+        # self.det = dd.DoctrTextlineDetector(
+        #     architecture="db_resnet50",
+        #     path_weights="/home/vmadmin/python/v6/file-service-02/dataset/doctr/models/db_resnet50-ac60cadc.pt",
+        #     categories= ModelCatalog.get_profile("/home/vmadmin/python/v6/file-service-02/dataset/doctr/models/db_resnet50-ac60cadc.pt").categories
+        #
+        # )
 
-        # text recognizer
-        self.rec = dd.DoctrTextRecognizer(
 
-        )
+
+        # text recognizer rec = DoctrTextRecognizer("crnn_vgg16_bn", path_weights_tr, "cpu")
+        # #
+        path_weights_tr = dd.ModelDownloadManager.maybe_download_weights_and_configs(
+            "doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt")
+        self.rec =  dd.DoctrTextRecognizer("crnn_vgg16_bn", path_weights_tr, "cpu")
     def build_analyzer_pipeline(self, table=True, table_ref=True, ocr=True):
         """Building the Detectron2/DocTr analyzer based on the given config"""
 
@@ -211,6 +233,7 @@ class TableOCRService:
         self.cfg.freeze()
 
         pipe_component_list = []
+
         layout = dd.ImageLayoutService(self.d_layout, to_image=True, crop_image=True)
         pipe_component_list.append(layout)
 
@@ -255,7 +278,8 @@ class TableOCRService:
             pipe_component_list.append(d_layout_text)
 
             d_text = dd.TextExtractionService(self.rec,
-                                              extract_from_roi="WORD")
+                                              extract_from_roi="WORD",
+                                              skip_if_text_extracted=False)
             pipe_component_list.append(d_text)
 
             match = dd.MatchingService(
@@ -293,8 +317,11 @@ class TableOCRService:
         if add_ocr:
             layout_items.sort(key=lambda x: x.reading_order)
         layout_items_str = ""
+
         for item in layout_items:
+
             layout_items_str += f"\n {item.category_name}: {item.text}"
+
         if add_table:
             html_list = [table.html for table in dp.tables]
             if html_list:
@@ -306,11 +333,12 @@ class TableOCRService:
 
         return dp.viz(show_table_structure=True), layout_items_str, html, out
 
-    def analyze_image(self, image: dd_image):
-        assert isinstance(image,dd_image),f"image must be {type(dd_image)}"
+    def analyze_image(self, image_file_path : str):
+        # if not isinstance(image,dd_image):
+        #     raise Exception(f"image must be {type(dd_image)}")
         analyzer = self.build_analyzer_pipeline()
-        df = DataFromList(lst=[image])
-        df = analyzer.analyze(dataset_dataflow=df)
+        # df = DataFromList(lst=[image])
+        df = analyzer.analyze(path=image_file_path)
 
         df.reset_state()
         df_iter = iter(df)
@@ -349,11 +377,28 @@ class TableOCRService:
 
 
     def analyze_image_by_file_path(self, file_path:str):
+
+        ret = self.analyze_image(
+            image_file_path= file_path
+        )
+        return ret
+
+    def load_deepdoctection_datapoint_image(self, file_path:str)->deepdoctection.datapoint.Image:
+        location = pathlib.Path(file_path).parent.__str__()
+        file_name = pathlib.Path(file_path).name
         from numpy import asarray
         from PIL import Image
         img = Image.open(file_path)
-        arr_image = dd.Image()
-        ret = self.analyze_image(
-            image=arr_image
+        arr_image = asarray(img)
+
+        ret = deepdoctection.datapoint.Image(
+            file_name=file_name, location=location
+
         )
+        ret.get_image()
+        print("file data")
+        print(ret.image)
+        ret.image = arr_image[:, :, ::-1]
+        img.close()
+        del img
         return ret

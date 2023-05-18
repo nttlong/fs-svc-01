@@ -6,13 +6,20 @@ working_path = pathlib.Path(__file__).parent.parent.__str__()
 import os
 
 sys.path.append(working_path)
-import  huggingface_hub
-import os
+os.environ["TRANSFORMERS_OFFLINE"] = "true"
+os.environ["HF_HUB_OFFLINE"]="true"
+os.environ["XDG_CACHE_HOME"]=f"{working_path}/dataset"
+os.environ["DOCTR_CACHE_DIR"]=f"{working_path}/dataset/doctr"
+import deepdoctection as dd
+
+
 import cy_kit
 import gradio as gr
 from  cyx.table_ocr_service import TableOCRService
 
 table_ocr_service = cy_kit.singleton(TableOCRService)
+import transformers.file_utils
+transformers.file_utils.is_pytesseract_available()
 
 os.environ["GRADIO_SERVER_NAME"] = "0.0.0.0"
 print("OK")
