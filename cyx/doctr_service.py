@@ -25,7 +25,7 @@ deepdoctection_analyzer = None
 
 class DoctrService:
     def __init__(self):
-        self.__lan__ ="vie" # "vie+eng"
+        self.__lan__ ="Vietnamese" # "vie+eng"
         self.__has_init__ = False
 
     def __build__(self):

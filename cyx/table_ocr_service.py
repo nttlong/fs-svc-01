@@ -123,6 +123,7 @@ class TableOCRService:
         path_weights_tl = dd.ModelDownloadManager.maybe_download_weights_and_configs("doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt")
         categories = ModelCatalog.get_profile("doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt").categories
         # word detector
+
         self.det = dd.DoctrTextlineDetector("db_resnet50", path_weights_tl, categories, "cpu")
         # self.det = dd.DoctrTextlineDetector(
         #     architecture="db_resnet50",
@@ -235,6 +236,18 @@ class TableOCRService:
         pipe_component_list = []
 
         layout = dd.ImageLayoutService(self.d_layout, to_image=True, crop_image=True)
+        deepdoctection_analyzer = self.doc_tr_service.deepdoctection_analyzer
+        print("-------------------------------------------")
+        for x in deepdoctection_analyzer.pipe_component_list:
+            print(x)
+        print("-------------------------------------------")
+        # deepdoctection_analyzer =  dd.get_dd_analyzer(
+        #     language="Vietnamese"
+        #
+        # )
+
+        print(deepdoctection_analyzer.pipe_component_list.__len__())
+
         pipe_component_list.append(layout)
 
         if self.cfg.TAB:
@@ -276,10 +289,16 @@ class TableOCRService:
         if self.cfg.OCR:
             d_layout_text = dd.ImageLayoutService(self.det, to_image=True, crop_image=True)
             pipe_component_list.append(d_layout_text)
+            dd.tesseract_available()
 
+            # pipe_component_list = deepdoctection_analyzer.pipe_component_list
             d_text = dd.TextExtractionService(self.rec,
+
                                               extract_from_roi="WORD",
                                               skip_if_text_extracted=False)
+            print()
+            # pipe_component_list+=deepdoctection_analyzer.pipe_component_list
+
             pipe_component_list.append(d_text)
 
             match = dd.MatchingService(
@@ -307,7 +326,8 @@ class TableOCRService:
 
         pipe = dd.DoctectionPipe(pipeline_component_list=pipe_component_list)
 
-        return pipe
+
+        return deepdoctection_analyzer
 
     def prepare_output(self, dp: deepdoctection.datapoint.view.Page, add_table: bool, add_ocr: bool):
         out = dp.as_dict()

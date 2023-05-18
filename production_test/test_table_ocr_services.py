@@ -11,7 +11,9 @@ os.environ["HF_HUB_OFFLINE"]="true"
 os.environ["XDG_CACHE_HOME"]=f"{working_path}/dataset"
 os.environ["DOCTR_CACHE_DIR"]=f"{working_path}/dataset/doctr"
 import deepdoctection as dd
-
+def inpect(*args,**kwargs):
+    print(args)
+    print(kwargs)
 
 import cy_kit
 import gradio as gr
