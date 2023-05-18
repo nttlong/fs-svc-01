@@ -16,6 +16,7 @@ from cyx.doctr_service import DoctrService
 doc_tr_service = cy_kit.singleton(DoctrService)
 
 import deepdoctection as dd
+from deepdoctection.datapoint import Image as dd_image
 from deepdoctection.dataflow.serialize import DataFromList
 import deepdoctection
 import numpy
@@ -115,7 +116,7 @@ class TableOCRService:
         self.rec = dd.DoctrTextRecognizer(
 
         )
-    def build_analyzer_pipeline(self, table, table_ref, ocr):
+    def build_analyzer_pipeline(self, table=True, table_ref=True, ocr=True):
         """Building the Detectron2/DocTr analyzer based on the given config"""
 
         self.cfg.freeze(freezed=False)
@@ -206,13 +207,7 @@ class TableOCRService:
         self.cfg.TAB = table
         self.cfg.TAB_REF = table_ref
         self.cfg.OCR = ocr
-        print("-------------------------------------------")
-        print("-------------------------------------------")
-        print("-------------------------------------------")
-        print(ocr)
-        print("-------------------------------------------")
-        print("-------------------------------------------")
-        print("-------------------------------------------")
+
         self.cfg.freeze()
 
         pipe_component_list = []
@@ -311,29 +306,19 @@ class TableOCRService:
 
         return dp.viz(show_table_structure=True), layout_items_str, html, out
 
-    def analyze_image(self, image: numpy.ndarray):
-        pass
+    def analyze_image(self, image: dd_image):
+        assert isinstance(image,dd_image),f"image must be {type(dd_image)}"
+        analyzer = self.build_analyzer_pipeline()
+        df = DataFromList(lst=[image])
+        df = analyzer.analyze(dataset_dataflow=df)
 
+        df.reset_state()
+        df_iter = iter(df)
 
+        dp = next(df_iter)
+        ret_dict = dp.as_dict()
 
-
-        # if img is not None:
-        #     image = dd.Image(file_name="input.png", location="")
-        #     image.image = img[:, :, ::-1]
-        #
-        #     df = DataFromList(lst=[image])
-        #     df = analyzer.analyze(dataset_dataflow=df)
-        # elif pdf:
-        #     df = analyzer.analyze(path=pdf.name, max_datapoints=3)
-        # else:
-        #     raise ValueError
-        #
-        # df.reset_state()
-        # df_iter = iter(df)
-        #
-        # dp = next(df_iter)
-        #
-        # return self.prepare_output(dp, add_table, add_ocr)
+        return ret_dict
     def analyze_image_or_pdf(self, img: numpy.ndarray, pdf, attributes):
 
         # creating an image object and passing to the analyzer by using dataflows
@@ -367,7 +352,7 @@ class TableOCRService:
         from numpy import asarray
         from PIL import Image
         img = Image.open(file_path)
-        arr_image = asarray(img)
+        arr_image = dd.Image()
         ret = self.analyze_image(
             image=arr_image
         )
