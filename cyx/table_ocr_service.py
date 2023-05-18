@@ -6,6 +6,8 @@ sys.path.append(working_path)
 
 
 import os
+os.environ["TRANSFORMERS_OFFLINE"] = "true"
+os.environ["HF_HUB_OFFLINE"]="true"
 os.environ["XDG_CACHE_HOME"]=f"{working_path}/dataset"
 os.environ["DOCTR_CACHE_DIR"]=f"{working_path}/dataset/doctr"
 import cy_kit
@@ -366,6 +368,7 @@ class TableOCRService:
         from PIL import Image
         img = Image.open(file_path)
         arr_image = asarray(img)
-        return self.analyze_image(
-            image=img
+        ret = self.analyze_image(
+            image=arr_image
         )
+        return ret

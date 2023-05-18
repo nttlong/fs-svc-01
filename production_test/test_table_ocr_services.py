@@ -2,7 +2,11 @@ import sys
 import pathlib
 
 working_path = pathlib.Path(__file__).parent.parent.__str__()
+
+import os
+
 sys.path.append(working_path)
+import  huggingface_hub
 import os
 import cy_kit
 import gradio as gr

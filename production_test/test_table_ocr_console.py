@@ -3,7 +3,12 @@ import pathlib
 
 working_path = pathlib.Path(__file__).parent.parent.__str__()
 sys.path.append(working_path)
+
 import os
+os.environ["TRANSFORMERS_OFFLINE"] = "true"
+os.environ["HF_HUB_OFFLINE"]="true"
+from huggingface_hub import constants
+print(constants.__dict__)
 import cy_kit
 import gradio as gr
 from  cyx.table_ocr_service import TableOCRService
