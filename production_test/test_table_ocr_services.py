@@ -6,10 +6,13 @@ working_path = pathlib.Path(__file__).parent.parent.__str__()
 import os
 
 sys.path.append(working_path)
-os.environ["TRANSFORMERS_OFFLINE"] = "true"
-os.environ["HF_HUB_OFFLINE"]="true"
-os.environ["XDG_CACHE_HOME"]=f"{working_path}/dataset"
-os.environ["DOCTR_CACHE_DIR"]=f"{working_path}/dataset/doctr"
+import cyx.document_layout_analysis.system
+cyx.document_layout_analysis.system.set_offline_dataset(True)
+cyx.document_layout_analysis.system.set_dataset_path("./dataset")
+# os.environ["TRANSFORMERS_OFFLINE"] = "true"
+# os.environ["HF_HUB_OFFLINE"]="true"
+# os.environ["XDG_CACHE_HOME"]=f"{working_path}/dataset"
+# os.environ["DOCTR_CACHE_DIR"]=f"{working_path}/dataset/doctr"
 import deepdoctection as dd
 def inpect(*args,**kwargs):
     print(args)
