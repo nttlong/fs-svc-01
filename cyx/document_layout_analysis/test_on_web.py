@@ -7,7 +7,7 @@ import os
 
 sys.path.append(working_path)
 import cyx.document_layout_analysis.system
-
+cyx.document_layout_analysis.system.set_languages("Vietnamese")
 cyx.document_layout_analysis.system.set_offline_dataset(True)
 cyx.document_layout_analysis.system.set_dataset_path("./dataset")
 import cy_kit

@@ -39,9 +39,10 @@ if __tesseract_path__ is None:
     """
     raise Exception(f"tesseract was not found in thou's OS \n"
                     f"Install before run this pacage")
-
+__ocr_languages__ = ["eng","vie"]
 __working_path__ = pathlib.Path(__file__).parent.parent.parent.__str__()
 sys.path.append(__working_path__)
+__full_path_to_data_set__ = os.path.abspath(os.path.join(__working_path__,"dataset"))
 """
 The path to root directory of applcation
 """
@@ -107,8 +108,12 @@ def set_dataset_path(abs_or_relative_path: str):
         os.makedirs(doctr_path, exist_ok=True)
     os.environ["XDG_CACHE_HOME"] = full_path_to_data_set
     os.environ["DOCTR_CACHE_DIR"] = doctr_path
+    global __full_path_to_data_set__
+    __full_path_to_data_set__ = full_path_to_data_set
     print(f"Thou's system will with dataset locate at:\n'{full_path_to_data_set}'")
-
+def get_dataset_path():
+    global __full_path_to_data_set__
+    return __full_path_to_data_set__
 
 def is_tesseract_available() -> bool:
     global __working_path__
@@ -165,3 +170,23 @@ __message__ = f"Tesseract is in thou's OS with below information:\n" \
               f"Version:{get_tesseract_version()}\"" \
               f"Languages:\t\n" + '\t\n-'.join(get_tesseract_languages())
 print(__message__)
+
+
+def set_languages(*args,**kwargs):
+    global __ocr_languages__
+    if isinstance(args,tuple):
+        __ocr_languages__ = list(args)
+    if isinstance(args,str):
+        __ocr_languages__ = [args]
+    print(f"Thou's system now is running with {','.join(__ocr_languages__)}")
+
+
+def get_languages():
+    """
+    Get languages was set by "set_languages" or default
+    :return:
+    """
+    global __ocr_languages__
+    return __ocr_languages__
+
+

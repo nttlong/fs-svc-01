@@ -1,18 +1,19 @@
 import os
 import huggingface_hub.file_download
+
 huggingface_hub.file_download.HUGGINGFACE_HUB_CACHE = f"/home/vmadmin/python/v6/file-service-02/dataset"
 
 print(huggingface_hub.file_download.HUGGINGFACE_HUB_CACHE)
 os.environ['CURL_CA_BUNDLE'] = ''
 import pathlib
 import shutil
-
+import cyx.document_layout_analysis.system
 working_dir = pathlib.Path(__file__).parent.parent.parent.__str__()
 lib_path = pathlib.Path(__file__).parent.parent.__str__()
 import os
 
-os.environ["XDG_CACHE_HOME"] = f"{working_dir}/dataset"
-os.environ["DOCTR_CACHE_DIR"] = f"{working_dir}/dataset/doctr"
+# os.environ["XDG_CACHE_HOME"] = cyx.document_layout_analysis.system.set_dataset_path()
+# os.environ["DOCTR_CACHE_DIR"] = f"{working_dir}/dataset/doctr"
 
 # os.environ["DOCTR_CACHE_DIR"]= f"{working_dir}/dataset"
 from doctr.io import DocumentFile
@@ -25,7 +26,7 @@ deepdoctection_analyzer = None
 
 class DoctrService:
     def __init__(self):
-        self.__lan__ ="vie" # "vie+eng"
+        self.__lan__ = "+".join(cyx.document_layout_analysis.system.get_languages())
         self.__has_init__ = False
 
     def __build__(self):
@@ -35,12 +36,12 @@ class DoctrService:
         global working_dir
         global lib_path
 
-
         self.dataset_model_path = os.path.abspath(
             os.path.join(lib_path, "dataset-model", "model_final_inf_only.pt")
         )
 
-        self.dataset_dir = os.path.join(working_dir, "dataset")
+        self.dataset_dir = cyx.document_layout_analysis.system.get_dataset_path()
+            #os.path.join(working_dir, "dataset")
         self.deepdoctection_weights_layout_finale_model_dir = os.path.abspath(
             os.path.join(
                 self.dataset_dir,
