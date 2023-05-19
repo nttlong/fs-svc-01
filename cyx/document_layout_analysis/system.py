@@ -24,6 +24,7 @@ import sys
 
 __tesseract_path__ = shutil.which("tesseract")
 __tesseract_languages__ = None
+
 import typing
 
 """
@@ -157,8 +158,9 @@ def set_tesseract_path(abs_path):
     import pytesseract
     pytesseract.get_languages()
 
+
 __message__ = f"Tesseract is in thou's OS with below information:\n" \
               f"Path='{__tesseract_path__}'\n" \
               f"Version:{get_tesseract_version()}\"" \
-              f"Languages:{'\t\n-'.join(get_tesseract_languages())}"
+              f"Languages:" + '\t\n-'.join(get_tesseract_languages())
 print(__message__)
