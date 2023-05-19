@@ -12,7 +12,7 @@ import cy_kit
 import deepdoctection as dd
 
 
-from cyx.doctr_service import DoctrService
+from cyx.document_layout_analysis.doctr_service import DoctrService
 
 
 
