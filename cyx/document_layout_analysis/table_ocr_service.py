@@ -3,7 +3,7 @@ import pathlib
 
 from deepdoctection import ModelCatalog
 
-working_path = pathlib.Path(__file__).parent.parent.__str__()
+working_path = pathlib.Path(__file__).parent.parent.parent.__str__()
 sys.path.append(working_path)
 
 
@@ -31,7 +31,7 @@ class TableOCRService:
     ):
         self.doc_tr_service = doc_tr_service
         self.doc_tr_service_model = doc_tr_service.get_model()
-        self.sub_app_dir = pathlib.Path(__file__).parent.__str__()
+        self.sub_app_dir = pathlib.Path(__file__).parent.parent.__str__()
         self._DD_ONE = f"{self.sub_app_dir}/conf_dd_one.yaml"
         if not os.path.isfile(self._DD_ONE):
             raise Exception(f"{self._DD_ONE} was not found")

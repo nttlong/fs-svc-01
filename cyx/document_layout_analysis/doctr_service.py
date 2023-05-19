@@ -7,8 +7,8 @@ os.environ['CURL_CA_BUNDLE'] = ''
 import pathlib
 import shutil
 
-working_dir = pathlib.Path(__file__).parent.parent.__str__()
-lib_path = pathlib.Path(__file__).parent.__str__()
+working_dir = pathlib.Path(__file__).parent.parent.parent.__str__()
+lib_path = pathlib.Path(__file__).parent.parent.__str__()
 import os
 
 os.environ["XDG_CACHE_HOME"] = f"{working_dir}/dataset"

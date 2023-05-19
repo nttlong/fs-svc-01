@@ -28,7 +28,8 @@ COPY ./../docker-build/files-service-final-req.txt ./files-service-final-req.txt
 RUN pip install -r files-service-final-req.txt  --no-cache-dir
 
 
-
+RUN pip uninstall packaging -y & \
+    pip install packaging packaging==20.9
 
 RUN if ["$TARGETARCH" ="amd64"]; then \
     python3 pre_test_build/check_tika_server.py;\

@@ -107,6 +107,7 @@ def set_dataset_path(abs_or_relative_path: str):
         os.makedirs(doctr_path, exist_ok=True)
     os.environ["XDG_CACHE_HOME"] = full_path_to_data_set
     os.environ["DOCTR_CACHE_DIR"] = doctr_path
+    print(f"Thou's system will with dataset locate at:\n'{full_path_to_data_set}'")
 
 
 def is_tesseract_available() -> bool:
@@ -162,5 +163,5 @@ def set_tesseract_path(abs_path):
 __message__ = f"Tesseract is in thou's OS with below information:\n" \
               f"Path='{__tesseract_path__}'\n" \
               f"Version:{get_tesseract_version()}\"" \
-              f"Languages:" + '\t\n-'.join(get_tesseract_languages())
+              f"Languages:\t\n" + '\t\n-'.join(get_tesseract_languages())
 print(__message__)

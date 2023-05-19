@@ -1,12 +1,13 @@
 import sys
 import pathlib
 
-working_path = pathlib.Path(__file__).parent.parent.__str__()
-
+working_path = pathlib.Path(__file__).parent.parent.parent.__str__()
+print(f"app path = {working_path}")
 import os
 
 sys.path.append(working_path)
 import cyx.document_layout_analysis.system
+
 cyx.document_layout_analysis.system.set_offline_dataset(True)
 cyx.document_layout_analysis.system.set_dataset_path("./dataset")
 import cy_kit
