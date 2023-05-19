@@ -76,7 +76,7 @@ spec:
               name: xdoc-dataset
       containers:
         - args:
-            - python3
+            - {{$value.executor | default $.Values.defaults.executor}}
             - /app/cy_consumers/{{$value.endpoint}}
             - elastic_search.server=$(elastic_search.server)
             - elastic_search.prefix_index=$(elastic_search.prefix_index)
@@ -86,8 +86,8 @@ spec:
             - temp_directory=$(temp_directory)
             - rabbitmq.server=$(rabbitmq.server)
             - rabbitmq.port=$(rabbitmq.port)
+          image: {{$value.image | default $.Values.image.repository}}
 
-          image: {{ $.Values.image.repository }}:{{ $.Values.image.tag }}
           envFrom:
             - configMapRef:
                 name: xdoc-job-config

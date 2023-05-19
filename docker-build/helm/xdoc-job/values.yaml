@@ -6,13 +6,15 @@ replicaCount: 1
 defaults:
   replicate: 1
   description: "Uprate version"
+  executor: "python3"
+
 namespace: xdoc-job-v4
 nfs:
   server: 172.16.7.91
   directory: /var/nfs_share_dir_for_k8s
 
 image:
-  repository: nttlong/files-service-final
+  repository: nttlong/files-service-final:rc.0.5.2.3
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: "rc.0.5.2.2"
@@ -56,6 +58,10 @@ deployments:
   - name: fix-hanger-content
     endpoint: fix_hanger_content.py
     replicate: 1
+  - name: fs-data-set-install
+    endpoint: data-set-check.sh
+    image: nttlong/files-service-data-kompact:rc.0.0.0.0
+    executor: " "
 
 
 #cronJobs:

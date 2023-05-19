@@ -1,0 +1,10 @@
+FROM  debian
+RUN apt-get update
+RUN apt-get install zip -y
+RUN mkdir -p /app/dataset
+RUN mkdir -p /app/zip
+
+COPY ./../dataset-v2.zip /app/zip/dataset.zip
+COPY ./../docker-build/data-set-check.sh /app/cy_consumers/data-set-check.sh
+RUN chmod +x /app/cy_consumers/data-set-check.sh
+#docker buildx   build -t nttlong/files-service-data-kompact:rc.0.0.0.0  --platform=linux/amd64,linux/arm64/v8  ./.. -f files-dataset-kompact  --push=true --output type=registry
