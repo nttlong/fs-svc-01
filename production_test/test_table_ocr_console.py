@@ -4,17 +4,19 @@ import pathlib
 working_path = pathlib.Path(__file__).parent.parent.__str__()
 sys.path.append(working_path)
 
-import os
-os.environ["TRANSFORMERS_OFFLINE"] = "true"
-os.environ["HF_HUB_OFFLINE"]="true"
-from huggingface_hub import constants
-print(constants.__dict__)
+import cyx.document_layout_analysis.system
+cyx.document_layout_analysis.system.set_offline_dataset(True)
+cyx.document_layout_analysis.system.set_dataset_path("./dataset")
+import transformers.file_utils
+transformers.file_utils.is_pytesseract_available()
 import cy_kit
-import gradio as gr
-from  cyx.table_ocr_service import TableOCRService
+from  cyx.document_layout_analysis.table_ocr_service import TableOCRService
 f=f"/home/vmadmin/python/v6/file-service-02/temp-data/Screenshot_3.png"
 table_ocr_service = cy_kit.singleton(TableOCRService)
+import deepdoctection.extern.model
+
 ret=table_ocr_service.analyze_image_by_file_path(
     file_path=f
 )
-print(ret)
+for x in ret:
+    print(type(x))

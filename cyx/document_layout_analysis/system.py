@@ -14,14 +14,17 @@ docment_layout_analysis.set_offline_dataset(true) # the dataset of AI is already
 ... any thou's source code star from here
 if __name__=="__main__":
 .....
+
 """
+
+
 import os
 import pathlib
 import shutil
 import string
 import subprocess
 import sys
-
+import gradio
 __tesseract_path__ = shutil.which("tesseract")
 __tesseract_languages__ = None
 

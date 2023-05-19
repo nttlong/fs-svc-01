@@ -8,6 +8,7 @@ os.environ['CURL_CA_BUNDLE'] = ''
 import pathlib
 import shutil
 import cyx.document_layout_analysis.system
+
 working_dir = pathlib.Path(__file__).parent.parent.parent.__str__()
 lib_path = pathlib.Path(__file__).parent.parent.__str__()
 import os
@@ -23,11 +24,28 @@ from doctr.datasets import CORD
 
 deepdoctection_analyzer = None
 
+import deepdoctection
+
 
 class DoctrService:
+
     def __init__(self):
         self.__lan__ = "+".join(cyx.document_layout_analysis.system.get_languages())
         self.__has_init__ = False
+        self.__analyzer__ = None
+
+    def get_analyzer(self) -> deepdoctection.DoctectionPipe:
+        self.__build__()
+        if self.__analyzer__ is None:
+            deepdoctection.set_tesseract_path('/bin/tesseract')
+            if not deepdoctection.tesseract_available():
+                raise Exception("tesseract is not available")
+            self.__analyzer__ = deepdoctection.get_dd_analyzer(
+                language=self.__lan__
+
+            )
+
+        return self.__analyzer__
 
     def __build__(self):
         if self.__has_init__:
@@ -41,7 +59,7 @@ class DoctrService:
         )
 
         self.dataset_dir = cyx.document_layout_analysis.system.get_dataset_path()
-            #os.path.join(working_dir, "dataset")
+        # os.path.join(working_dir, "dataset")
         self.deepdoctection_weights_layout_finale_model_dir = os.path.abspath(
             os.path.join(
                 self.dataset_dir,
@@ -64,6 +82,7 @@ class DoctrService:
             dd.set_tesseract_path('/bin/tesseract')
             if not dd.tesseract_available():
                 raise Exception("tesseract is not available")
+            
             deepdoctection_analyzer = dd.get_dd_analyzer(
                 language=self.__lan__
 
