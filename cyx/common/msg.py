@@ -85,6 +85,14 @@ Tin nhắn sẽ buộc một Conumser khác làm điều đó
 MSG_FILE_EXTRACT_TEXT_FROM_IMAGE = "files.upload.extract.text.from.file"
 MSG_FILE_MOVE_TENANT = "files.move.tenant"
 MSG_FILE_PAGES_CONTENT = "files.pages.content"
+"""
+Parse page by page of file put to Elasticsearch and MongoDb
+"""
+MSG_FILE_DOC_LAYOUT_ANALYSIS = "files.document.layout.analysis"
+"""deepdoctection is a Python library that orchestrates document extraction and document layout analysis tasks using 
+deep learning models. It does not implement models but enables you to build pipelines using highly acknowledged 
+libraries for object detection, OCR and selected NLP tasks and provides an integrated framework for fine-tuning, 
+evaluating and running models. For more specific text processing tasks use one of the many other great NLP libraries"""
 import datetime
 from typing import List
 

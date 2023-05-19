@@ -12,11 +12,16 @@ transformers.file_utils.is_pytesseract_available()
 import cy_kit
 from  cyx.document_layout_analysis.table_ocr_service import TableOCRService
 f=f"/home/vmadmin/python/v6/file-service-02/temp-data/Screenshot_3.png"
+fo=f"/home/vmadmin/python/v6/file-service-02/temp-data/Screenshot_4.png"
 table_ocr_service = cy_kit.singleton(TableOCRService)
 import deepdoctection.extern.model
 
 ret=table_ocr_service.analyze_image_by_file_path(
-    file_path=f
+    input_file_path=f,
+    ouput_file_path=fo
 )
 for x in ret:
-    print(type(x))
+    if isinstance(x,str):
+        print(x)
+    else:
+        print(type(x))

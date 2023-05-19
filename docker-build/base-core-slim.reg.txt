@@ -74,3 +74,6 @@ PyMuPDF~=1.19.6
 
 moviepy==1.0.3
 ocrmypdf==14.1.0
+html-to-json
+git+https://github.com/facebookresearch/fastText.git
+jdeskew

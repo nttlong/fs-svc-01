@@ -385,18 +385,18 @@ class TableOCRService:
         #     return dp
         return self.prepare_output(dp, add_table, add_ocr)
 
-    def analyze_image_by_file_path(self, file_path: str, ouput_image: str):
+    def analyze_image_by_file_path(self, input_file_path: str, ouput_file_path: str):
 
         arr_image, msg_1, msg_2, data = self.analyze_image(
-            image_file_path=file_path
+            image_file_path=input_file_path
         )
         import numpy as np
         from PIL import Image
         im = Image.fromarray(arr_image)
-        im.save(ouput_image)
+        im.save(ouput_file_path)
         del im
         del arr_image
-        return ouput_image, msg_1, msg_2, data
+        return ouput_file_path, msg_1, msg_2, data
 
     def load_deepdoctection_datapoint_image(self, file_path: str) -> deepdoctection.datapoint.Image:
         location = pathlib.Path(file_path).parent.__str__()

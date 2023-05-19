@@ -131,6 +131,18 @@ def on_receive_msg(msg_info: MessageInfo):
         file_ext = msg_info.Data.get("FileExt")
         import mimetypes
         mime_type, _ = mimetypes.guess_type(msg_info.Data['FullFileName'])
+        msg.emit(
+            app_name=msg_info.AppName,
+            message_type=cyx.common.msg.MSG_FILE_DOC_LAYOUT_ANALYSIS,
+            data=msg_info.Data
+        )
+        msg.emit(
+            app_name=msg_info.AppName,
+            message_type=cyx.common.msg.MSG_FILE_PAGES_CONTENT,
+            data=msg_info.Data
+        )
+        print(f"{cyx.common.msg.MSG_FILE_GENERATE_IMAGE_FROM_OFFICE}\n{full_file_path}")
+        logs.info(f"{cyx.common.msg.MSG_FILE_GENERATE_IMAGE_FROM_OFFICE}\n{full_file_path}")
         if file_ext.lower() == "pdf":
             msg.emit(
                 app_name=msg_info.AppName,
