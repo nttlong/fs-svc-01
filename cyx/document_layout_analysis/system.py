@@ -23,6 +23,9 @@ import subprocess
 import sys
 
 __tesseract_path__ = shutil.which("tesseract")
+__tesseract_languages__ = None
+import typing
+
 """
 The package is require tesseract
 Yêu cầu tesseract
@@ -112,7 +115,7 @@ def is_tesseract_available() -> bool:
 
 def get_tesseract_version():
     """
-    Returns Version object of the Tesseract version. We need at least Tesseract 3.05
+    get tesseract version
     """
     global __working_path__
     try:
@@ -132,6 +135,30 @@ def get_tesseract_version():
     return str_version
 
 
+def get_tesseract_languages() -> typing.List[str]:
+    """
+    get tesseract languages
+    :return:
+    """
+    global __tesseract_languages__
+    if __tesseract_languages__ is None:
+        output = subprocess.check_output(
+            [__tesseract_path__, "--list-langs"],
+            stderr=subprocess.STDOUT,
+            env=os.environ,
+            stdin=subprocess.DEVNULL,
+        )
+        txt_output = output.decode("utf-8")
+        __tesseract_languages__ = txt_output.split(':')[1].lstrip('\n').rstrip('\n').split('\n')
+    return __tesseract_languages__
+
+
 def set_tesseract_path(abs_path):
     import pytesseract
     pytesseract.get_languages()
+
+__message__ = f"Tesseract is in thou's OS with below information:\n" \
+              f"Path='{__tesseract_path__}'\n" \
+              f"Version:{get_tesseract_version()}\"" \
+              f"Languages:{'\t\n-'.join(get_tesseract_languages())}"
+print(__message__)

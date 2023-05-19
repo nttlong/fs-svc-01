@@ -21,7 +21,7 @@ import deepdoctection
 import numpy
 
 import deepdoctection.extern.tessocr
-deepdoctection.extern.tessocr.get_tesseract_requirement()
+
 
 class TableOCRService:
     def __init__(
