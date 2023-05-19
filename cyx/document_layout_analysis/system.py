@@ -17,9 +17,27 @@ if __name__=="__main__":
 """
 import os
 import pathlib
+import shutil
+import string
+import subprocess
 import sys
 
+__tesseract_path__ = shutil.which("tesseract")
+"""
+The package is require tesseract
+Yêu cầu tesseract
+
+"""
+if __tesseract_path__ is None:
+    """
+    If thou's OS did not have "tesseract", we will cause the problem here
+    Nếu hệ điều hành của bạn không có "tesseract", chúng tôi sẽ gây ra sự cố tại đây
+    """
+    raise Exception(f"tesseract was not found in thou's OS \n"
+                    f"Install before run this pacage")
+
 __working_path__ = pathlib.Path(__file__).parent.parent.parent.__str__()
+sys.path.append(__working_path__)
 """
 The path to root directory of applcation
 """
@@ -68,20 +86,52 @@ def set_dataset_path(abs_or_relative_path: str):
     """
     global __working_path__
     full_path_to_data_set = abs_or_relative_path
-    if abs_or_relative_path[0:2] =="./":
+    if abs_or_relative_path[0:2] == "./":
         """
         if start with "./" -> relative path
         """
         full_path_to_data_set = os.path.abspath(
-            os.path.join(__working_path__,abs_or_relative_path[2:])
+            os.path.join(__working_path__, abs_or_relative_path[2:])
         )
     doctr_path = os.path.abspath(
-        os.path.join(full_path_to_data_set,"doctr")
+        os.path.join(full_path_to_data_set, "doctr")
     )
     if not os.path.isdir(doctr_path):
         """
         if not exist "doctr_path" create it
         """
-        os.makedirs(doctr_path,exist_ok=True)
+        os.makedirs(doctr_path, exist_ok=True)
     os.environ["XDG_CACHE_HOME"] = full_path_to_data_set
     os.environ["DOCTR_CACHE_DIR"] = doctr_path
+
+
+def is_tesseract_available() -> bool:
+    global __working_path__
+    return __tesseract_path__ is not None
+
+
+def get_tesseract_version():
+    """
+    Returns Version object of the Tesseract version. We need at least Tesseract 3.05
+    """
+    global __working_path__
+    try:
+        output = subprocess.check_output(
+            [__tesseract_path__, "--version"],
+            stderr=subprocess.STDOUT,
+            env=os.environ,
+            stdin=subprocess.DEVNULL,
+        )
+    except OSError:
+        raise Exception(f"tesseract was not found in thou's OS")
+
+    raw_version = output.decode("utf-8")
+    str_version, *_ = raw_version.lstrip(string.printable[10:]).partition(" ")
+    str_version, *_ = str_version.partition("-")
+
+    return str_version
+
+
+def set_tesseract_path(abs_path):
+    import pytesseract
+    pytesseract.get_languages()
