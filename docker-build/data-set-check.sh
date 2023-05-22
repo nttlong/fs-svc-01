@@ -1,2 +1,3 @@
 #!/bin/sh
-unzip /app/zip/dataset.zip -d /app
+mkdir -p /app/dataset/chek-version
+mv   /tmp/data/dataset/* /app/dataset

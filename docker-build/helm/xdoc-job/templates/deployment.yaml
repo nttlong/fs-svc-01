@@ -45,6 +45,7 @@ spec:
       labels:
         app: files-{{$value.name}}
     spec:
+
       volumes:
         - name: xdoc-temp-storage
           nfs:
@@ -54,7 +55,10 @@ spec:
           nfs:
             server: {{$.Values.nfs.server}}
             path: {{$.Values.nfs.directory}}/dataset
-
+        - name: xdoc-brokers
+          nfs:
+            server: {{$.Values.nfs.server}}
+            path: {{$.Values.nfs.directory}}/brokers
       initContainers:
         - name: volume-mount-hack
           image: busybox
@@ -77,16 +81,21 @@ spec:
 
 
       containers:
+      {{if eq $value.executor "sh"}}
+        - command: [
+          "sh",
+          "-c",
+          "chown -R nfsnobody:nfsnobody /app/dataset",
+          "mkdir -p /app/dataset/chek-version",
+          "mv   /tmp/data/dataset/* /app/dataset"
 
+        ]
+      {{else}}
         - args:
-            {{if eq $value.executor "sh"}}
-            - /app/cy_consumers/{{$value.endpoint}}
-            {{else}}
             - python3
             - /app/cy_consumers/{{$value.endpoint}}
             {{- include "python3-args" . | nindent 12}}
-            {{end}}
-
+      {{end}}
           image: {{$value.image | default $.Values.image.repository}}
 
           envFrom:

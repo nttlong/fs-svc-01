@@ -1,10 +1,12 @@
-FROM  debian
-RUN apt-get update
-RUN apt-get install zip -y
-RUN mkdir -p /app/dataset
-RUN mkdir -p /app/zip
+FROM  python:alpine
+RUN mkdir -p /app/cyx
+RUN mkdir -p /app/cy_consumers
+COPY ./../cy_consumers/install_dataset.py /app/cy_consumers/install_dataset.py
 
-COPY ./../dataset-v2.zip /app/zip/dataset.zip
-COPY ./../docker-build/data-set-check.sh /app/cy_consumers/data-set-check.sh
-RUN chmod +x /app/cy_consumers/data-set-check.sh
-#docker buildx   build -t nttlong/files-service-data-kompact:rc.0.0.0.0  --platform=linux/amd64,linux/arm64/v8  ./.. -f files-dataset-kompact  --push=true --output type=registry
+
+
+RUN mkdir -p /tmp/data
+ADD ./../dataset /tmp/data/dataset
+
+
+#docker buildx   build -t nttlong/files-service-data-kompact:rc.0.0.0.5  --platform=linux/amd64,linux/arm64/v8  ./.. -f files-dataset-kompact  --push=true --output type=registry
