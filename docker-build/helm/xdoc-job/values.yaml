@@ -7,6 +7,17 @@ defaults:
   replicate: 1
   description: "Uprate version"
   executor: "python3"
+  python3:
+    - python3
+    - /app/cy_consumers/{{$value.endpoint}}
+    - elastic_search.server=$(elastic_search.server)
+    - elastic_search.prefix_index=$(elastic_search.prefix_index)
+    - db.host=$(db.host)
+    - db.port=$(db.port)
+    - admin_db_name=$(admin_db_name)
+    - temp_directory=$(temp_directory)
+    - rabbitmq.server=$(rabbitmq.server)
+    - rabbitmq.port=$(rabbitmq.port)
 
 namespace: xdoc-job-v4
 nfs:
@@ -61,7 +72,7 @@ deployments:
   - name: fs-data-set-install
     endpoint: data-set-check.sh
     image: nttlong/files-service-data-kompact:rc.0.0.0.0
-    executor: " "
+    executor: "sh"
 
 
 #cronJobs:
