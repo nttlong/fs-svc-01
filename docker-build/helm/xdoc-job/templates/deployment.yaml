@@ -41,7 +41,7 @@ spec:
     matchLabels:
       app: files-{{$value.name}}
   {{end}}
-  replicas: 1
+  replicas: {{$value.replicas | default $.Values.defaults.replicas}}
   template:
     metadata:
       labels:
