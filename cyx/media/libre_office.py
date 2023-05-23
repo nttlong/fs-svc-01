@@ -2,20 +2,20 @@ import pathlib
 import shutil
 import typing
 
+import cy_kit
 from cyx.common.base import config
 import subprocess
 import uuid
 import os
 
-
+from cyx.common.share_storage import ShareStorageService
 class LibreOfficeService:
-    def __init__(self):
+    def __init__(self,share_storage_service = cy_kit.singleton(ShareStorageService)):
+        self.share_storage_service = share_storage_service
         self.config = config
         self.libre_office_path = self.config.libre_office_path
         self.working_dir = pathlib.Path(__file__).parent.parent.parent.__str__()
-        self.temp_dir = os.path.join(self.working_dir, "tmp", "libre-office")
-        if not os.path.isdir(self.temp_dir):
-            os.makedirs(self.temp_dir, exist_ok=True)
+        self.temp_dir = self.share_storage_service.get_temp_dir(LibreOfficeService)
         self.user_profile_dir = os.path.join(self.temp_dir, "users-profiles")
         if not os.path.isdir(self.user_profile_dir):
             os.makedirs(self.user_profile_dir, exist_ok=True)
@@ -25,7 +25,7 @@ class LibreOfficeService:
 
     def get_image(self, file_path) -> str:
         """
-        Generate image of file by using libre office
+        Generate image of file by using libre-office
         :param file_path:
         :return:
         """

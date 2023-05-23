@@ -46,10 +46,8 @@ logs = cy_kit.create_logs(
     name=pathlib.Path(__file__).stem
 )
 
-def on_receive_msg(msg_info: MessageInfo):
 
-    from cyx.media.libre_office import LibreOfficeService
-    libre_office_service = cy_kit.singleton(LibreOfficeService)
+def on_receive_msg(msg_info: MessageInfo):
     if msg_info.Data.get("processing_file"):
         full_file = msg_info.Data["processing_file"]
     else:
@@ -62,7 +60,7 @@ def on_receive_msg(msg_info: MessageInfo):
         msg.delete(msg_info)
         return
 
-    def th_run(full_file,msg,msg_info,logs):
+    def th_run(full_file, msg, msg_info, logs):
         ocr_file = None
         print(f"Do OCR file {full_file}")
         logs.info(f"Do OCR file {full_file}")
@@ -103,15 +101,17 @@ def on_receive_msg(msg_info: MessageInfo):
         del msg_info
         cy_kit.clean_up()
 
-
-    th_run(full_file,msg,msg_info,logs)
+    th_run(full_file, msg, msg_info, logs)
     # th = threading.Thread(
     #     target= th_run,
     #     args=(full_file,msg,msg_info,logs,)
     # )
     # th.start()
+
+
 if sys.platform == "linux":
     import signal
+
     signal.signal(signal.SIGCHLD, signal.SIG_IGN)
 msg.consume(
     msg_type=cyx.common.msg.MSG_FILE_OCR_CONTENT,

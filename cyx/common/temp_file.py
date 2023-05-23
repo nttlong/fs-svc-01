@@ -75,20 +75,22 @@ class TempFiles:
     def __init__(self):
         from cyx.common.file_storage_mongodb import MongoDbFileStorage, MongoDbFileService
         from cy_xdoc.services.files import FileServices
-
+        from cyx.common.share_storage import ShareStorageService
+        self.share_storage_service = cy_kit.singleton(ShareStorageService)
+        self.__tem_path__  = self.share_storage_service.get_share_location_file_processing()
         self.file_storage = cy_kit.singleton(MongoDbFileService)
         self.files_services = cy_kit.singleton(FileServices)
         self.config = cyx.common.config
-        if self.config.get("temp_directory") is None or self.config.get("temp_directory") == '':
-            self.__is_use__ = False
-            print(f" warning temp_directory was not set")
-            return
-        self.__tem_path__: str = self.config.temp_directory
-        if self.__tem_path__.startswith("./"):
-            self.__tem_path__ = os.path.abspath(
-                os.path.join(pathlib.Path(__file__).parent.parent.parent.__str__(), self.__tem_path__[2:]))
-            if not os.path.isdir(self.__tem_path__):
-                os.makedirs(self.__tem_path__, exist_ok=True)
+        # if self.config.get("temp_directory") is None or self.config.get("temp_directory") == '':
+        #     self.__is_use__ = False
+        #     print(f" warning temp_directory was not set")
+        #     return
+        # self.__tem_path__: str = self.config.temp_directory
+        # if self.__tem_path__.startswith("./"):
+        #     self.__tem_path__ = os.path.abspath(
+        #         os.path.join(pathlib.Path(__file__).parent.parent.parent.__str__(), self.__tem_path__[2:]))
+        #     if not os.path.isdir(self.__tem_path__):
+        #         os.makedirs(self.__tem_path__, exist_ok=True)
         self.__is_use__ = True
 
     @property
@@ -179,7 +181,7 @@ class TempFiles:
         if not os.path.isdir(full_sub_dir):
             os.makedirs(full_sub_dir, exist_ok=True)
         file_name = pathlib.Path(from_file).name
-        file_ext = os.path.splitext(file_name)[1]
+        # file_ext = os.path.splitext(file_name)[1]
         ret = os.path.join(full_sub_dir, f"{file_name}")
         shutil.move(
             src=from_file,

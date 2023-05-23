@@ -14,12 +14,13 @@ import PyPDF2.errors
 
 import cy_kit
 
+from cyx.common.share_storage import ShareStorageService
+
 
 class PDFService:
-    def __init__(self):
-        self.processing_folder = os.path.abspath(
-            os.path.join(pathlib.Path(__file__).parent.parent.parent.__str__(), "tmp", "pdf")
-        )
+    def __init__(self, share_storage_service: ShareStorageService = cy_kit.singleton(ShareStorageService)):
+        self.share_storage_service = share_storage_service
+        self.processing_folder = self.share_storage_service.get_temp_dir(PDFService)
         if not os.path.isdir(self.processing_folder):
             os.makedirs(self.processing_folder, exist_ok=True)
 

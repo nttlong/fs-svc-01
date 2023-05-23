@@ -9,13 +9,12 @@ from PyPDF2 import PdfFileWriter, PdfFileReader, PdfMerger
 import cy_kit
 
 
-
+from cyx.common.share_storage import ShareStorageService
 class VideoServices:
-    def __init__(self):
+    def __init__(self,share_storage_service:ShareStorageService = cy_kit.singleton(ShareStorageService)):
+        self.share_storage_service = share_storage_service
         self.working_folder = pathlib.Path(__file__).parent.parent.parent.__str__()
-        self.processing_folder = os.path.join(
-            self.working_folder, "tmp", "video"
-        )
+        self.processing_folder = self.share_storage_service.get_temp_dir(VideoServices)
         if not os.path.isdir(self.processing_folder):
             os.makedirs(self.processing_folder, exist_ok=True)
 

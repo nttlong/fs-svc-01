@@ -12,7 +12,7 @@ from cyx.media.exe import ExeService
 from cyx.media.core.graphics import GraphicsService
 from cyx.base import config
 
-
+from cyx.common.share_storage import ShareStorageService
 class ImageExtractorService:
     def __init__(
             self,
@@ -20,8 +20,10 @@ class ImageExtractorService:
             libre_office_service: LibreOfficeService = cy_kit.singleton(LibreOfficeService),
             pdf_service: PDFService = cy_kit.singleton(PDFService),
             exe_service: ExeService = cy_kit.singleton(ExeService),
-            graphics_service: GraphicsService = cy_kit.singleton(GraphicsService)
+            graphics_service: GraphicsService = cy_kit.singleton(GraphicsService),
+            share_storage_service:ShareStorageService = cy_kit.singleton(ShareStorageService)
     ):
+        self.share_storage_service = share_storage_service
         self.video_service: VideoServices = video_service
         self.libre_office_service = libre_office_service
         self.pdf_service = pdf_service
@@ -29,9 +31,7 @@ class ImageExtractorService:
         self.config = config
         self.ext_office_file = self.config.ext_office_file
         self.working_dir = pathlib.Path(__file__).parent.parent.parent.__str__()
-        self.processing_folder = os.path.abspath(
-            os.path.join(self.working_dir,"tmp","images")
-        )
+        self.processing_folder = self.share_storage_service.get_temp_dir(ImageExtractorService)
         self.processing_tmp_pdf_folder = os.path.join(
             self.processing_folder,"pdf"
         )
@@ -40,8 +40,7 @@ class ImageExtractorService:
         if not os.path.isdir(self.processing_folder):
             os.makedirs(self.processing_folder,exist_ok=True)
         self.graphics_service: GraphicsService = graphics_service
-        self.logs = cy_kit.create_logs(
-           os.path.join(self.working_dir,"background_service_files","logs"),pathlib.Path(__file__).stem)
+        self.logs = cy_kit.create_logs(self.share_storage_service.get_logs_dir(ImageExtractorService))
 
     def get_image(self, file_path: str) -> str:
         mime_type, _ = mimetypes.guess_type(file_path)
