@@ -20,6 +20,7 @@ file_cacher_service = cy_kit.singleton(FileCacherService)
 
 @cy_web.hanlder(method="get", path="{app_name}/file/{directory:path}")
 async def get_content_of_files(app_name: str, directory: str, request: fastapi.Request):
+    cache_dir = file_cacher_service.get_path(os.path.join(app_name, "images"))
     file_service = cy_kit.singleton(cy_xdoc.services.files.FileServices)
     upload_id = directory.split('/')[0]
     upload = file_service.get_upload_register_with_cache(app_name, upload_id)
@@ -27,7 +28,7 @@ async def get_content_of_files(app_name: str, directory: str, request: fastapi.R
         auth_service.check_request(app_name, request)
     mime_type, _ = mimetypes.guess_type(directory)
     if mime_type.startswith('image/'):
-        cache_dir = file_cacher_service.get_path(os.path.join(app_name, "images"))
+
         file_cache = cy_web.cache_content_check(cache_dir, directory.replace('/', '_'))
         if file_cache:
             return fastapi.responses.FileResponse(path=file_cache)
@@ -58,7 +59,7 @@ async def get_content_of_files(app_name: str, directory: str, request: fastapi.R
     if mime_type.startswith('image/'):
         content = fs.read(fs.get_size())
         fs.seek(0)
-        cy_web.cache_content(app_name, directory.replace('/', '_'), content)
+        cy_web.cache_content(cache_dir, directory.replace('/', '_'), content)
         del content
     mime_type, _ = mimetypes.guess_type(directory)
     if hasattr(fs, "cursor_len"):

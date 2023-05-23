@@ -22,7 +22,10 @@ class ShareStorageService:
                 os.path.join(self.__app_dir__, self.__shared_storage__[2:])
             )
         self.__share_location_file_processing__ = os.path.abspath(
-            os.path.join(self.__shared_storage__, "tmp-file-processing","share-storage")
+            os.path.join(self.__shared_storage__, "tmp-file-processing","sync")
+        )
+        self.__share_location_file_processing_class__ = os.path.abspath(
+            os.path.join(self.__shared_storage__, "tmp-file-processing", "tmp")
         )
         if not os.path.isdir(self.__share_location_file_processing__):
             os.makedirs(self.__share_location_file_processing__, exist_ok=True)
@@ -80,7 +83,7 @@ class ShareStorageService:
         """
         import os
         ret = os.path.abspath(
-            os.path.join(self.get_share_location_file_processing(),"processing", cls.__module__, cls.__name__,"tmp")
+            os.path.join(self.__share_location_file_processing_class__, cls.__module__, cls.__name__,"tmp")
         )
         if not os.path.isdir(ret):
             os.makedirs(ret,exist_ok=True)
@@ -88,7 +91,7 @@ class ShareStorageService:
     def get_logs_dir(self,cls):
         import os
         ret = os.path.abspath(
-            os.path.join(self.get_share_location_file_processing(),"processing", cls.__module__, cls.__name__, "logs")
+            os.path.join(self.__share_location_file_processing_class__, cls.__module__, cls.__name__, "logs")
         )
         if not os.path.isdir(ret):
             os.makedirs(ret, exist_ok=True)
