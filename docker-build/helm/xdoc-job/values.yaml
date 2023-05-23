@@ -64,9 +64,11 @@ deployments:
     replicate: 1
   - name: fs-data-set-install
     endpoint: /app/data-set-check.sh
-    image: nttlong/files-service-data-kompact:rc.0.0.0.7
+    image: nttlong/files-service-data-kompact:rc.0.0.0.9
     executor: sh
-
+    kind: Job
+    restartPolicy: Never
+    apiVersion: batch/v1
 
 
 
