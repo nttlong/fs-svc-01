@@ -93,6 +93,8 @@ def set_dataset_path(abs_or_relative_path: str):
     :return:
     """
     global __working_path__
+
+
     full_path_to_data_set = abs_or_relative_path
     if abs_or_relative_path[0:2] == "./":
         """
@@ -101,6 +103,13 @@ def set_dataset_path(abs_or_relative_path: str):
         full_path_to_data_set = os.path.abspath(
             os.path.join(__working_path__, abs_or_relative_path[2:])
         )
+    dd_one_path_source = os.path.abspath(
+        os.path.join(__working_path__, "cyx/conf_dd_one.yaml")
+    )
+    dd_one_path_dest = os.path.abspath(
+        os.path.join(full_path_to_data_set, "conf_dd_one.yaml")
+    )
+    shutil.copy(dd_one_path_source,dd_one_path_dest)
     doctr_path = os.path.abspath(
         os.path.join(full_path_to_data_set, "doctr")
     )
@@ -109,7 +118,10 @@ def set_dataset_path(abs_or_relative_path: str):
         if not exist "doctr_path" create it
         """
         os.makedirs(doctr_path, exist_ok=True)
+    # raise Exception(full_path_to_data_set)
     os.environ["XDG_CACHE_HOME"] = full_path_to_data_set
+
+
     os.environ["DOCTR_CACHE_DIR"] = doctr_path
     global __full_path_to_data_set__
     __full_path_to_data_set__ = full_path_to_data_set

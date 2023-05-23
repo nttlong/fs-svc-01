@@ -25,10 +25,10 @@ class TableOCRService:
             doc_tr_service=cy_kit.singleton(DoctrService)
 
     ):
-
+        import cyx.document_layout_analysis.system
         self.doc_tr_service = doc_tr_service
         # self.doc_tr_service_model = doc_tr_service.get_model()
-        self.sub_app_dir = pathlib.Path(__file__).parent.parent.__str__()
+        self.sub_app_dir = cyx.document_layout_analysis.system.get_dataset_path() #pathlib.Path(__file__).parent.parent.__str__()
         self._DD_ONE = f"{self.sub_app_dir}/conf_dd_one.yaml"
         if not os.path.isfile(self._DD_ONE):
             raise Exception(f"{self._DD_ONE} was not found")

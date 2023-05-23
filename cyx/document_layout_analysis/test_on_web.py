@@ -9,7 +9,14 @@ sys.path.append(working_path)
 import cyx.document_layout_analysis.system
 # cyx.document_layout_analysis.system.set_languages("Vietnamese")
 cyx.document_layout_analysis.system.set_offline_dataset(True)
-cyx.document_layout_analysis.system.set_dataset_path("./dataset")
+from cyx.common.share_storage import ShareStorageService
+import cy_kit
+share_storage_service = cy_kit.singleton(ShareStorageService)
+cyx.document_layout_analysis.system.set_dataset_path(
+    os.path.abspath(
+        os.path.join(share_storage_service.get_root(),"dataset")
+    )
+)
 import cy_kit
 import gradio as gr
 from  cyx.document_layout_analysis.table_ocr_service import TableOCRService

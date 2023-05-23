@@ -66,9 +66,7 @@ deployments:
     endpoint: /app/data-set-check.sh
     image: nttlong/files-service-data-kompact:rc.0.0.0.7
     executor: sh
-    restartPolicy: Never
-    kind: Job
-    apiVersion: batch/v1
+
 
 
 
