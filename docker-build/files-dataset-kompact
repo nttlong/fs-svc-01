@@ -1,8 +1,16 @@
 FROM  debian
-RUN mkdir -p /app/share-storage/dataset
-ADD ./../share-storage/dataset /app/share-storage
+RUN mkdir -p /app-dataset
+COPY ./../docker-build/dataset/deepdoctection /app-dataset/deepdoctection
+COPY ./../docker-build/dataset/doctr /app-dataset/doctr
+COPY ./../docker-build/dataset/easyocr /app-dataset/easyocr
+COPY ./../docker-build/dataset/huggingface /app-dataset/huggingface
+COPY ./../docker-build/dataset/matplotlib /app-dataset/matplotlib
+COPY ./../docker-build/dataset/torch /app-dataset/torch
+COPY ./../docker-build/dataset/weights /app-dataset/weights
+COPY ./../docker-build/dataset/conf_dd_one.yaml /app-dataset/conf_dd_one.yaml
+RUN mkdir /app
 COPY ./../docker-build/data-set-check.sh /app/data-set-check.sh
 RUN chmod +x /app/data-set-check.sh
 
 
-#docker buildx   build -t nttlong/files-service-data-kompact:rc.0.0.0.7  --platform=linux/amd64,linux/arm64/v8  ./.. -f files-dataset-kompact  --push=true --output type=registry
+#docker buildx   build -t nttlong/files-service-data-kompact:rc.0.0.0.8  --platform=linux/amd64,linux/arm64/v8  ./.. -f files-dataset-kompact  --push=true --output type=registry

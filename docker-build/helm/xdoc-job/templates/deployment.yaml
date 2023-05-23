@@ -53,6 +53,21 @@ spec:
           nfs:
             server: {{$.Values.nfs.server}}
             path: {{$.Values.nfs.directory}}
+      initContainers:
+        - name: volume-mount-hack
+          image: busybox
+          command: [
+            "sh",
+            "-c",
+            "mkdir -p /app/share-storage/dataset",
+            "chmod -R 777 /app/share-storage/dataset",
+            "chown -R nfsnobody:nfsnobody /app/share-storage/dataset"
+
+          ]
+          volumeMounts:
+            - mountPath: /app/share-storage
+              name: xdoc-storage
+
       containers:
       {{if eq $value.executor "sh"}}
         - command: [
@@ -159,4 +174,6 @@ spec:
 #          restartPolicy: OnFailure
 #---
 #{{- end }}
+#helm uninstall xdoc-job-v15
+#helm install xdoc-job-v15 xdoc-job
 #scp -r root@172.16.13.72:/home/vmadmin/python/v6/file-service-02/docker-build/helm/xdoc-job /nttlong/helm/xdoc-job
