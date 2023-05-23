@@ -40,7 +40,7 @@ class ImageExtractorService:
         if not os.path.isdir(self.processing_folder):
             os.makedirs(self.processing_folder,exist_ok=True)
         self.graphics_service: GraphicsService = graphics_service
-        self.logs = cy_kit.create_logs(self.share_storage_service.get_logs_dir(ImageExtractorService))
+        self.logs = cy_kit.create_logs(self.share_storage_service.get_logs_dir(ImageExtractorService),ImageExtractorService.__name__)
 
     def get_image(self, file_path: str) -> str:
         mime_type, _ = mimetypes.guess_type(file_path)
