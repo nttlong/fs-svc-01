@@ -28,67 +28,35 @@ data:
 {{- range $key, $value := .Values.deployments }}
 ---
 
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: {{$value.apiVersion | default $.Values.defaults.apiVersion}}
+kind: {{$value.kind | default $.Values.defaults.kind}}
 metadata:
   name: {{$value.name}}
   namespace: {{$.Values.namespace}}
   annotations:
     description: "{{$value.description | default $.Values.defaults.description }}"
 spec:
+  {{if ne $value.kind "Job"}}
   selector:
     matchLabels:
       app: files-{{$value.name}}
+  {{end}}
   replicas: 1
   template:
     metadata:
       labels:
         app: files-{{$value.name}}
     spec:
-
+      restartPolicy: {{$value.restartPolicy | default $.Values.defaults.restartPolicy}}
       volumes:
-        - name: xdoc-temp-storage
+        - name: xdoc-storage
           nfs:
             server: {{$.Values.nfs.server}}
-            path: {{$.Values.nfs.directory}}/xdoc-web
-        - name: xdoc-dataset
-          nfs:
-            server: {{$.Values.nfs.server}}
-            path: {{$.Values.nfs.directory}}/dataset
-        - name: xdoc-brokers
-          nfs:
-            server: {{$.Values.nfs.server}}
-            path: {{$.Values.nfs.directory}}/brokers
-      initContainers:
-        - name: volume-mount-hack
-          image: busybox
-          command: [
-            "sh",
-            "-c",
-            "mkdir -p /app/brokers",
-            "chmod -R 777 /app/brokers",
-            "chown -R nfsnobody:nfsnobody /app/brokers",
-            "mkdir -p /app/dataset",
-            "chmod -R 777 /app/dataset",
-            "chown -R nfsnobody:nfsnobody /app/dataset",
-
-          ]
-          volumeMounts:
-            - mountPath: /app/brokers
-              name: xdoc-temp-storage
-            - mountPath: /app/dataset
-              name: xdoc-dataset
-
-
+            path: {{$.Values.nfs.directory}}
       containers:
       {{if eq $value.executor "sh"}}
         - command: [
-          "sh",
-          "-c",
-          "chown -R nfsnobody:nfsnobody /app/dataset",
-          "mkdir -p /app/dataset/chek-version",
-          "mv   /tmp/data/dataset/* /app/dataset"
-
+          "{{$value.endpoint}}"
         ]
       {{else}}
         - args:
@@ -106,10 +74,9 @@ spec:
           imagePullPolicy: IfNotPresent
 
           volumeMounts:
-            - mountPath: /app/brokers
-              name: xdoc-temp-storage
-            - mountPath: /app/dataset
-              name: xdoc-dataset
+            - mountPath: /app/share-storage
+              name: xdoc-storage
+
 ---
 {{- end }}
 ---

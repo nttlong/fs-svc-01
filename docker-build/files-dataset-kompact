@@ -1,12 +1,8 @@
-FROM  python:alpine
-RUN mkdir -p /app/cyx
-RUN mkdir -p /app/cy_consumers
-COPY ./../cy_consumers/install_dataset.py /app/cy_consumers/install_dataset.py
+FROM  debian
+RUN mkdir -p /app/share-storage/dataset
+ADD ./../share-storage/dataset /app/share-storage
+COPY ./../docker-build/data-set-check.sh /app/data-set-check.sh
+RUN chmod +x /app/data-set-check.sh
 
 
-
-RUN mkdir -p /tmp/data
-ADD ./../dataset /tmp/data/dataset
-
-
-#docker buildx   build -t nttlong/files-service-data-kompact:rc.0.0.0.5  --platform=linux/amd64,linux/arm64/v8  ./.. -f files-dataset-kompact  --push=true --output type=registry
+#docker buildx   build -t nttlong/files-service-data-kompact:rc.0.0.0.7  --platform=linux/amd64,linux/arm64/v8  ./.. -f files-dataset-kompact  --push=true --output type=registry
