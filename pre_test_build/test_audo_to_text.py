@@ -1,0 +1,53 @@
+import pathlib
+import sys
+import os
+sys.path.append(pathlib.Path(__file__).parent.parent.__str__())
+import gradio
+import cyx.document_layout_analysis.system
+cyx.document_layout_analysis.system.set_offline_dataset(False)
+from cyx.common.share_storage import ShareStorageService
+import cy_kit
+share_storage_service = cy_kit.singleton(ShareStorageService)
+cyx.document_layout_analysis.system.set_dataset_path(
+    os.path.abspath(
+        os.path.join(share_storage_service.get_root(),"dataset")
+    )
+)
+import torch
+import torchaudio
+from datasets import load_dataset
+from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
+# test_dataset = load_dataset("common_voice", "vi", split="test")
+processor = Wav2Vec2Processor.from_pretrained("dragonSwing/wav2vec2-base-vietnamese")
+model = Wav2Vec2ForCTC.from_pretrained("dragonSwing/wav2vec2-base-vietnamese")
+resampler = torchaudio.transforms.Resample(48_000, 16_000)
+# Preprocessing the datasets.
+# We need to read the aduio files as arrays
+audio_file = f"/home/vmadmin/python/v6/file-service-02/audio-test/510_cbsk___file_goc_510201920_3.wav"
+audio_file = f"/home/vmadmin/python/v6/file-service-02/audio-test/Một Đời Một Kiếp Quá Xa Xôi _1_.mp3"
+from cyx.common.audio_utils import AudioService
+audio_service = cy_kit.singleton(AudioService)
+files = audio_service.split(audio_file)
+def speech_file_to_array_fn(batch:dict):
+
+
+    #data_waveform, rate_of_sample = torchaudio.load(audio_file)
+    speech_array, sampling_rate = torchaudio.load(audio_file)
+    batch["speech"] = resampler(speech_array).squeeze().numpy()
+    return batch
+print(type(speech_file_to_array_fn))
+# test_dataset = test_dataset.map(speech_file_to_array_fn)
+# print(type(test_dataset["speech"][:2][0]))
+#inputs = processor(test_dataset["speech"][:2], sampling_rate=16_000, return_tensors="pt", padding=True)
+speech_array, sampling_rate = None, None
+try:
+    speech_array, sampling_rate = torchaudio.load(files[0])
+    print(len(speech_array))
+except Exception as  e:
+    print(e)
+inputs = processor(speech_array[0], sampling_rate=16_000, return_tensors="pt", padding=True)
+with torch.no_grad():
+  logits = model(inputs.input_values, attention_mask=inputs.attention_mask).logits
+predicted_ids = torch.argmax(logits, dim=-1)
+print("Prediction:", processor.batch_decode(predicted_ids))
+

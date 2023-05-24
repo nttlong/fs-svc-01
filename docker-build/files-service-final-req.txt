@@ -3,3 +3,5 @@ packaging==20.9
 dash
 dash-bootstrap-components
 dash-uploader
+librosa
+soundfile
