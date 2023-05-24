@@ -15,6 +15,8 @@ files = cy_kit.singleton(FileServices)
 apps = cy_kit.singleton(AppServices)
 apps_list = apps.get_list("admin")
 for app in apps_list:
+    if app.Name in ["admin","default","lv-docs","lv-cms"]:
+        continue
     qr = files.get_queryable_doc(app.Name)
     items = qr.context.aggregate().match(
         ((qr.fields.HasThumb == False) | (cy_docs.not_exists(qr.fields.HasThumb))) & \
@@ -23,6 +25,7 @@ for app in apps_list:
         qr.fields.RegisterOn.desc()
     ).limit(100)
     for x in items:
+        print(f"{app.Name}\t{x[qr.fields.FileName]}")
         msg.emit(
             app_name=app.Name,
             message_type=cyx.common.msg.MSG_FILE_UPLOAD,

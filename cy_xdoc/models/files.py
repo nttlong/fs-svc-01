@@ -24,9 +24,21 @@ class Privileges:
 class PrivilegesValues:
     """
     Ban nay luu lai cac dac quyen va ca gia tri cua tung dac quyen
+    The privileges of DocUploadRegister
     """
     Name: str
     Value: str
+
+
+class ContentPage:
+    Page: int
+    """
+    Page number
+    """
+    Content: str
+    """
+    Content in page
+    """
 
 
 @cy_docs.define(
@@ -302,8 +314,12 @@ class DocUploadRegister:
     """
     Phan bo sung danh cho cac ung dung khac
     """
-
-
-
-
-
+    Content: typing.Optional[str]
+    """
+    if this file is readable content file. The readable content o file wil store here
+    nếu tệp này là tệp nội dung có thể đọc được. Nội dung có thể đọc được o tập tin sẽ lưu trữ ở đây
+    """
+    Contents: typing.Optional[ContentPage]
+    """
+    Content of file each page 
+    """
