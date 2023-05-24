@@ -14,7 +14,7 @@ import os
 
 
 def version() -> str:
-    return f"0.0.6{os.path.splitext(__file__)[1]}"
+    return f"0.0.7{os.path.splitext(__file__)[1]}"
 
 
 def get_all_index(client: Elasticsearch) -> List[str]:
