@@ -270,11 +270,37 @@ class DocumentFields:
             #         self.__name__: item
             #     }
             # }
+            # ret.__es_expr__ = {
+            #     "wildcard": {
+            #         self.__name__: item
+            #     }
+            # }
+
+            src = f"doc['{self.__name__}.keyword'].value.contains(params.item)"
+            if item[0]!='*' and item[-1]=='*':
+                src = f"doc['{self.__name__}.keyword'].value.indexOf(params.item)==0"
+            elif item[0]=='*' and item[-1]!='*':
+                src = f"doc['{self.__name__}.keyword'].value.endsWith(params.item)"
+            #value
             ret.__es_expr__ = {
-                "wildcard": {
-                    self.__name__: item
+                "filter": {
+                    "script": {
+
+                        "script": {
+
+                            "source": f"return  {src};",
+                            "lang": "painless",
+                            "params": {
+                                "item": item.lstrip('*').rstrip('*')
+                            }
+                        }
+                    }
                 }
             }
+            ret.__is_bool__ = True
+            fx_check_field = DocumentFields(self.__name__) != None
+            ret= fx_check_field & ret
+
             return ret
         elif isinstance(item, list):
             """
@@ -503,10 +529,30 @@ class DocumentFields:
             return ret
         elif isinstance(other, str):
             ret = DocumentFields()
-            self.__is_bool__ = True
-            # es_object = __make_up_es__(self.__name__, other)
-            ret.__es_expr__ = __make_up_es_syntax__(self.__name__, other)
+            src = f"doc['{self.__name__}.keyword'].value==params.item"
+
+            # value
+            ret.__es_expr__ = {
+                "filter": {
+                    "script": {
+
+                        "script": {
+
+                            "source": f"return  {src};",
+                            "lang": "painless",
+                            "params": {
+                                "item": other
+                            }
+                        }
+                    }
+                }
+            }
+            ret.__is_bool__ = True
+            fx_check_field = DocumentFields(self.__name__) != None
+            ret = fx_check_field & ret
+
             return ret
+
         elif type(other) in [int, float, datetime.datetime, bool]:
 
             if __check_is_painless_expr__(self.__es_expr__):
@@ -594,17 +640,28 @@ class DocumentFields:
             return ret
         if isinstance(other, str):
             ret = DocumentFields()
-            self.__is_bool__ = True
-            # es_object = __make_up_es__(self.__name__, other)
+            src = f"doc['{self.__name__}.keyword'].value!=params.item"
+
+            # value
             ret.__es_expr__ = {
-                "bool": {
-                    "must_not": {
-                        "match": {
-                            self.__name__: other
+                "filter": {
+                    "script": {
+
+                        "script": {
+
+                            "source": f"return  {src};",
+                            "lang": "painless",
+                            "params": {
+                                "item": other
+                            }
                         }
                     }
                 }
             }
+            ret.__is_bool__ = True
+            fx_check_field = DocumentFields(self.__name__) != None
+            ret = fx_check_field & ret
+
             return ret
         else:
             ret = DocumentFields()
@@ -646,9 +703,28 @@ class DocumentFields:
             return ret
         elif isinstance(other, str):
             ret = DocumentFields()
-            self.__is_bool__ = True
-            # es_object = __make_up_es__(self.__name__, other)
-            ret.__es_expr__ = __make_up_es_syntax__(self.__name__, other, is_match=True)
+            src = f"doc['{self.__name__}.keyword'].value==params.item"
+
+            # value
+            ret.__es_expr__ = {
+                "filter": {
+                    "script": {
+
+                        "script": {
+
+                            "source": f"return  {src};",
+                            "lang": "painless",
+                            "params": {
+                                "item": other
+                            }
+                        }
+                    }
+                }
+            }
+            ret.__is_bool__ = True
+            fx_check_field = DocumentFields(self.__name__) != None
+            ret = fx_check_field & ret
+
             return ret
         else:
             ret = DocumentFields()
