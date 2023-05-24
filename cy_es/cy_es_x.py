@@ -276,11 +276,11 @@ class DocumentFields:
             #     }
             # }
 
-            src = f"doc['{self.__name__}.keyword'].value.contains(params.item)"
+            src = f"(doc['{self.__name__}.keyword'].size()>0) && doc['{self.__name__}.keyword'].value.contains(params.item)"
             if item[0]!='*' and item[-1]=='*':
-                src = f"doc['{self.__name__}.keyword'].value.indexOf(params.item)==0"
+                src = f"(doc['{self.__name__}.keyword'].size()>0) && (doc['{self.__name__}.keyword'].value.indexOf(params.item)==0)"
             elif item[0]=='*' and item[-1]!='*':
-                src = f"doc['{self.__name__}.keyword'].value.endsWith(params.item)"
+                src = f"(doc['{self.__name__}.keyword'].size()>0) && doc['{self.__name__}.keyword'].value.endsWith(params.item)"
             #value
             ret.__es_expr__ = {
                 "filter": {
@@ -300,7 +300,7 @@ class DocumentFields:
             ret.__is_bool__ = True
             fx_check_field = DocumentFields(self.__name__) != None
             ret= fx_check_field & ret
-
+            ret.__highlight_fields__ = [self.__name__]
             return ret
         elif isinstance(item, list):
             """
