@@ -2,11 +2,17 @@ import pathlib
 import sys
 import os
 sys.path.append(pathlib.Path(__file__).parent.parent.__str__())
+import cy_kit
+audio_file = f"/home/vmadmin/python/v6/file-service-02/audio-test/Một Đời Một Kiếp Quá Xa Xôi _1_.mp3"
+from cyx.common.audio_utils import AudioService
+audio_service = cy_kit.singleton(AudioService)
+print(audio_service.get_duration(audio_file))
+files = audio_service.split_by_seconds(audio_file)
 import gradio
 import cyx.document_layout_analysis.system
 cyx.document_layout_analysis.system.set_offline_dataset(False)
 from cyx.common.share_storage import ShareStorageService
-import cy_kit
+
 share_storage_service = cy_kit.singleton(ShareStorageService)
 cyx.document_layout_analysis.system.set_dataset_path(
     os.path.abspath(
@@ -24,11 +30,9 @@ resampler = torchaudio.transforms.Resample(48_000, 16_000)
 # Preprocessing the datasets.
 # We need to read the aduio files as arrays
 audio_file = f"/home/vmadmin/python/v6/file-service-02/audio-test/510_cbsk___file_goc_510201920_3.wav"
-audio_file = f"/home/vmadmin/python/v6/file-service-02/audio-test/Một Đời Một Kiếp Quá Xa Xôi _1_.mp3"
-from cyx.common.audio_utils import AudioService
-audio_service = cy_kit.singleton(AudioService)
-files = audio_service.split(audio_file)
+
 def speech_file_to_array_fn(batch:dict):
+
 
 
     #data_waveform, rate_of_sample = torchaudio.load(audio_file)
