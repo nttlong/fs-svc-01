@@ -37,7 +37,21 @@ def get_doc(collection_name: str, client: pymongo.mongo_client.MongoClient, inde
 
 
 def define(name: str, indexes: List[str] = [], uniques: List[str] = []):
-    return getattr(cy_docs_x, "document_define")(name, indexes, uniques)
+    """
+    Define MongoDb document
+    The document infor is included : Name, Indexes, Unique Keys
+    Xác định tài liệu MongoDb
+    Thông tin tài liệu bao gồm: Tên, Chỉ mục, Khóa duy nhất
+    Note: A combine fields index ( also call multi fields Index) declare with comma between each field sucha as ['a,b','c'].
+    The same way for Unique Index
+    Lưu ý: Chỉ mục trường kết hợp (còn gọi là Chỉ mục nhiều trường) khai báo bằng dấu phẩy giữa mỗi trường, chẳng hạn như ['a,b','c'].
+    Cách tương tự cho Unique Index
+    :param name:
+    :param indexes:
+    :param uniques:
+    :return:
+    """
+    return cy_docs_x.document_define(name, indexes, uniques)
 
 
 fields = cy_docs_x.fields

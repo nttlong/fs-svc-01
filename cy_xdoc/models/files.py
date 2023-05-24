@@ -66,7 +66,8 @@ class ContentPage:
         "FullFileNameLower",
         "PdfFileId",
         "FullFileNameWithoutExtenstion",
-        "FullFileNameWithoutExtenstionLower"
+        "FullFileNameWithoutExtenstionLower",
+        "Contents.Page"
 
     ]
 
