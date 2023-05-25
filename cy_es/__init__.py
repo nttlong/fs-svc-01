@@ -100,7 +100,9 @@ def select(
         filter: typing.Union[dict,DocumentFields] = None ,
         sort=None,
         skip=0,
-        limit=1000):
+        limit=1000,
+        highlight_fields=None
+):
     """
     Select some field in Elasticsearch index \n
     Chọn một số trường trong chỉ mục Elaticsearch
@@ -122,7 +124,8 @@ def select(
         fields=fields,
         sort=sort,
         skip=skip,
-        limit=limit
+        limit=limit,
+        highlight_fields= highlight_fields
     )
 
 
@@ -232,44 +235,7 @@ def __create_mapping_from_dict__(body):
 
 def create_doc(client: Elasticsearch, index: str, id: str, body,
                doc_type: str = "_doc") -> cy_es_x.ESDocumentObjectInfo:
-    # global __check_mapping__
-    # if __check_mapping__.get(index) is None:
-    #
-    #     map = get_mapping(client,index)
-    #
-    #     if map:
-    #         __check_mapping__[index] = map
-    #     else:
-    #         map = __create_mapping_from_dict__(body)
-    #         """
-    #             {
-    #                   "settings": {
-    #                 "index.mapping.ignore_malformed": true
-    #               },
-    #               "mappings": {
-    #                 "_doc": {
-    #                   "properties": {
-    #                     "number_one": {
-    #                       "type": "byte"
-    #                     },
-    #                     "number_two": {
-    #                       "type": "integer",
-    #                       "ignore_malformed": false
-    #                     }
-    #                   }
-    #                 }
-    #               }
-    #         """
-    #         create_index(client=client, index=index, body={
-    #             "settings":{
-    #                 # "index.mapping.ignore_malformed": True
-    #             },
-    #             "mappings": map
-    #         })
-    #         put_mapping(
-    #             client, index,map
-    #         )
-    #         __check_mapping__[index] = map
+
 
     return cy_es_x.create_doc(
         client=client,

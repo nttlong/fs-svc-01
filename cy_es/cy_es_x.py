@@ -14,7 +14,7 @@ import os
 
 
 def version() -> str:
-    return f"0.0.7{os.path.splitext(__file__)[1]}"
+    return f"0.0.8{os.path.splitext(__file__)[1]}"
 
 
 def get_all_index(client: Elasticsearch) -> List[str]:
@@ -842,7 +842,17 @@ class DocumentFields:
         if isinstance(self.__es_expr__, dict):
             self.__es_expr__["boost"] = value
         return self
-
+    def __rshift__(self, other):
+        ret= DocumentFields()
+        ret.__es_expr__ = {
+            "filter":{
+            "simple_query_string": {
+                "fields": [self.__name__],
+                "query": other
+            }}
+        }
+        ret.__is_bool__ = True
+        return ret
     def __lshift__(self, other):
         if self.__name__ is None:
             raise Exception("Thous can not update expression")
@@ -1186,7 +1196,7 @@ def get_docs(client: Elasticsearch, index: str, doc_type: str = "_doc", limit=10
 
 
 def select(client: Elasticsearch, index: str, doc_type: str = "_doc", fields=[], filter=None, sort=None, skip=0,
-           limit=1000) -> SearchResult:
+           limit=1000,highlight_fields=None) -> SearchResult:
     """
     Select some field in Elasticsearch index
     :param client:
@@ -1251,6 +1261,36 @@ def select(client: Elasticsearch, index: str, doc_type: str = "_doc", fields=[],
     body["size"] = limit
     if fields is not None:
         body["_source"] = False
+    if highlight_fields is not None:
+        if isinstance(highlight_fields,str):
+            body["highlight"] = {
+                "pre_tags": ["<b>"],
+                "post_tags": ["</b>"],
+                "fields": {
+                    highlight_fields: {}
+                }
+            }
+        elif isinstance(highlight_fields,DocumentFields):
+            body["highlight"] = {
+                "pre_tags": ["<b>"],
+                "post_tags": ["</b>"],
+                "fields": {
+                    highlight_fields.__name__: {}
+                }
+            }
+        elif isinstance(highlight_fields,list):
+            _highlight_fields_ = {}
+            for x in highlight_fields:
+                if isinstance(x,str):
+                    _highlight_fields_[x] = {}
+                elif isinstance(x,DocumentFields):
+                    _highlight_fields_[x.__name__] = {}
+
+            body["highlight"]={
+                "pre_tags": ["<_highlight_fields_>"],
+                "post_tags": ["</_highlight_fields_>"],
+                "fields": _highlight_fields_
+            }
     ret = client.search(
         index=index, doc_type=doc_type, body=body, sort=_sort
     )
@@ -1488,7 +1528,7 @@ def __convert_exception__(e):
     return e
 
 
-def create_doc(client: Elasticsearch, index: str, body, id: str = None, doc_type: str = "_doc"):
+def create_doc(client: Elasticsearch, index: str, body, id: str = None, doc_type: str = "_doc", es_type:str = None):
     id = id or str(uuid.uuid4())
     try:
         res = client.create(index=index, doc_type=doc_type, id=id, body=body)
