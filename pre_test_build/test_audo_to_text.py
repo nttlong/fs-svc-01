@@ -24,7 +24,9 @@ import torchaudio
 from datasets import load_dataset
 from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
 # test_dataset = load_dataset("common_voice", "vi", split="test")
-test_dataset = load_dataset("common_voice", "vi", split="test")
+# test_dataset = load_dataset("common_voice", "vi", split="test")
+# split 'train', 'test', 'validation', 'other', 'validated', 'invalidated'
+test_dataset = load_dataset("common_voice", "vi", split="validated")
 processor = Wav2Vec2Processor.from_pretrained("dragonSwing/wav2vec2-base-vietnamese")
 model = Wav2Vec2ForCTC.from_pretrained("dragonSwing/wav2vec2-base-vietnamese")
 resampler = torchaudio.transforms.Resample(48_000, 16_000)
@@ -32,6 +34,7 @@ resampler = torchaudio.transforms.Resample(48_000, 16_000)
 # We need to read the aduio files as arrays
 audio_file = f"/home/vmadmin/python/v6/file-service-02/audio-test/510_cbsk___file_goc_510201920_3.wav"
 audio_file = f"/home/vmadmin/python/v6/file-service-02/share-storage/tmp-file-processing/tmp/cyx.common.audio_utils/AudioService/tmp/1fa0b769-e0af-4404-a9cf-8ed0fb768cce/chunk0.mp3"
+audio_file = f"/home/vmadmin/python/v6/file-service-02/audio-test/GiongMienNam.mp3"
 def speech_file_to_array_fn(batch:dict):
 
 
