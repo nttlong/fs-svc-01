@@ -28,26 +28,23 @@ data:
 {{- range $key, $value := .Values.deployments }}
 ---
 
-apiVersion: {{$value.apiVersion | default $.Values.defaults.apiVersion}}
-kind: {{$value.kind | default $.Values.defaults.kind}}
+apiVersion: apps/v1
+kind: Deployment
 metadata:
   name: {{$value.name}}
   namespace: {{$.Values.namespace}}
   annotations:
     description: "{{$value.description | default $.Values.defaults.description }}"
 spec:
-  {{if ne $value.kind "Job"}}
   selector:
     matchLabels:
       app: files-{{$value.name}}
-  {{end}}
   replicas: {{$value.replicas | default $.Values.defaults.replicas}}
   template:
     metadata:
       labels:
         app: files-{{$value.name}}
     spec:
-      restartPolicy: {{$value.restartPolicy | default $.Values.defaults.restartPolicy}}
       volumes:
         - name: xdoc-storage
           nfs:
@@ -56,17 +53,18 @@ spec:
 
 
       containers:
-      {{if eq $value.executor "sh"}}
-        - command: [
-          "{{$value.endpoint}}"
-        ]
-      {{else}}
         - args:
             - python3
             - /app/cy_consumers/{{$value.endpoint}}
-            {{- include "python3-args" . | nindent 12}}
-      {{end}}
-          image: {{$value.image | default $.Values.image.repository}}
+            - elastic_search.server=$(elastic_search.server)
+            - elastic_search.prefix_index=$(elastic_search.prefix_index)
+            - db.host=$(db.host)
+            - db.port=$(db.port)
+            - admin_db_name=$(admin_db_name)
+            - temp_directory=$(temp_directory)
+            - rabbitmq.server=$(rabbitmq.server)
+            - rabbitmq.port=$(rabbitmq.port)
+          image: {{ $.Values.image.repository  }}:{{$.Values.image.tag}}
 
           envFrom:
             - configMapRef:
@@ -82,85 +80,35 @@ spec:
 ---
 {{- end }}
 ---
-{{- range $key, $value := .Values.cronJobs}}
+{{- range $key, $value := .Values.jobs}}
 ---
-#apiVersion: batch/v1
-#kind: CronJob
-#metadata:
-#  name: {{$value.name}}
-#  namespace: {{$.Values.namespace}}
-#  annotations:
-#    description: "{{$value.description | default $.Values.defaults.description }}"
-#spec:
-#  schedule: {{$value.schedule}}
-#  {{if eq $value.numOfPods 1.0}}
-#
-#  successfulJobsHistoryLimit: {{$value.numOfPods}}
-#  failedJobsHistoryLimit: {{$value.numOfPods}}
-#  {{end}}
-#  jobTemplate:
-#    spec:
-#      template:
-#        spec:
-#          volumes:
-#            - name: xdoc-temp-storage
-#              nfs:
-#                server: {{$.Values.nfs.server}}
-#                path: {{$.Values.nfs.directory}}/xdoc-web
-#            - name: xdoc-dataset
-#              nfs:
-#                server: {{$.Values.nfs.server}}
-#                path: {{$.Values.nfs.directory}}/dataset
-#
-#          initContainers:
-#            - name: volume-mount-hack
-#              image: busybox
-#              command: [
-#                "sh",
-#                "-c",
-#                "mkdir -p /app/brokers",
-#                "chmod -R 777 /app/brokers",
-#                "chown -R nfsnobody:nfsnobody /app/brokers",
-#                "mkdir -p /app/dataset",
-#                "chmod -R 777 /app/dataset",
-#                "chown -R nfsnobody:nfsnobody /app/dataset",
-#
-#              ]
-#              volumeMounts:
-#                - mountPath: /app/brokers
-#                  name: xdoc-temp-storage
-#                - mountPath: /app/dataset
-#                  name: xdoc-dataset
-#          containers:
-#
-#            - args:
-#                - python3
-#                - /app/cy_consumers/{{$value.endpoint}}
-#                - elastic_search.server=$(elastic_search.server)
-#                - elastic_search.prefix_index=$(elastic_search.prefix_index)
-#                - db.host=$(db.host)
-#                - db.port=$(db.port)
-#                - admin_db_name=$(admin_db_name)
-#                - temp_directory=$(temp_directory)
-#                - rabbitmq.server=$(rabbitmq.server)
-#                - rabbitmq.port=$(rabbitmq.port)
-#
-#              image: {{ $.Values.image.repository }}:{{ $.Values.image.tag }}
-#              envFrom:
-#                - configMapRef:
-#                    name: xdoc-job-config
-#
-#              name: files-{{$value.name}}
-#              imagePullPolicy: IfNotPresent
-#
-#              volumeMounts:
-#                - mountPath: /app/brokers
-#                  name: xdoc-temp-storage
-#                - mountPath: /app/dataset
-#                  name: xdoc-dataset
-#          restartPolicy: OnFailure
-#---
-#{{- end }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{$value.name}}
+  namespace: {{$.Values.namespace}}
+  annotations:
+    description: "{{$value.description | default $.Values.defaults.description }}"
+spec:
+  template:
+    spec:
+      volumes:
+        - name: xdoc-storage
+          nfs:
+            server: {{$.Values.nfs.server}}
+            path: {{$.Values.nfs.directory}}
+      containers:
+      - image: {{ $value.image  }}
+        name: {{$value.name}}
+        imagePullPolicy: IfNotPresent
+
+        volumeMounts:
+          - mountPath: /app/share-storage
+            name: xdoc-storage
+      restartPolicy: Never
+  backoffLimit: 4
+---
+{{- end }}
 #helm uninstall xdoc-job-v15
 #helm install xdoc-job-v15 xdoc-job-18
 #scp -r root@172.16.13.72:/home/vmadmin/python/v6/file-service-02/docker-build/helm/xdoc-job /nttlong/helm/xdoc-job

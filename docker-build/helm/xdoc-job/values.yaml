@@ -18,10 +18,10 @@ nfs:
   directory: /var/nfs_share_dir_for_k8s
 
 image:
-  repository: nttlong/files-service-final:rc.0.5.2.6
+  repository: nttlong/files-service-final
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "rc.0.5.2.2"
+  tag: "rc.0.5.2.6"
 deployments:
   - name: files-upload
     endpoint: files_upload.py
@@ -62,14 +62,16 @@ deployments:
   - name: fix-hanger-content
     endpoint: fix_hanger_content.py
     replicate: 1
-  - name: fs-data-set-install
-    endpoint: /app/data-set-check.sh
-    image: nttlong/files-service-data-kompact:rc.0.0.0.9
-    executor: sh
-    kind: Job
-    restartPolicy: Never
-    apiVersion: batch/v1
-    replicas: 1
+
+
+jobs:
+  - name: install-xdoc-torch-dataset-huggingface
+    image: nttlong/xdoc-torch-dataset-huggingface:rc.0.0.2
+  - name: xdoc-install-torch-dataset-layout-microsoft
+    image: nttlong/xdoc-torch-dataset-layout-microsoft:rc.0.0.1
+  - name: install-xdoc-torch-dataset-layouts
+    image: nttlong/xdoc-torch-dataset-layouts:rc.0.0.2
+
 
 
 
