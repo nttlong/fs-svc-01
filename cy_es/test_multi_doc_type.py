@@ -33,6 +33,11 @@ id= str(uuid.uuid4())
 #         ]
 #     )
 # )
+expr= "fx search 'aaa' and fy=1"
+import cy_es_x
+ok = cy_es_x.Tree()
+tx =ok.parse(expr)
+print(tx)
 field = cy_es.DocumentFields("pages").conent
 fx = field >> "This is the test number one"
 ret =cy_es.select(
