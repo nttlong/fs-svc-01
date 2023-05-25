@@ -1,5 +1,8 @@
 FROM  debian
+RUN apt-get update
+RUN apt-get -y install rsync
 RUN mkdir -p /app-dataset
+
 
 COPY ./../share-storage/dataset/huggingface/models--microsoft--layoutlm-base-uncased /app-dataset/huggingface/models--microsoft--layoutlm-base-uncased
 COPY ./../share-storage/dataset/huggingface/hub /app-dataset/huggingface/hub

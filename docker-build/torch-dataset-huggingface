@@ -1,5 +1,8 @@
 FROM  debian
+RUN apt-get update
+RUN apt-get -y install rsync
 RUN mkdir -p /app-dataset
+
 
 COPY ./../share-storage/dataset/huggingface/datasets /app-dataset/huggingface/datasets
 
