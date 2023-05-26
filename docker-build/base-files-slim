@@ -13,6 +13,7 @@ RUN if [ "$TARGETARCH" = "amd64" ]; then \
     pip uninstall torch -y && \
     pip install torch --extra-index-url https://download.pytorch.org/whl/cpu --no-cache-dir && \
     pip install torchvision==0.15.0 --extra-index-url https://download.pytorch.org/whl/cpu --no-cache-dir && \
+    pip install torchaudio --extra-index-url https://download.pytorch.org/whl/cpu --no-cache-dir && \
     pip install -r base-files-slim.req.txt --no-cache-dir && \
     pip install -r base-file-slim.deep-learning.reg.txt --no-cache-dir;\
     fi

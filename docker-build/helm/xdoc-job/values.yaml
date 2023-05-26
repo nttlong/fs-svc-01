@@ -66,11 +66,11 @@ deployments:
 
 jobs:
   - name: install-xdoc-torch-dataset-huggingface
-    image: nttlong/xdoc-torch-dataset-huggingface:rc.0.0.2
+    image: nttlong/xdoc-torch-dataset-huggingface:rc.0.0.4
   - name: xdoc-install-torch-dataset-layout-microsoft
-    image: nttlong/xdoc-torch-dataset-layout-microsoft:rc.0.0.1
+    image: nttlong/xdoc-torch-dataset-layout-microsoft:rc.0.0.4
   - name: install-xdoc-torch-dataset-layouts
-    image: nttlong/xdoc-torch-dataset-layouts:rc.0.0.2
+    image: nttlong/xdoc-torch-dataset-layouts:rc.0.0.4
 
 
 
@@ -106,3 +106,6 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+#helm uninstall xdoc-job-v15
+#helm install xdoc-job-v15 xdoc-job-18
+#scp -r root@172.16.13.72:/home/vmadmin/python/v6/file-service-02/docker-build/helm/xdoc-job /nttlong/helm/xdoc-job
