@@ -19,6 +19,13 @@ import deepdoctection.extern.tessocr
 from deepdoctection import ModelCatalog
 
 
+class AnalysisInfo:
+    result_image_path:str
+    msg_1:str
+    msg_1_2:str
+    data: dict
+
+
 class TableOCRService:
     def __init__(
             self,
@@ -28,7 +35,7 @@ class TableOCRService:
         import cyx.document_layout_analysis.system
         self.doc_tr_service = doc_tr_service
         # self.doc_tr_service_model = doc_tr_service.get_model()
-        self.sub_app_dir = cyx.document_layout_analysis.system.get_dataset_path() #pathlib.Path(__file__).parent.parent.__str__()
+        self.sub_app_dir = cyx.document_layout_analysis.system.get_dataset_path()  # pathlib.Path(__file__).parent.parent.__str__()
         self._DD_ONE = f"{self.sub_app_dir}/conf_dd_one.yaml"
         if not os.path.isfile(self._DD_ONE):
             raise Exception(f"{self._DD_ONE} was not found")
@@ -385,7 +392,7 @@ class TableOCRService:
         #     return dp
         return self.prepare_output(dp, add_table, add_ocr)
 
-    def analyze_image_by_file_path(self, input_file_path: str, ouput_file_path: str):
+    def analyze_image_by_file_path(self, input_file_path: str, ouput_file_path: str)->AnalysisInfo:
 
         arr_image, msg_1, msg_2, data = self.analyze_image(
             image_file_path=input_file_path
@@ -396,7 +403,12 @@ class TableOCRService:
         im.save(ouput_file_path)
         del im
         del arr_image
-        return ouput_file_path, msg_1, msg_2, data
+        ret = AnalysisInfo()
+        ret.result_image_path = ouput_file_path
+        ret.msg_1 = msg_1
+        ret.msg_2 = msg_2
+        ret.data = data
+        return ret
 
     def load_deepdoctection_datapoint_image(self, file_path: str) -> deepdoctection.datapoint.Image:
         location = pathlib.Path(file_path).parent.__str__()
