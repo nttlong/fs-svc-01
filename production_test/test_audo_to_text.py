@@ -1,13 +1,15 @@
+#https://huggingface.co/nguyenvulebinh/wav2vec2-base-vietnamese-250h
 import pathlib
 import sys
 import os
 sys.path.append(pathlib.Path(__file__).parent.parent.__str__())
 import cy_kit
 audio_file = f"/home/vmadmin/python/v6/file-service-02/audio-test/Một Đời Một Kiếp Quá Xa Xôi _1_.mp3"
+audio_file_2 = f"/home/vmadmin/python/v6/file-service-02/audio-test/GiongDocTruyen.mp3"
 from cyx.common.audio_utils import AudioService
 audio_service = cy_kit.singleton(AudioService)
 print(audio_service.get_duration(audio_file))
-# files = audio_service.split_by_seconds(audio_file)
+files = audio_service.split_by_seconds(audio_file_2,senconds=10)
 import gradio
 import cyx.document_layout_analysis.system
 cyx.document_layout_analysis.system.set_offline_dataset(False)
@@ -26,21 +28,24 @@ from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
 # test_dataset = load_dataset("common_voice", "vi", split="test")
 # test_dataset = load_dataset("common_voice", "vi", split="test")
 # split 'train', 'test', 'validation', 'other', 'validated', 'invalidated'
-test_dataset = load_dataset("common_voice", "vi", split="validated")
+#test_dataset = load_dataset("common_voice", "vi", split="validated")
+#mozilla-foundation/common_voice_11_0
+test_dataset = load_dataset("mozilla-foundation/common_voice_11_0", "vi", split="train")
 processor = Wav2Vec2Processor.from_pretrained("dragonSwing/wav2vec2-base-vietnamese")
 model = Wav2Vec2ForCTC.from_pretrained("dragonSwing/wav2vec2-base-vietnamese")
+model.gradient_checkpointing_enable()
 resampler = torchaudio.transforms.Resample(48_000, 16_000)
 # Preprocessing the datasets.
 # We need to read the aduio files as arrays
 audio_file = f"/home/vmadmin/python/v6/file-service-02/audio-test/510_cbsk___file_goc_510201920_3.wav"
-audio_file = f"/home/vmadmin/python/v6/file-service-02/share-storage/tmp-file-processing/tmp/cyx.common.audio_utils/AudioService/tmp/1fa0b769-e0af-4404-a9cf-8ed0fb768cce/chunk0.mp3"
-audio_file = f"/home/vmadmin/python/v6/file-service-02/audio-test/GiongMienNam.mp3"
+audio_file_2 = f"/home/vmadmin/python/v6/file-service-02/audio-test/GiongDocTruyen.mp3"
+audio_file_1 = f"/home/vmadmin/python/v6/file-service-02/audio-test/GiongMienNam.mp3"
 def speech_file_to_array_fn(batch:dict):
 
 
 
     #data_waveform, rate_of_sample = torchaudio.load(audio_file)
-    speech_array, sampling_rate = torchaudio.load(audio_file)
+    speech_array, sampling_rate = torchaudio.load(files[0])
     batch["speech"] = resampler(speech_array).squeeze().numpy()
     return batch
 test_dataset = test_dataset.map(speech_file_to_array_fn)

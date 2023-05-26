@@ -7,7 +7,8 @@ from cyx.common.share_storage import ShareStorageService
 import os
 import librosa
 import soundfile
-
+from pydub import AudioSegment
+from pydub.silence import split_on_silence
 
 class AudioService:
     def __init__(self, share_storage_service: ShareStorageService = cy_kit.singleton(ShareStorageService)):
@@ -43,8 +44,7 @@ class AudioService:
 
     def split(self, audio_file: str):
         ret = []
-        from pydub import AudioSegment
-        from pydub.silence import split_on_silence
+
         # reading from audio mp3 file
         print("load audio file")
         print(audio_file)

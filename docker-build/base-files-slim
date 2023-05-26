@@ -1,4 +1,4 @@
-FROM nttlong/base-core-slim:rc.2023.028  as git
+FROM nttlong/base-core-slim:rc.2023.029  as git
 ARG TARGETARCH
 #ADD ./../torch-source /torch-source
 RUN mkdir -p /app/pre_test_build && mkdir -p /tmp-source/amd
@@ -11,11 +11,17 @@ COPY ./../docker-build/base-file-slim.deep-learning.reg.txt ./base-file-slim.dee
 RUN if [ "$TARGETARCH" = "amd64" ]; then \
     pip uninstall torchvision -y && \
     pip uninstall torch -y && \
+    pip uninstall timm -y && \
+    pip uninstall easyocr -y && \
     pip install torch --extra-index-url https://download.pytorch.org/whl/cpu --no-cache-dir && \
-    pip install torchvision==0.15.0 --extra-index-url https://download.pytorch.org/whl/cpu --no-cache-dir && \
+    pip install torchvision --extra-index-url https://download.pytorch.org/whl/cpu --no-cache-dir && \
     pip install torchaudio --extra-index-url https://download.pytorch.org/whl/cpu --no-cache-dir && \
     pip install -r base-files-slim.req.txt --no-cache-dir && \
-    pip install -r base-file-slim.deep-learning.reg.txt --no-cache-dir;\
+    pip install -r base-file-slim.deep-learning.reg.txt --no-cache-dir && \
+    pip install timm  --no-cache-dir && \
+    pip install easyocr --no-cache-dir && \
+    pip install librosa --no-cache-dir && \
+    pip install soundfile --no-cache-dir;\
     fi
 RUN if [ "$TARGETARCH" = "arm64" ]; then \
     pip install -r base-files-slim.req.txt --no-cache-dir && \
@@ -43,4 +49,4 @@ RUN rm -fr /app/pre_test_build
 #docker buildx create --name builder --driver docker-container --use
 #docker buildx inspect --bootstrap
 #docker buildx   build -t nttlong/files-service-slim:rc.0.1.1   --platform=linux/amd64,linux/arm64/v8  ./.. -f base-files-slim
-#docker buildx   build -t nttlong/files-service-slim:rc.0.2.0  --platform=linux/amd64,linux/arm64/v8  ./.. -f base-files-slim  --push=true --output type=registry
+#docker buildx   build -t nttlong/files-service-slim:rc.0.2.2  --platform=linux/amd64,linux/arm64/v8  ./.. -f base-files-slim  --push=true --output type=registry

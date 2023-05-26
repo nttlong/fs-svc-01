@@ -11,4 +11,4 @@ RUN python3 cy_kit/setup.py build_ext --inplace
 RUN python3 cy_es/setup.py build_ext --inplace
 RUN python3 cy_web/setup.py build_ext --inplace
 RUN cd ..
-#docker buildx   build -t nttlong/base-core-slim:rc.2023.028  --platform=linux/amd64,linux/arm64/v8  ./.. -f base-core-slim  --push=true --output type=registry
+#docker buildx   build -t nttlong/base-core-slim:rc.2023.029  --platform=linux/amd64,linux/arm64/v8  ./.. -f base-core-slim  --push=true --output type=registry

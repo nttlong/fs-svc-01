@@ -154,3 +154,41 @@ class MessageService:
 
     def close(self):
         pass
+
+
+def broker(message: str):
+    def __wrapper__(cls):
+        from cyx.common.rabitmq_message import RabitmqMsg
+        if not hasattr(cls, "on_receive_msg"):
+            raise Exception(f"{cls.__module__}.{cls.__name__} must have function on_receive_msg")
+        fx = getattr(cls, "on_receive_msg")
+        if not callable(fx):
+            raise Exception(f"on_receive_msg in {cls.__module__}.{cls.__name__} must be a function")
+        if len(fx.__annotations__.keys())<2:
+            raise Exception(f"on_receive_msg in {cls.__module__}.{cls.__name__} must be a 2 args")
+        if fx.__annotations__.get("msg_info") is None:
+            raise Exception(f"The first arg of on_receive_msg in {cls.__module__}.{cls.__name__} must name 'msg_info'")
+        if fx.__annotations__.get("msg_broker") is None:
+            raise Exception(f"The second arg of on_receive_msg in {cls.__module__}.{cls.__name__} must name 'msg_broker'")
+        if fx.__annotations__["msg_info"] != MessageInfo:
+            raise Exception(f"msg_info arg of on_receive_msg in {cls.__module__}.{cls.__name__} must be {MessageInfo.__module__} {MessageInfo.__name__}")
+        if fx.__annotations__["msg_broker"] != MessageService:
+            raise Exception(f"msg_broker arg of on_receive_msg in {cls.__module__}.{cls.__name__} must be {MessageService.__module__} {MessageService.__name__}")
+        def __set_msg__(owner, str_msg: str):
+            owner.message_type = message
+            return owner
+
+        setattr(cls, "__set_msg__", __set_msg__)
+        import cy_kit
+        ins = cy_kit.singleton(cls)
+        ins.__set_msg__(message)
+        msg = cy_kit.singleton(RabitmqMsg)
+        def on_receive_msg(msg_info: MessageInfo):
+            ins.on_receive_msg(msg_info,msg)
+        msg.consume(
+            msg_type=ins.message_type,
+            handler=on_receive_msg
+        )
+        return ins
+
+    return __wrapper__
