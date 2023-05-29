@@ -6,7 +6,8 @@ metadata:
     name: {{$.Values.namespace}}
 
 ---
-
+{{if ne $.Values.existConfigMap true}}
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -14,16 +15,18 @@ metadata:
   namespace: {{$.Values.namespace}}
 data:
   admin_db_name: lv-docs
-  db.authSource: hps-file-test
-  db.host: 192.168.18.36
-  db.password: ''
-  db.port: '27018'
-  db.username: ''
+  db.authSource: {{ $.Values.config.db.authSource }}
+  db.host: {{ $.Values.config.db.host }}
+  db.password: {{ $.Values.config.db.password }}
+  db.port: {{ $.Values.config.db.port }}
+  db.username: {{ $.Values.config.db.username }}
   elastic_search.prefix_index: lv-codx
-  elastic_search.server: http://192.168.18.36:9200
-  rabbitmq.port: '5672'
-  rabbitmq.server: rabbitmq.rabbitmq-dev
+  elastic_search.server: {{ $.Values.config.elastic_search.server }}
+  rabbitmq.port: {{ $.Values.config.rabbitmq.port }}
+  rabbitmq.server: {{ $.Values.config.rabbitmq.server }}
   temp_directory: ./brokers/tmp
+---
+{{end}}
 ---
 {{- range $key, $value := .Values.deployments }}
 ---
@@ -109,6 +112,6 @@ spec:
   backoffLimit: 4
 ---
 {{- end }}
-#helm uninstall xdoc-job-v15
-#helm install xdoc-job-v15 xdoc-job-18
+#helm uninstall xdoc-job-v16
+#helm install xdoc-job-v16 xdoc-job-10
 #scp -r root@172.16.13.72:/home/vmadmin/python/v6/file-service-02/docker-build/helm/xdoc-job /nttlong/helm/xdoc-job

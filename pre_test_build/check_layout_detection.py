@@ -1,3 +1,6 @@
+import os
+if not os.path.isfile("/usr/bin/tesseract"):
+    raise Exception(f"'/usr/bin/tesseract' was not found")
 import doctr
 if doctr.__version__!="v0.6.0":
     raise Exception(f"doctr version require is v0.6.0. But found {doctr.__version__}")
@@ -5,8 +8,8 @@ from doctr.io import DocumentFile
 from doctr.models import ocr_predictor
 from doctr.datasets import CORD
 import deepdoctection
-if str(deepdoctection.__version__)!="0.21":
-    raise Exception(f"deepdoctection version require is 0.21. But found {deepdoctection.__version__}")
+if str(deepdoctection.__version__)!="0.23":
+    raise Exception(f"deepdoctection version require is 0.23. But found {deepdoctection.__version__}")
 from deepdoctection.dataflow.serialize import DataFromList
 
 import gradio as gr
@@ -17,5 +20,8 @@ import transformers
 if transformers.__version__!="4.28.0.dev0":
     raise Exception(f"transformers version require is 4.28.0.dev0. But found {transformers.__version__}")
 import detectron2
-if detectron2.__version__!="0.4":
-    raise Exception(f"detectron2 version require is 0.4. But found {detectron2.__version__}")
+if detectron2.__version__!="0.6":
+    raise Exception(f"detectron2 version require is 0.6. But found {detectron2.__version__}")
+import gradio
+if gradio.__version__!="3.32.0":
+    raise Exception(f"gradio version require 3.32.0. But found {gradio.__version__}")

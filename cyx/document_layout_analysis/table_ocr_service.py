@@ -132,10 +132,12 @@ class TableOCRService:
         print("-----------------------------------------------")
         #categories = ModelCatalog.get_profile(path_weights_tl).categories
         print("-----------Profile info-----------------------------")
+        import deepdoctection
+        print(deepdoctection.__version__)
         profile = ModelCatalog.get_profile(profile_name)
         categories = profile.categories
         print(profile.name)
-        print(profile.dl_library)
+
         print("-------------------------------------------------")
         # word detector
 
@@ -246,6 +248,7 @@ class TableOCRService:
         #
         # layout = dd.ImageLayoutService(self.d_layout, to_image=True, crop_image=True)
         deepdoctection_analyzer = self.doc_tr_service.get_analyzer()
+
 
 
         return deepdoctection_analyzer

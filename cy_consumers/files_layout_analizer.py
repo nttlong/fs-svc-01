@@ -21,15 +21,18 @@ from cyx.common.temp_file import TempFiles
 from cyx.document_layout_analysis.table_ocr_service import TableOCRService
 from cy_xdoc.services.search_engine import SearchEngine
 
+shared_storage_service=shared_storage_service
+audio_service=cy_kit.singleton(AudioService)
+temp_file=cy_kit.singleton(TempFiles)
+table_ocr_service=cy_kit.singleton(TableOCRService)
+search_engine = cy_kit.singleton(SearchEngine)
+test_dir = pathlib.Path(__file__).parent.__str__()
+test_file = os.path.join(test_dir,"doremon8.jpg")
+analyze_image_by_file_path = table_ocr_service.analyze_image_by_file_path
+analyze_image_by_file_path(test_file,os.path.join(test_dir,"r.jpg"))
 @broker(message=MSG_FILE_DOC_LAYOUT_ANALYSIS)
 class Process:
-    def __init__(self,
-                 shared_storage_service=shared_storage_service,
-                 audio_service=cy_kit.singleton(AudioService),
-                 temp_file=cy_kit.singleton(TempFiles),
-                 table_ocr_service=cy_kit.singleton(TableOCRService),
-                 search_engine = cy_kit.singleton(SearchEngine)
-                 ):
+    def __init__(self):
         print("consumer init")
         self.shared_storage_service = shared_storage_service
         self.audio_service = audio_service

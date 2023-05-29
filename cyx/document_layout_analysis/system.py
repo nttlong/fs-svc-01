@@ -26,7 +26,7 @@ import shutil
 import string
 import subprocess
 import sys
-import gradio
+# import gradio
 __tesseract_path__ = shutil.which("tesseract")
 __tesseract_languages__ = None
 

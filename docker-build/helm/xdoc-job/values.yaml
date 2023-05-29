@@ -1,7 +1,7 @@
 # Default values for xdoc-job.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
-
+existConfigMap: false # Neu da co config map thi dat ban true
 replicaCount: 1
 defaults:
   replicas: 2
@@ -11,8 +11,24 @@ defaults:
   kind: Deployment
   apiVersion: apps/v1
 
+config:
+  db:
+    admin: lv-docs #Giu nguyen kg thay doi
+    authSource: hps-file-test
+    host: 192.168.18.36
+    password: ''
+    port: '27018'
+    username: ''
+  elastic_search:
+    prefix_index: lv-codx # giu nguyen kg thay doi
+    server: http://192.168.18.36:9200
+  rabbitmq:
+    port: '5672'
+    server: rabbitmq.rabbitmq-dev
+    temp_directory: ./brokers/tmp
 
-namespace: xdoc-job-v5
+
+namespace: xdoc-job-v6
 nfs:
   server: 172.16.7.91
   directory: /var/nfs_share_dir_for_k8s
@@ -21,6 +37,7 @@ image:
   repository: nttlong/files-service-final
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
+
   tag: "rc.0.5.2.9"
 deployments:
   - name: files-upload
@@ -31,7 +48,6 @@ deployments:
     description: Generate image from any office file, replicate number should be number of worker
   - name: files-generate-image-from-pdf
     endpoint: files_generate_image_from_pdf.py
-    replicate: 3
   - name: files-generate-image-from-video
     endpoint: files_generate_image_from_video.py
   - name: files-ocr-pdf
@@ -40,12 +56,10 @@ deployments:
     endpoint: files_generate_pdf_from_image.py
   - name: files-generate-thumbs
     endpoint: files_generate_thumbs.py
-    replicate: 3
   - name: files-save-custom-thumb
     endpoint: files_save_custom_thumb.py
   - name: files-save-default-thumb
     endpoint: files_save_default_thumb.py
-    replicate: 3
   - name: files-save-orc-pdf-file
     endpoint: files_save_orc_pdf_file.py
   - name: files-save-search-engine
@@ -54,6 +68,7 @@ deployments:
     endpoint: files_extrac_text_from_image.py
   - name: files-clean-up
     endpoint: files_clean_up.py
+    replicate: 1
   - name: files-move-tenants
     endpoint: files_move_tenants.py
   - name: files-clean-unfinished
@@ -62,8 +77,8 @@ deployments:
   - name: fix-hanger-content
     endpoint: fix_hanger_content.py
     replicate: 1
-  - name: files-layout-analizer
-    endpoint: files_layout_analizer.py
+#  - name: files-layout-analizer
+#    endpoint: files_layout_analizer.py
 
 
 jobs:
