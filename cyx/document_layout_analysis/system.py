@@ -20,6 +20,8 @@ if __name__=="__main__":
 
 import os
 import pathlib
+__path_to_this_package__ = pathlib.Path(__file__).parent.__str__()
+
 import shutil
 import string
 import subprocess
@@ -93,7 +95,7 @@ def set_dataset_path(abs_or_relative_path: str):
     :return:
     """
     global __working_path__
-
+    global __path_to_this_package__
 
     full_path_to_data_set = abs_or_relative_path
     if abs_or_relative_path[0:2] == "./":
@@ -104,12 +106,15 @@ def set_dataset_path(abs_or_relative_path: str):
             os.path.join(__working_path__, abs_or_relative_path[2:])
         )
     dd_one_path_source = os.path.abspath(
-        os.path.join(__working_path__, "cyx/conf_dd_one.yaml")
+        os.path.join(__path_to_this_package__, "conf_dd_one.yaml")
     )
     dd_one_path_dest = os.path.abspath(
         os.path.join(full_path_to_data_set, "conf_dd_one.yaml")
     )
-    shutil.copy(dd_one_path_source,dd_one_path_dest)
+    if not os.path.isdir(pathlib.Path(dd_one_path_dest).parent.__str__()):
+        os.makedirs(pathlib.Path(dd_one_path_dest).parent.__str__(),exist_ok=True)
+    if not os.path.isdir(dd_one_path_dest):
+        shutil.copy(dd_one_path_source,dd_one_path_dest)
     doctr_path = os.path.abspath(
         os.path.join(full_path_to_data_set, "doctr")
     )

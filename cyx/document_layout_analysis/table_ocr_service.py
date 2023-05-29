@@ -119,25 +119,33 @@ class TableOCRService:
             device=self.cfg.DEVICE
         )
         #/home/vmadmin/python/v6/file-service-02/share-storage/dataset/deepdoctection/weights/doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt
+        architecture_name = "db_resnet50"
+        profile_name = f"doctr/{architecture_name}/pt/db_resnet50-ac60cadc.pt"
         path_weights_tl = os.path.abspath(
-            os.path.join(self.sub_app_dir,"deepdoctection/weights/doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt")
+            os.path.join(self.sub_app_dir,f"deepdoctection/weights/{profile_name}")
         )
-        if not os.path.isfile():
-            path_weights_tl = dd.ModelDownloadManager.maybe_download_weights_and_configs(
-            "doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt")
+
+        #path_weights_tl = dd.ModelDownloadManager.maybe_download_weights_and_configs(
+        #"doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt")
         print("-----------------------------------------------")
         print(path_weights_tl)
         print("-----------------------------------------------")
-        categories = ModelCatalog.get_profile("doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt").categories
+        #categories = ModelCatalog.get_profile(path_weights_tl).categories
+        print("-----------Profile info-----------------------------")
+        profile = ModelCatalog.get_profile(profile_name)
+        categories = profile.categories
+        print(profile.name)
+        print(profile.dl_library)
+        print("-------------------------------------------------")
         # word detector
 
-        self.det = dd.DoctrTextlineDetector("db_resnet50", path_weights_tl, categories, "cpu")
-
+        self.det = dd.DoctrTextlineDetector(architecture_name, path_weights_tl, categories, "cpu")
+        #self.det = dd.DoctrTextlineDetector("db_resnet50", "doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt", categories, "cpu")
         # text recognizer rec = DoctrTextRecognizer("crnn_vgg16_bn", path_weights_tr, "cpu")
         # #
-        path_weights_tr = dd.ModelDownloadManager.maybe_download_weights_and_configs(
-            "doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt")
-        self.rec = dd.DoctrTextRecognizer("crnn_vgg16_bn", path_weights_tr, "cpu")
+        # path_weights_tr = dd.ModelDownloadManager.maybe_download_weights_and_configs(
+        #     "doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt")
+        # self.rec = dd.DoctrTextRecognizer("crnn_vgg16_bn", path_weights_tr, "cpu")
 
     def build_analyzer_pipeline(self, table=True, table_ref=True, ocr=True):
         """Building the Detectron2/DocTr analyzer based on the given config"""
@@ -238,94 +246,7 @@ class TableOCRService:
         #
         # layout = dd.ImageLayoutService(self.d_layout, to_image=True, crop_image=True)
         deepdoctection_analyzer = self.doc_tr_service.get_analyzer()
-        # print("-------------------------------------------")
-        # for x in deepdoctection_analyzer.pipe_component_list:
-        #     print(x)
-        # print("-------------------------------------------")
-        # # deepdoctection_analyzer =  dd.get_dd_analyzer(
-        # #     language="Vietnamese"
-        # #
-        # # )
-        #
-        # print(deepdoctection_analyzer.pipe_component_list.__len__())
-        #
-        # pipe_component_list.append(layout)
-        #
-        # if self.cfg.TAB:
-        #
-        #     detect_result_generator = dd.DetectResultGenerator(self.categories_cell)
-        #     cell = dd.SubImageLayoutService(
-        #         self.d_cell, dd.LayoutType.table, {1: 6}, detect_result_generator
-        #     )
-        #     pipe_component_list.append(cell)
-        #
-        #     detect_result_generator = dd.DetectResultGenerator(
-        #         self.categories_item
-        #     )
-        #     item = dd.SubImageLayoutService(
-        #         self.d_item, dd.LayoutType.table,
-        #         {1: 7, 2: 8},
-        #         detect_result_generator
-        #     )
-        #     pipe_component_list.append(item)
-        #
-        #     table_segmentation = dd.TableSegmentationService(
-        #         self.cfg.SEGMENTATION.ASSIGNMENT_RULE,
-        #         self.cfg.SEGMENTATION.IOU_THRESHOLD_ROWS
-        #         if self.cfg.SEGMENTATION.ASSIGNMENT_RULE in ["iou"]
-        #         else self.cfg.SEGMENTATION.IOA_THRESHOLD_ROWS,
-        #         self.cfg.SEGMENTATION.IOU_THRESHOLD_COLS
-        #         if self.cfg.SEGMENTATION.ASSIGNMENT_RULE in ["iou"]
-        #         else self.cfg.SEGMENTATION.IOA_THRESHOLD_COLS,
-        #         self.cfg.SEGMENTATION.FULL_TABLE_TILING,
-        #         self.cfg.SEGMENTATION.REMOVE_IOU_THRESHOLD_ROWS,
-        #         self.cfg.SEGMENTATION.REMOVE_IOU_THRESHOLD_COLS,
-        #     )
-        #     pipe_component_list.append(table_segmentation)
-        #
-        #     if self.cfg.TAB_REF:
-        #         table_segmentation_refinement = dd.TableSegmentationRefinementService()
-        #         pipe_component_list.append(table_segmentation_refinement)
-        #
-        # if self.cfg.OCR:
-        #     d_layout_text = dd.ImageLayoutService(self.det, to_image=True, crop_image=True)
-        #     pipe_component_list.append(d_layout_text)
-        #     dd.tesseract_available()
-        #
-        #     # pipe_component_list = deepdoctection_analyzer.pipe_component_list
-        #     d_text = dd.TextExtractionService(self.rec,
-        #
-        #                                       extract_from_roi="WORD",
-        #                                       skip_if_text_extracted=False)
-        #     print()
-        #     # pipe_component_list+=deepdoctection_analyzer.pipe_component_list
-        #
-        #     pipe_component_list.append(d_text)
-        #
-        #     match = dd.MatchingService(
-        #         parent_categories=self.cfg.WORD_MATCHING.PARENTAL_CATEGORIES,
-        #         child_categories=dd.LayoutType.word,
-        #         matching_rule=self.cfg.WORD_MATCHING.RULE,
-        #         threshold=self.cfg.WORD_MATCHING.IOU_THRESHOLD
-        #         if self.cfg.WORD_MATCHING.RULE in ["iou"]
-        #         else self.cfg.WORD_MATCHING.IOA_THRESHOLD,
-        #     )
-        #     pipe_component_list.append(match)
-        #     order = dd.TextOrderService(
-        #         text_container=dd.LayoutType.word,
-        #         floating_text_block_names=[dd.LayoutType.title, dd.LayoutType.text, dd.LayoutType.list],
-        #         text_block_names=[
-        #             dd.LayoutType.title,
-        #             dd.LayoutType.text,
-        #             dd.LayoutType.list,
-        #             dd.LayoutType.cell,
-        #             dd.CellType.header,
-        #             dd.CellType.body,
-        #         ],
-        #     )
-        #     pipe_component_list.append(order)
-        #
-        # pipe = dd.DoctectionPipe(pipeline_component_list=pipe_component_list)
+
 
         return deepdoctection_analyzer
 

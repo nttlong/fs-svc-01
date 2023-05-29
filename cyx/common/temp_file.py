@@ -159,6 +159,8 @@ class TempFiles:
             if file is not exist in temp folder
             get it from Mongodb
             """
+            print(f"{ret} was not found")
+            print(f"try sync {ret} from server")
             try:
                 fs = self.files_services.get_main_file_of_upload(
                     app_name=app_name,
@@ -169,8 +171,9 @@ class TempFiles:
                         data = fs.read(fs.get_size())
                         f.write(data)
             except gridfs.errors.CorruptGridFile as e:
+                print(f"fail sync {ret} from server")
                 return None
-
+        print(f"Finish sync {ret} from server")
         return ret
 
     def move_file(self, from_file: str, app_name: str, sub_dir: str):

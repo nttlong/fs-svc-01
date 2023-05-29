@@ -35,11 +35,11 @@ class DoctrService:
         self.__analyzer__ = None
 
     def get_analyzer(self) -> deepdoctection.DoctectionPipe:
-        self.__build__()
+        #self.__build__()
         if self.__analyzer__ is None:
-            deepdoctection.set_tesseract_path('/bin/tesseract')
-            if not deepdoctection.tesseract_available():
-                raise Exception("tesseract is not available")
+            # deepdoctection.set_tesseract_path('/bin/tesseract')
+            # if not deepdoctection.tesseract_available():
+            #     raise Exception("tesseract is not available")
             self.__analyzer__ = deepdoctection.get_dd_analyzer(
                 language=self.__lan__
 

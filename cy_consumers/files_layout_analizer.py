@@ -6,7 +6,7 @@ sys.path.append(pathlib.Path(__file__).parent.parent.__str__())
 import cy_kit
 from cyx.common.share_storage import ShareStorageService
 import cyx.document_layout_analysis.system
-
+cyx.document_layout_analysis.system.set_offline_dataset(False)
 shared_storage_service = cy_kit.singleton(ShareStorageService)
 cyx.document_layout_analysis.system.set_dataset_path(
     os.path.abspath(
@@ -50,12 +50,16 @@ class Process:
             upload_id=msg_info.Data["_id"]
 
         )
+
         if full_file_path is None:
+            print("File not found")
             msg_broker.delete(msg_info)
             return
+
         import mimetypes
         mime_type, _ = mimetypes.guess_type(full_file_path)
         if mime_type.startswith('image/'):
+            print(f"Process layout {full_file_path}")
             output_file_path = os.path.join(self.output_dir, f'{msg_info.Data["_id"]}.{msg_info.Data["FileExt"]}')
             ret = self.table_ocr_service.analyze_image_by_file_path(
                 input_file_path=full_file_path,
