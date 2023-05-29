@@ -12,7 +12,7 @@ defaults:
   apiVersion: apps/v1
 
 
-namespace: xdoc-job-v4
+namespace: xdoc-job-v5
 nfs:
   server: 172.16.7.91
   directory: /var/nfs_share_dir_for_k8s
@@ -21,7 +21,7 @@ image:
   repository: nttlong/files-service-final
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "rc.0.5.2.6"
+  tag: "rc.0.5.2.9"
 deployments:
   - name: files-upload
     endpoint: files_upload.py
@@ -62,6 +62,8 @@ deployments:
   - name: fix-hanger-content
     endpoint: fix_hanger_content.py
     replicate: 1
+  - name: files-layout-analizer
+    endpoint: files_layout_analizer.py
 
 
 jobs:

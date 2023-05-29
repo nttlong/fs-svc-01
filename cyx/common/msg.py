@@ -93,6 +93,7 @@ MSG_FILE_DOC_LAYOUT_ANALYSIS = "files.document.layout.analysis"
 deep learning models. It does not implement models but enables you to build pipelines using highly acknowledged 
 libraries for object detection, OCR and selected NLP tasks and provides an integrated framework for fine-tuning, 
 evaluating and running models. For more specific text processing tasks use one of the many other great NLP libraries"""
+MSG_FILE_EXTRACT_AUDIO_FROM_VIDEO = "files.upload.extract.audio.from.video"
 import datetime
 from typing import List
 

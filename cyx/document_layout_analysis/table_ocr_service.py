@@ -21,9 +21,10 @@ from deepdoctection import ModelCatalog
 
 class AnalysisInfo:
     result_image_path:str
-    msg_1:str
-    msg_1_2:str
-    data: dict
+    text:str
+    table:str
+    data:dict
+
 
 
 class TableOCRService:
@@ -117,8 +118,16 @@ class TableOCRService:
             self.categories_item,
             device=self.cfg.DEVICE
         )
-        path_weights_tl = dd.ModelDownloadManager.maybe_download_weights_and_configs(
+        #/home/vmadmin/python/v6/file-service-02/share-storage/dataset/deepdoctection/weights/doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt
+        path_weights_tl = os.path.abspath(
+            os.path.join(self.sub_app_dir,"deepdoctection/weights/doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt")
+        )
+        if not os.path.isfile():
+            path_weights_tl = dd.ModelDownloadManager.maybe_download_weights_and_configs(
             "doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt")
+        print("-----------------------------------------------")
+        print(path_weights_tl)
+        print("-----------------------------------------------")
         categories = ModelCatalog.get_profile("doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt").categories
         # word detector
 
@@ -393,8 +402,8 @@ class TableOCRService:
         return self.prepare_output(dp, add_table, add_ocr)
 
     def analyze_image_by_file_path(self, input_file_path: str, ouput_file_path: str)->AnalysisInfo:
-
-        arr_image, msg_1, msg_2, data = self.analyze_image(
+        import html_to_json
+        arr_image, text, table, data = self.analyze_image(
             image_file_path=input_file_path
         )
         import numpy as np
@@ -405,9 +414,14 @@ class TableOCRService:
         del arr_image
         ret = AnalysisInfo()
         ret.result_image_path = ouput_file_path
-        ret.msg_1 = msg_1
-        ret.msg_2 = msg_2
-        ret.data = data
+        ret.text = text
+        ret.table = dict()
+        try:
+            ret.table=html_to_json.convert(table)
+        except Exception as e:
+            pass
+
+
         return ret
 
     def load_deepdoctection_datapoint_image(self, file_path: str) -> deepdoctection.datapoint.Image:
