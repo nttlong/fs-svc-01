@@ -20,20 +20,33 @@ from deepdoctection import ModelCatalog
 
 
 class AnalysisInfo:
-    result_image_path:str
-    text:str
-    table:str
-    data:dict
-
+    result_image_path: str
+    text: str
+    table: str
+    data: dict
 
 
 class TableOCRService:
+    """
+    This service will extract all information about Table-Layout-Extractor
+    Use Deepdoctection on top of combination of DocTr and Tesseract
+    This service will apply db_resnet50 arhitecture in Deepdoctection-Pipeline.
+    Deepdoctection-Pipeline will extract bellow information:
+        1 - text: Contiguous text
+        2- title: Header title of image
+        3- list:
+
+
+    """
+
     def __init__(
             self,
             doc_tr_service=cy_kit.singleton(DoctrService)
 
     ):
         import cyx.document_layout_analysis.system
+        architecture_name = "db_resnet50"
+        profile_name = f"doctr/{architecture_name}/pt/db_resnet50-ac60cadc.pt"
         self.doc_tr_service = doc_tr_service
         # self.doc_tr_service_model = doc_tr_service.get_model()
         self.sub_app_dir = cyx.document_layout_analysis.system.get_dataset_path()  # pathlib.Path(__file__).parent.parent.__str__()
@@ -55,9 +68,13 @@ class TableOCRService:
                         "2": dd.LayoutType.title,
                         "3": dd.LayoutType.list,
                         "4": dd.LayoutType.table,
-                        "5": dd.LayoutType.figure},
+                        "5": dd.LayoutType.table_rotated,
+                        "6": dd.LayoutType.line,
+                        "7": dd.LayoutType.figure,
+                        "9": dd.LayoutType.caption,
+                        "10": dd.LayoutType.column,
+                        "11": dd.LayoutType.cell},
         )
-        import huggingface_hub.file_download
 
         dd.ModelCatalog.register(f"layout/{self.lay_out_model_file}", self.model)
 
@@ -118,19 +135,17 @@ class TableOCRService:
             self.categories_item,
             device=self.cfg.DEVICE
         )
-        #/home/vmadmin/python/v6/file-service-02/share-storage/dataset/deepdoctection/weights/doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt
-        architecture_name = "db_resnet50"
-        profile_name = f"doctr/{architecture_name}/pt/db_resnet50-ac60cadc.pt"
+        # /home/vmadmin/python/v6/file-service-02/share-storage/dataset/deepdoctection/weights/doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt
+
         path_weights_tl = os.path.abspath(
-            os.path.join(self.sub_app_dir,f"deepdoctection/weights/{profile_name}")
+            os.path.join(self.sub_app_dir, f"deepdoctection/weights/{profile_name}")
         )
 
-        #path_weights_tl = dd.ModelDownloadManager.maybe_download_weights_and_configs(
-        #"doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt")
+        # path_weights_tl = dd.ModelDownloadManager.maybe_download_weights_and_configs(
+        # "doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt")
         print("-----------------------------------------------")
         print(path_weights_tl)
         print("-----------------------------------------------")
-        #categories = ModelCatalog.get_profile(path_weights_tl).categories
         print("-----------Profile info-----------------------------")
         import deepdoctection
         print(deepdoctection.__version__)
@@ -142,97 +157,10 @@ class TableOCRService:
         # word detector
 
         self.det = dd.DoctrTextlineDetector(architecture_name, path_weights_tl, categories, "cpu")
-        #self.det = dd.DoctrTextlineDetector("db_resnet50", "doctr/db_resnet50/pt/db_resnet50-ac60cadc.pt", categories, "cpu")
-        # text recognizer rec = DoctrTextRecognizer("crnn_vgg16_bn", path_weights_tr, "cpu")
-        # #
-        # path_weights_tr = dd.ModelDownloadManager.maybe_download_weights_and_configs(
-        #     "doctr/crnn_vgg16_bn/pt/crnn_vgg16_bn-9762b0b0.pt")
-        # self.rec = dd.DoctrTextRecognizer("crnn_vgg16_bn", path_weights_tr, "cpu")
 
     def build_analyzer_pipeline(self, table=True, table_ref=True, ocr=True):
         """Building the Detectron2/DocTr analyzer based on the given config"""
         return self.doc_tr_service.get_pipe()
-        # self.cfg.freeze(freezed=False)
-        # self.cfg.TAB = table
-        # self.cfg.TAB_REF = table_ref
-        # self.cfg.OCR = ocr
-        #
-        # self.cfg.freeze()
-        #
-        # pipe_component_list = []
-        # layout = dd.ImageLayoutService(self.d_layout, to_image=True, crop_image=True)
-        # pipe_component_list.append(layout)
-        #
-        # if self.cfg.TAB:
-        #
-        #     detect_result_generator = dd.DetectResultGenerator(self.categories_cell)
-        #     cell = dd.SubImageLayoutService(
-        #         self.d_cell, dd.LayoutType.table, {1: 6}, detect_result_generator
-        #     )
-        #     pipe_component_list.append(cell)
-        #
-        #     detect_result_generator = dd.DetectResultGenerator(
-        #         self.categories_item
-        #     )
-        #     item = dd.SubImageLayoutService(
-        #         self.d_item, dd.LayoutType.table,
-        #         {1: 7, 2: 8},
-        #         detect_result_generator
-        #     )
-        #     pipe_component_list.append(item)
-        #
-        #     table_segmentation = dd.TableSegmentationService(
-        #         self.cfg.SEGMENTATION.ASSIGNMENT_RULE,
-        #         self.cfg.SEGMENTATION.IOU_THRESHOLD_ROWS
-        #         if self.cfg.SEGMENTATION.ASSIGNMENT_RULE in ["iou"]
-        #         else self.cfg.SEGMENTATION.IOA_THRESHOLD_ROWS,
-        #         self.cfg.SEGMENTATION.IOU_THRESHOLD_COLS
-        #         if self.cfg.SEGMENTATION.ASSIGNMENT_RULE in ["iou"]
-        #         else self.cfg.SEGMENTATION.IOA_THRESHOLD_COLS,
-        #         self.cfg.SEGMENTATION.FULL_TABLE_TILING,
-        #         self.cfg.SEGMENTATION.REMOVE_IOU_THRESHOLD_ROWS,
-        #         self.cfg.SEGMENTATION.REMOVE_IOU_THRESHOLD_COLS,
-        #     )
-        #     pipe_component_list.append(table_segmentation)
-        #
-        #     if self.cfg.TAB_REF:
-        #         table_segmentation_refinement = dd.TableSegmentationRefinementService()
-        #         pipe_component_list.append(table_segmentation_refinement)
-        #
-        # if self.cfg.OCR:
-        #     d_layout_text = dd.ImageLayoutService(self.det, to_image=True, crop_image=True)
-        #     pipe_component_list.append(d_layout_text)
-        #
-        #     d_text = dd.TextExtractionService(self.rec,
-        #                                       extract_from_roi="WORD")
-        #     pipe_component_list.append(d_text)
-        #
-        #     match = dd.MatchingService(
-        #         parent_categories=self.cfg.WORD_MATCHING.PARENTAL_CATEGORIES,
-        #         child_categories=dd.LayoutType.word,
-        #         matching_rule=self.cfg.WORD_MATCHING.RULE,
-        #         threshold=self.cfg.WORD_MATCHING.IOU_THRESHOLD
-        #         if self.cfg.WORD_MATCHING.RULE in ["iou"]
-        #         else self.cfg.WORD_MATCHING.IOA_THRESHOLD,
-        #     )
-        #     pipe_component_list.append(match)
-        #     order = dd.TextOrderService(
-        #         text_container=dd.LayoutType.word,
-        #         floating_text_block_names=[dd.LayoutType.title, dd.LayoutType.text, dd.LayoutType.list],
-        #         text_block_names=[
-        #             dd.LayoutType.title,
-        #             dd.LayoutType.text,
-        #             dd.LayoutType.list,
-        #             dd.LayoutType.cell,
-        #             dd.CellType.header,
-        #             dd.CellType.body,
-        #         ],
-        #     )
-        #     pipe_component_list.append(order)
-        #
-        # pipe = dd.DoctectionPipe(pipeline_component_list=pipe_component_list)
-        #
-        # return pipe
 
     def build_gradio_analyzer(self, table=True, table_ref=True, ocr=True):
         """Building the Detectron2/DocTr analyzer based on the given config"""
@@ -248,8 +176,6 @@ class TableOCRService:
         #
         # layout = dd.ImageLayoutService(self.d_layout, to_image=True, crop_image=True)
         deepdoctection_analyzer = self.doc_tr_service.get_analyzer()
-
-
 
         return deepdoctection_analyzer
 
@@ -325,7 +251,7 @@ class TableOCRService:
         #     return dp
         return self.prepare_output(dp, add_table, add_ocr)
 
-    def analyze_image_by_file_path(self, input_file_path: str, ouput_file_path: str)->AnalysisInfo:
+    def analyze_image_by_file_path(self, input_file_path: str, ouput_file_path: str) -> AnalysisInfo:
         import html_to_json
         arr_image, text, table, data = self.analyze_image(
             image_file_path=input_file_path
@@ -341,10 +267,9 @@ class TableOCRService:
         ret.text = text
         ret.table = dict()
         try:
-            ret.table=html_to_json.convert(table)
+            ret.table = html_to_json.convert(table)
         except Exception as e:
             pass
-
 
         return ret
 

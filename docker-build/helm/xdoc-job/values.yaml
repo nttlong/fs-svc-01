@@ -10,26 +10,44 @@ defaults:
   restartPolicy: Always
   kind: Deployment
   apiVersion: apps/v1
-
 config:
   db:
-    admin: lv-docs #Giu nguyen kg thay doi
-    authSource: hps-file-test
-    host: 192.168.18.36
+    admin_db_name: 'hps-file-test'
+    authSource: 'hps-file-test'
+    host: '10.0.2.140'
+    password: ""
+    port: '27017'
+    username: ""
+  elastic_search:
+    prefix_index: 'lv-codx'
+    server: 'http://10.0.2.140:9200'
+  rabbitmq:
+    port: '5672'
+    server: 'rabbitmq.rabbitmq-dev.svc.cluster.local'
+  temp_directory: ./brokers/tmp
+
+config_dev:
+  db:
+    admin_db_name: 'lv-docs'
+    authSource: 'hps-file-test'
+    host: '192.168.18.36'
     password: ''
     port: '27018'
     username: ''
   elastic_search:
-    prefix_index: lv-codx # giu nguyen kg thay doi
-    server: http://192.168.18.36:9200
+    prefix_index: 'lv-codx'
+    server: 'http://192.168.18.36:9200'
   rabbitmq:
     port: '5672'
-    server: rabbitmq.rabbitmq-dev
-    temp_directory: ./brokers/tmp
+    server: 'rabbitmq.rabbitmq-dev'
+    temp_directory: './brokers/tmp'
 
 
-namespace: xdoc-job-v6
+namespace: xdoc-job-v7
 nfs:
+  server: 10.0.2.217
+  directory: /var/nfs_share_dir_for_k8s
+nfs_dev:
   server: 172.16.7.91
   directory: /var/nfs_share_dir_for_k8s
 
@@ -38,7 +56,7 @@ image:
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
 
-  tag: "rc.0.5.2.9"
+  tag: "rc.0.5.3.0"
 deployments:
   - name: files-upload
     endpoint: files_upload.py
@@ -77,8 +95,8 @@ deployments:
   - name: fix-hanger-content
     endpoint: fix_hanger_content.py
     replicate: 1
-#  - name: files-layout-analizer
-#    endpoint: files_layout_analizer.py
+  - name: files-layout-analizer
+    endpoint: files_layout_analizer.py
 
 
 jobs:

@@ -1,3 +1,7 @@
+"""
+This Consumer detect any image if it has table or tabular format and generate data
+Consumer  này phát hiện bất kỳ hình ảnh nào nếu nó có định dạng bảng hoặc dạng bảng và tạo dữ liệu
+"""
 import pathlib
 import sys
 import os

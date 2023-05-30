@@ -25,3 +25,6 @@ if detectron2.__version__!="0.6":
 import gradio
 if gradio.__version__!="3.32.0":
     raise Exception(f"gradio version require 3.32.0. But found {gradio.__version__}")
+import packaging
+if packaging.__version__!="20.9":
+    raise Exception(f"packaging version require 20.9. But found {packaging.__version__}")

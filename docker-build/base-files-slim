@@ -41,12 +41,26 @@ RUN if [ "$TARGETARCH" = "arm64"]; then \
 RUN if [ "$TARGETARCH" = "amd64"]; then \
     python3 /app/pre_test_build/check_torch_version.py; \
     fi
+RUN pip uninstall deepdoctection -y && \
+    pip uninstall python-doctr -y && \
+    pip uninstall doctr -y && \
+    pip install doctr==1.9.0 && \
+    pip install python-doctr==0.6.0 && \
+    pip install deepdoctection==0.23 && \
+    pip install git+https://github.com/facebookresearch/detectron2.git@2c6c380f94a27bd8455a39506c9105f652b9f760
+RUN pip uninstall packaging -y && \
+    pip install packaging packaging==20.9
+RUN apt-get install -y tesseract-ocr-script-viet
 
-RUN python3 /app/pre_test_build/cheK_layout_detection.py
+
+
+RUN python3 pre_test_build/check_layout_detection.py
+RUN python3 /app/pre_test_build/check_layout_detection.py
+
 RUN rm -fr /app/pre_test_build
 #docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 #docker buildx rm builder
 #docker buildx create --name builder --driver docker-container --use
 #docker buildx inspect --bootstrap
 #docker buildx   build -t nttlong/files-service-slim:rc.0.1.1   --platform=linux/amd64,linux/arm64/v8  ./.. -f base-files-slim
-#docker buildx   build -t nttlong/files-service-slim:rc.0.2.2  --platform=linux/amd64,linux/arm64/v8  ./.. -f base-files-slim  --push=true --output type=registry
+#docker buildx   build -t nttlong/files-service-slim:rc.0.2.3  --platform=linux/amd64,linux/arm64/v8  ./.. -f base-files-slim  --push=true --output type=registry

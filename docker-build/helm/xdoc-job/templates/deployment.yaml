@@ -14,17 +14,17 @@ metadata:
   name: xdoc-job-config
   namespace: {{$.Values.namespace}}
 data:
-  admin_db_name: lv-docs
-  db.authSource: {{ $.Values.config.db.authSource }}
-  db.host: {{ $.Values.config.db.host }}
-  db.password: {{ $.Values.config.db.password }}
-  db.port: {{ $.Values.config.db.port }}
-  db.username: {{ $.Values.config.db.username }}
+  admin_db_name: {{ $.Values.config.db.admin_db_name }}
+  db.authSource: '{{ $.Values.config.db.authSource }}'
+  db.host: '{{ $.Values.config.db.host }}'
+  db.password: '{{ $.Values.config.db.password }}'
+  db.port: '{{ $.Values.config.db.port }}'
+  db.username: '{{ $.Values.config.db.username }}'
   elastic_search.prefix_index: lv-codx
-  elastic_search.server: {{ $.Values.config.elastic_search.server }}
-  rabbitmq.port: {{ $.Values.config.rabbitmq.port }}
-  rabbitmq.server: {{ $.Values.config.rabbitmq.server }}
-  temp_directory: ./brokers/tmp
+  elastic_search.server: '{{ $.Values.config.elastic_search.server }}'
+  rabbitmq.port: '{{ $.Values.config.rabbitmq.port }}'
+  rabbitmq.server: '{{ $.Values.config.rabbitmq.server }}'
+  temp_directory: './brokers/tmp'
 ---
 {{end}}
 ---
@@ -58,12 +58,15 @@ spec:
       containers:
         - args:
             - python3
-            - /app/cy_consumers/{{$value.endpoint}}
+            - /app/cy_consumers/files_upload.py
             - elastic_search.server=$(elastic_search.server)
             - elastic_search.prefix_index=$(elastic_search.prefix_index)
             - db.host=$(db.host)
             - db.port=$(db.port)
-            - admin_db_name=$(admin_db_name)
+            - admin_db_name= $(admin_db_name)
+            - db.username=$(db.username)
+            - db.password=$(db.password)
+            - db.authSource=$(db.authSource)
             - temp_directory=$(temp_directory)
             - rabbitmq.server=$(rabbitmq.server)
             - rabbitmq.port=$(rabbitmq.port)

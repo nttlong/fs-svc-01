@@ -28,6 +28,19 @@ import deepdoctection
 
 
 class DoctrService:
+    """
+    This service will install DocTr service with Tesseract.
+    Service also detect if thou's OS has Tesseract.
+    If thou's OS does not have Tesseract it will cause an error
+    In the case,  Tesseract is already in thou's OS, the service will detect all language and install DocTr
+    If the service did not find any language of Tesseract in thou's OS it will use English as default
+    ------------------- \n
+    Dịch vụ này sẽ cài đặt dịch vụ DocTr với Tesseract.
+    Dịch vụ cũng phát hiện xem hệ điều hành của bạn có Tesseract hay không.
+    Nếu hệ điều hành của bạn không có Tesseract, nó sẽ gây ra lỗi
+    Trong trường hợp Tesseract đã có trong hệ điều hành của bạn, dịch vụ sẽ phát hiện tất cả ngôn ngữ và cài đặt DocTr
+    Nếu dịch vụ không tìm thấy bất kỳ ngôn ngữ nào của Tesseract trong hệ điều hành của bạn, dịch vụ sẽ sử dụng tiếng Anh làm mặc định
+    """
 
     def __init__(self):
         self.__lan__ = "+".join(cyx.document_layout_analysis.system.get_languages())
@@ -35,15 +48,17 @@ class DoctrService:
         self.__analyzer__ = None
 
     def get_analyzer(self) -> deepdoctection.DoctectionPipe:
-        # self.__build__()
+        """
+        Install Tesseract with installed-language into DocTr
+        This is really importance thing to force Doctr use Tesseract and installed-language to layout detection
+        ----------------------- \n
+        Cài đặt Tesseract với ngôn ngữ cài đặt vào DocTr
+        Đây thực sự là điều quan trọng để buộc Doctr sử dụng Tesseract và ngôn ngữ cài đặt để phát hiện bố cục
+        :return:
+        """
         if self.__analyzer__ is None:
-            # deepdoctection.set_tesseract_path('/bin/tesseract')
-            # if not deepdoctection.tesseract_available():
-            #     raise Exception("tesseract is not available")
-
             if not deepdoctection.tesseract_available():
                 raise Exception("tesseract is not available")
-
 
             self.__analyzer__ = deepdoctection.get_dd_analyzer(
                 language=self.__lan__
@@ -53,6 +68,10 @@ class DoctrService:
         return self.__analyzer__
 
     def __build__(self):
+        """
+        Use when debug or developer mode not for Production
+        :return:
+        """
         if self.__has_init__:
             return self
         self.__has_init__ = True
@@ -87,7 +106,7 @@ class DoctrService:
 
             if not dd.tesseract_available():
                 raise Exception("tesseract is not available")
-            
+
             deepdoctection_analyzer = dd.get_dd_analyzer(
                 language=self.__lan__
 
