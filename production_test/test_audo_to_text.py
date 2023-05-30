@@ -1,4 +1,5 @@
 #https://huggingface.co/nguyenvulebinh/wav2vec2-base-vietnamese-250h
+#https://huggingface.co/spaces/ntt123/vietTTS
 import pathlib
 import sys
 import os
