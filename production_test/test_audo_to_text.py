@@ -10,7 +10,7 @@ audio_file_2 = f"/home/vmadmin/python/v6/file-service-02/audio-test/GiongDocTruy
 from cyx.common.audio_utils import AudioService
 audio_service = cy_kit.singleton(AudioService)
 print(audio_service.get_duration(audio_file))
-files = audio_service.split_by_seconds(audio_file_2,senconds=10)
+files = audio_service.split_by_seconds(audio_file_2,senconds=3)
 import gradio
 import cyx.document_layout_analysis.system
 cyx.document_layout_analysis.system.set_offline_dataset(False)
@@ -31,6 +31,7 @@ from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
 # split 'train', 'test', 'validation', 'other', 'validated', 'invalidated'
 #test_dataset = load_dataset("common_voice", "vi", split="validated")
 #mozilla-foundation/common_voice_11_0
+
 test_dataset = load_dataset("mozilla-foundation/common_voice_11_0", "vi", split="train")
 processor = Wav2Vec2Processor.from_pretrained("dragonSwing/wav2vec2-base-vietnamese")
 model = Wav2Vec2ForCTC.from_pretrained("dragonSwing/wav2vec2-base-vietnamese")

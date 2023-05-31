@@ -13,7 +13,7 @@ cyx.document_layout_analysis.system.set_dataset_path(
 
 from vietTTS.hifigan.mel2wave import mel2wave
 from vietTTS.nat.text2mel import text2mel
-from vietTTS import nat_normalize_text
+# from vietTTS import nat_normalize_text
 import numpy as np
 import gradio as gr
 print(gr.__version__)
@@ -23,13 +23,16 @@ gdown
 git+https://github.com/NTT123/vietTTS.git@demo
 gradio==3.0.2
 """
+import vietTTS.nat.config
+tts_path = os.path.join(cyx.document_layout_analysis.system.get_dataset_path(),"vn-tts")
+vietTTS.nat.config.FLAGS.ckpt_dir =pathlib.Path(tts_path)
 
 def text_to_speech(text):
     # prevent too long text
     if len(text) > 500:
         text = text[:500]
-    text = nat_normalize_text(text)
-    tts_path = os.path.join(cyx.document_layout_analysis.system.get_dataset_path(),"vn-tts")
+    # text = nat_normalize_text(text)
+
     lexicon_path = os.path.join(tts_path,"lexicon.txt")
     acoustic_latest_ckpt = os.path.join(tts_path,"acoustic_latest_ckpt.pickle")
     duration_latest_ckpt = os.path.join(tts_path,"duration_latest_ckpt.pickle")
@@ -38,12 +41,13 @@ def text_to_speech(text):
     fx=f"/home/vmadmin/python/v6/file-service-02/share-storage/dataset/vn-tts/lexicon.txt"
     mel = text2mel(
         text = text,
-        lexicon_fn=lexicon_path,
-        acoustic_ckpt =acoustic_latest_ckpt,
-        duration_ckpt =duration_latest_ckpt
+        lexicon_fn=lexicon_path
+        # acoustic_ckpt =acoustic_latest_ckpt,
+        # duration_ckpt =duration_latest_ckpt
 
     )
-    wave = mel2wave(mel, config_path, hk_hifi_path)
+    wave  = mel2wave(mel)
+    # wave = mel2wave(mel, config_path, hk_hifi_path)
     return (wave * (2**15)).astype(np.int16)
 
 

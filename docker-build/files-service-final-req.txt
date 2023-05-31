@@ -6,3 +6,4 @@ dash-uploader
 librosa
 soundfile
 html-to-json
+donut-python
