@@ -1,5 +1,42 @@
 ﻿<div class="layout-columns">
     <style>
+
+    </style>
+    <style>
+        <style>
+
+.w3rcontainer{
+   border: 1px solid #cccfdb;
+   border-radius: 2px;
+}
+ .image-card {
+        overflow-y: hidden;
+
+
+}
+
+.perspective-left {
+  transform: perspective(1500px) rotateY(15deg);
+  transition: transform 1s ease 0s;
+}
+
+.perspective-left:hover {
+  transform: perspective(3000px) rotateY(5deg);
+}
+
+.perspective-right {
+  transform: perspective(1500px) rotateY(-30deg);
+  transition: transform 1s ease 0s;
+}
+
+.perspective-right:hover {
+  transform: perspective(3000px) rotateY(-22deg);
+}
+
+</style>
+
+    </style>
+    <style>
         .shadow-box {
             box-shadow: rgba(0, 0, 0, 0.07) 0px 5px 15px;
             margin: 10px;
@@ -36,6 +73,13 @@
             }
             .header-panel label {
                 white-space:nowrap;
+            }
+            img.mirror {
+                -webkit-box-reflect: below 0px -webkit-gradient(linear, left top, left bottom,  from(transparent), color-stop(0%, transparent), to(rgba(255, 255, 255, 0.21)));
+                min-width:100px;
+                max-width:100px;
+                margin:10px;
+
             }
     </style>
     <div class="header layout-rows">
@@ -78,9 +122,9 @@
         <div rcmpct-lazy-scroll source="listOfFiles" item-var="p" class="row" on-request-data="doLoadMore" page-size="20">
             <rcmpct-template>
                 <rcmpct-grid cols="(,700,100%)(700,,50% 50%)"  class="shadow-box" file-id="{{p.UploadId}}">
-                    <rcmpct-grid cols="180px minmax(0,1fr)" >
-                        <div>
-                            <img style="min-width:120px;max-width:120px;margin:10px" ng-src="{{p.ThumbUrl}}" ng-if="p.HasThumb" />
+                    <rcmpct-grid cols="180px minmax(0,1fr)" class="card-container">
+                        <div class="image-card perspective-right">
+                            <img class="mirror" style="" ng-src="{{p.ThumbUrl}}" ng-if="p.HasThumb" />
                         </div>
                         <rcmpct-grid cols="30% 70%">
 

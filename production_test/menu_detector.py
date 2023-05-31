@@ -76,6 +76,6 @@ demo = gr.Interface(
     description=description,
     article=article,
     enable_queue=True,
-    examples=[["example.png"], ["example_2.png"], ["example_3.jpeg"]],
+    examples=[],
     cache_examples=False)
 demo.launch(server_name="0.0.0.0",server_port=8013)

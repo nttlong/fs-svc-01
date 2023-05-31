@@ -27,9 +27,13 @@ class AppServices:
             docs.fields.description,
             docs.fields.domain,
             docs.fields.login_url,
-            docs.fields.return_url_afterSignIn
+            docs.fields.return_url_afterSignIn,
+            docs.fields.LatestAccess,
+            docs.fields.AccessCount,
+            docs.fields.RegisteredOn
 
         ).sort(
+            docs.fields.LatestAccess.desc(),
             docs.fields.Name.asc(),
             docs.fields.RegisteredOn.desc()
         )

@@ -31,6 +31,9 @@ logger = cy_kit.create_logs(
     "web"
 )
 print(config)
+from cyx.common.base import DbConnect
+cnn = cy_kit.singleton(DbConnect)
+cnn.set_tracking(True)
 cy_web.create_web_app(
     working_dir=pathlib.Path(__file__).parent.__str__(),
     static_dir="./../resource/static",

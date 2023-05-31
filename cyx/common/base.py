@@ -1,3 +1,6 @@
+import datetime
+import threading
+
 import pymongo.database
 
 import cy_docs
@@ -48,13 +51,40 @@ class DbConnect:
         self.admin_db_name = config.admin_db_name
 
         self.client = MongoClient(**self.connect_config.to_dict())
+        self.__tracking__ = False
         print("load connect is ok")
 
     def db(self, app_name):
         db_name = app_name
         if app_name == 'admin':
             db_name = self.admin_db_name
+        else:
+            self.do_tracking(app_name)
         return DB(client=self.client, db_name=db_name)
+
+
+    def set_tracking(self, is_tracking):
+        self.__tracking__ = is_tracking
+
+    def do_tracking(self, app_name):
+        def run():
+            from cy_xdoc.models.apps import App
+            db = DB(client=self.client, db_name=self.admin_db_name)
+            db_context = db.doc(App)
+            app = db_context.context.find_one(db_context.fields.Name==app_name)
+            if app is None:
+                return
+            if app.AccessCount is None:
+                app.AccessCount =1
+            else:
+                app.AccessCount += 1
+            db_context.context.update(
+                db_context.fields.id==app.id,
+                db_context.fields.LatestAccess<< datetime.datetime.utcnow(),
+                db_context.fields.AccessCount << app.AccessCount
+            )
+        threading.Thread(target=run,args=()).start()
+        print(f"access {app_name}")
 
 
 class __DbContext__:

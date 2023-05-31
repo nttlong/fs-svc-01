@@ -1,3 +1,4 @@
+import typing
 from datetime import datetime
 import cy_docs
 from bson import ObjectId
@@ -31,3 +32,8 @@ class App:
     Email dùng để liên lạc với application khi cần. Ví dụ dùng trong trường ho75ptruy tìm lại mật khẩu của user root trên app
     """
 
+    LatestAccess: typing.Optional[datetime]
+    """
+    Latest access time
+    """
+    AccessCount: typing.Optional[int]

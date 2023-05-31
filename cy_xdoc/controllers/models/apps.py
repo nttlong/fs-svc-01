@@ -1,3 +1,4 @@
+import datetime
 import typing
 import cy_web
 from cy_xdoc.controllers.models.errors import ErrorResult
@@ -16,6 +17,9 @@ class AppInfo:
     LoginUrl:typing.Optional[str]
     ReturnUrlAfterSignIn:typing.Optional[str]
     ReturnSegmentKey:typing.Optional[str]
+    RegisteredOn: typing.Optional[datetime.datetime]
+    LatestAccess: typing.Optional[datetime.datetime]
+    AccessCount: typing.Optional[int]
 from pydantic import Field
 def warpper():
     return

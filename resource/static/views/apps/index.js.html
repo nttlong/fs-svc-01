@@ -1,14 +1,40 @@
 <div class="dock full layout-columns">
+    <style>
+        .black.box {
+    --shadow-color: hsl(0deg 0% 0% / 0.5);
+  }
+  .darker.box {
+    --shadow-color: hsl(220deg 100% 50%);
+  }
+  .goldilocks.box {
+    box-shadow: 0 3px 10px rgb(0 0 0 / 0.2);
+    margin:10px;
+    padding:10px;
+  }
+  .box {
+    filter: drop-shadow(
+      1px 2px 8px var(--shadow-color)
+    );
+  }
+  .app-label {
+    white-space: nowrap;
+  }
+    </style>
+    <div class="dock full" style="padding:10px;margin-bottom:40px">
+         <div rcmpct-lazy-scroll source="listOfApps" item-var="p" class="row" on-request-data="getListOfApps" page-size="20">
+            <rcmpct-template>
+                <rcmpct-grid cols="(,700,100%)(700,,50% 50%)"  class="goldilocks box" file-id="{{p.id}}">
+                    <rcmpct-grid cols="50% 50%">
+                            <div class="app-label">Name :</div> <b>{{p.Name}}</b>
+                            <div class="app-label">Created on :</div> <span>{{p.RegisteredOn|date:'dd-MM-yyyy'}}</span>
+                            <div class="app-label">Most recently activities :</div> <span>{{p.LatestAccess|date:'dd-MM-yyyy'}}</span>
+                            <div class="app-label">Activities score :</div> <span>{{p.AccessCount}}</span>
+                        </rcmpct-grid>
+                </rcmpct-grid>
 
-    <div class="dock full">
-        <div class="row">
-            <div ng-repeat="app in list" class="col-4">
-                <a href="javascript:void(0)" ng-click="doEdit(app.Name).then()">
-                    {{app.Name}}
-                </a>
 
 
-            </div>
+            </rcmpct-template>
         </div>
     </div>
     <div>

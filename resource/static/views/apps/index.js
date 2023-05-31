@@ -27,7 +27,7 @@ var appsView = await View(import.meta, class AppsView extends BaseScope {
     //}
     async getListOfApps() {
         debugger;
-        this.list = await api.post("admin/apps", {
+        this.listOfApps = await api.post("admin/apps", {
            
         });
         this.$applyAsync();
