@@ -1157,11 +1157,25 @@ class DBDocument:
             elif isinstance(x, dict):
                 updater = {**updater, **x}
         updater = {**updater, **kwargs}
+        _inc_ = {}
+        _set_ = {}
+
+        for k,v in updater.items():
+            if k=="$inc":
+                _inc_[k] = v
+            else:
+                _set_[k] = v
+        _update_ = {
+
+        }
+
+        if len(_set_.keys())>0:
+            _update_["$set"] = _set_
+        if len(_inc_.keys())>0:
+            _update_= {**_update_,**_inc_}
         ret = self.collection.update_many(
             filter=_filter,
-            update={
-                "$set": updater
-            }
+            update=_update_
         )
         return ret
 
