@@ -37,3 +37,50 @@ class App:
     Latest access time
     """
     AccessCount: typing.Optional[int]
+
+
+class AppStatsDimension:
+    TotalFiles: int
+    """
+    Amount of  files which were uploaded 
+    """
+    TotalFilesStillUploading: int
+    """
+    Amount of  files which is still uploading 
+    """
+    TotalSizeOfFilesUploadedInGB: float
+    """
+    Total size of files were uploaded
+    """
+    TotalSizeOfFilesStillUploadingInGB: float
+    """
+    Total size of files were uploaded
+    """
+    TotalAmountInGB: float
+
+class AppStatsYear(AppStatsDimension):
+    Year: int
+class AppStatsMonth(AppStatsYear):
+    Month:int
+class AppStatsDay(AppStatsMonth):
+    Day:int
+@cy_docs.define(
+    name="app_stats",
+    uniques=["AppName","AppName"]
+)
+class AppStats:
+    _id: str
+    AppName: str
+    AppName:str
+    AppId: str
+    YearStat: typing.Optional[AppStatsYear]
+    MonthStat: typing.Optional[AppStatsMonth]
+    DayStat : typing.Optional[AppStatsDay]
+    Grand : typing.Optional[AppStatsDimension]
+    """
+    Total till now
+    """
+
+
+
+

@@ -32,7 +32,7 @@ from pydantic.validators import datetime
 
 def get_version() -> str:
     import os
-    return f"0.0.2{os.path.splitext(__file__)[1]}"
+    return f"0.0.3{os.path.splitext(__file__)[1]}"
 
 
 import datetime
@@ -1431,7 +1431,10 @@ class AggregateDocument:
                     _fields = {**_fields,**x}
                 elif isinstance(x,Field):
                     if isinstance(x.__data__,dict):
-                        _fields = {**_fields, **x.__data__}
+                        if x.__alias__:
+                            _fields = {**_fields, **{ x.__alias__:x.__data__}}
+                        else:
+                            _fields = {**_fields, **x.__data__}
                     else:
                         _fields = {**_fields, **{x.__name__:f"${x.__name__}"}}
         _group_ = {**{"_id":_id},**_fields}
