@@ -25,14 +25,53 @@
 }
 
 .perspective-right {
-  transform: perspective(1500px) rotateY(-30deg);
+
   transition: transform 1s ease 0s;
+  position:relative;
+    left:0px;
+    top:0px;
+}
+.card-container:has(*:hover) .perspective-right {
+    transform: perspective(100px) rotateY(15deg);
+    position:relative;
+
+    left:0px;
+    top:0px;
+}
+.card-container:has(*:hover) img.mirror {
+    animation: scale 1s ease-in-out forwards;
+}
+.card-container:has(*:hover) {
+  filter:invert(10%)
 }
 
-.perspective-right:hover {
-  transform: perspective(3000px) rotateY(-22deg);
-}
 
+@keyframes scale {
+  to {
+    transform: scale(0.5);
+  }
+}
+.perspective-right:hover img.mirror {
+
+  animation: scale 1s ease-in-out forwards;
+}
+ .perspective-right:hover {
+    transform: perspective(100px) rotateY(15deg);
+    position:relative;
+
+    left:0px;
+    top:0px;
+}
+.card-container{
+    overflow: hidden;
+}
+img.mirror {
+                -webkit-box-reflect: below 4px -webkit-gradient(linear, left top, left bottom,  from(transparent), color-stop(0%, transparent), to(rgba(255, 255, 255, 0.21)));
+
+                max-width:100px;
+                margin:10px;
+
+            }
 </style>
 
     </style>
@@ -74,13 +113,7 @@
             .header-panel label {
                 white-space:nowrap;
             }
-            img.mirror {
-                -webkit-box-reflect: below 4px -webkit-gradient(linear, left top, left bottom,  from(transparent), color-stop(0%, transparent), to(rgba(255, 255, 255, 0.21)));
-                min-width:100px;
-                max-width:100px;
-                margin:10px;
 
-            }
     </style>
     <div class="header layout-rows">
         <div class="layout-rows header-panel">

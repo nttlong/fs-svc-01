@@ -30,7 +30,8 @@ from pydantic.validators import datetime
 
 
 def get_version() -> str:
-    return "0.0.1"
+    import os
+    return f"0.0.2{os.path.splitext(__file__)[1]}"
 
 
 import datetime
