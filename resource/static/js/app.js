@@ -1,5 +1,6 @@
-﻿import rcmpctModule from "./directives/rpct/rcmpt.js"
-import { } from "./directives/rpct/rcmpact.layout.grid.js"
+﻿import rcmpctModule from "./directives/rpct/rcmpt.js";
+import { } from "./directives/rpct/json-viewer.js";
+import { } from "./directives/rpct/rcmpact.layout.grid.js";
 import { } from "./directives/rpct/lazy_scroll.js";
 import { module, module_name } from "./loader/loaderModule.js";
 import bs4Module from "./directives/bs4/module.js";

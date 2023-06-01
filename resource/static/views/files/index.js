@@ -130,13 +130,28 @@ var filesView = await View(import.meta, class FilesView extends BaseScope {
 
     }
     async doShowDetail(item){
-        debugger;
+
         var r = await import("../file-info/index.js");
         var viewer = await r.default();
         await viewer.loadDetailInfo(this.currentAppName,item.UploadId)
          var win =await viewer.asWindow();
          win.doMaximize()
          console.log(win);
+    }
+    async doReadableContent(item){
+        var r = await import("../content-info/index.js");
+        var viewer = await r.default();
+        await viewer.loadReadableContent(this.currentAppName,item.UploadId)
+         var win =await viewer.asWindow();
+         win.doMaximize()
+    }
+    async doLoadLayoutOCR(item) {
+        var r = await import("../layout-ocr/index.js");
+        var viewer = await r.default();
+        var win =await viewer.asWindow();
+        await viewer.loadLayoutOcrData(this.currentAppName,item.UploadId);
+        win.doMaximize();
+
     }
 });
 export default filesView;

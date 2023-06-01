@@ -23,8 +23,8 @@ from typing import Optional, List
 # @cy_web.hanlder("post","{app_name}/content/save")
 # def test(app_name:str,doc_id:str):
 #     pass
-@cy_web.hanlder("post","{app_name}/content/readable")
-def file_content_get_ocr_content_by_id(
+@cy_web.hanlder("post","{app_name}/layouts/detection")
+def files_content_get_layout_detection_by_id(
         app_name: str,
         id:typing.Optional[str],
         token=fastapi.Depends(cy_xdoc.auths.Authenticate)):
@@ -44,16 +44,15 @@ def file_content_get_ocr_content_by_id(
         id=id
     )
     if not doc:
-        return dict(
-            error=dict(
-                code="ItemWasNotFound",
-                description=f"Item with id={id} was not found"
-            )
-        )
+        return None
+    if not doc.source.doc_layout_analysis_data:
+        return None
+    if not doc.source.doc_layout_analysis_data.table:
+        return None
+    if not doc.source.doc_layout_analysis_data.table.table:
+        return None
     else:
-        return dict(
-            content=doc.source.content
-        )
+        return doc.source.doc_layout_analysis_data.table.table
 
 
 

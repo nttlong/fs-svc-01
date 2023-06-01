@@ -26,20 +26,20 @@
 
 .perspective-right {
 
-  transition: transform 1s ease 0s;
+  transition: transform 0.5s ease 0s;
   position:relative;
     left:0px;
     top:0px;
 }
 .card-container:has(*:hover) .perspective-right {
-    transform: perspective(100px) rotateY(15deg);
+    transform: perspective(100px) rotateY(45deg);
     position:relative;
 
     left:0px;
     top:0px;
 }
 .card-container:has(*:hover) img.mirror {
-    animation: scale 1s ease-in-out forwards;
+    animation: scale 0.5s ease-in-out forwards;
 }
 .card-container:has(*:hover) {
   filter:invert(10%)
@@ -53,10 +53,10 @@
 }
 .perspective-right:hover img.mirror {
 
-  animation: scale 1s ease-in-out forwards;
+  animation: scale 0.5s ease-in-out forwards;
 }
  .perspective-right:hover {
-    transform: perspective(100px) rotateY(15deg);
+    transform: perspective(100px) rotateY(45deg);
     position:relative;
 
     left:0px;
@@ -113,7 +113,10 @@ img.mirror {
             .header-panel label {
                 white-space:nowrap;
             }
-
+        .img-container {
+            background: #0f0f0f;
+            margin:4px;
+        }
     </style>
     <div class="header layout-rows">
         <div class="layout-rows header-panel">
@@ -156,9 +159,11 @@ img.mirror {
             <rcmpct-template>
                 <rcmpct-grid cols="(,700,100%)(700,,50% 50%)"  class="shadow-box" file-id="{{p.UploadId}}">
                     <rcmpct-grid cols="180px minmax(0,1fr)" class="card-container">
+                        <div class="img-container">
                         <div class="image-card perspective-right">
                             <img class="mirror" style="" ng-src="{{p.ThumbUrl}}" ng-if="p.HasThumb" />
                         </div>
+                            </div>
                         <rcmpct-grid cols="30% 70%">
 
                             <div style="overflow:hidden;text-overflow:ellipsis;grid-column:1/-1">
@@ -214,6 +219,12 @@ img.mirror {
                                         <input type="checkbox" ng-model="p.isSelected" ng-change="showAddTagsButton().then()">
                                     </div>
                                     <div class="dock full"></div>
+                                    <div>
+                                        <button class="btn btn-link btn-sm" ng-click="doLoadLayoutOCR(p).then()">{{$res('Layout OCR')}} </button>
+                                    </div>
+                                    <div>
+                                        <button class="btn btn-link btn-sm" ng-click="doReadableContent(p).then()">{{$res('Content')}} </button>
+                                    </div>
                                     <div>
                                         <button class="btn btn-link btn-sm" ng-click="doShowDetail(p).then()">{{$res('Detail')}} </button>
                                     </div>
