@@ -59,7 +59,7 @@ fields = cy_docs_x.fields
 For any expression
 """
 
-
+FUNCS = cy_docs_x.FUNCS
 def context(client, cls):
     return cy_docs_x.context(client, cls)
 

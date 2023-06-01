@@ -22,6 +22,7 @@ Special:
 """
 
 import threading
+import typing
 
 import motor
 import pydantic
@@ -46,6 +47,8 @@ import inspect
 import re
 import pymongo.mongo_client
 import gridfs
+
+
 def get_mongodb_text(data):
     if isinstance(data, dict):
 
@@ -213,7 +216,7 @@ class __BaseField__:
 
 
 class Field(__BaseField__):
-    def __init__(self, init_value: Union[str, dict], oprator: str = None,is_expr = False):
+    def __init__(self, init_value: Union[str, dict], oprator: str = None, is_expr=False):
         """
         Init a base field
         :param __name__:
@@ -225,6 +228,50 @@ class Field(__BaseField__):
         self.__sort__ = 1
         self.__is_expr__ = is_expr
 
+    def day(self):
+        ret = Field(self.__name__)
+        ret.__data__ = {
+            "$dayOfMonth": f"${ret.__name__}"
+
+        }
+
+        return ret
+
+    def month(self):
+        ret = Field(self.__name__)
+        ret.__data__ = {
+            "$month": f"${ret.__name__}"
+
+        }
+        return ret
+    def year(self):
+        ret = Field(self.__name__)
+        ret.__data__ = {
+            "$year": f"${ret.__name__}"
+
+        }
+        return ret
+    def hour(self):
+        ret = Field(self.__name__)
+        ret.__data__ = {
+            "$hour": f"${ret.__name__}"
+
+        }
+        return ret
+    def minute(self):
+        ret = Field(self.__name__)
+        ret.__data__ = {
+            "$minute": f"${ret.__name__}"
+
+        }
+        return ret
+    def second(self):
+        ret = Field(self.__name__)
+        ret.__data__ = {
+            "$second": f"${ret.__name__}"
+
+        }
+        return ret
     def reduce(self, data, reduce_type: type = None):
         reduce_type = reduce_type or self.__delegate_type__
         ret = {"_id": data.get("_id")}
@@ -262,7 +309,6 @@ class Field(__BaseField__):
                 raise e
 
         if len(require_fields) > 0:
-
             str_require_fields_list = '\n\t'.join(require_fields)
             raise Exception(f"These below fields are require:\n {str_require_fields_list}\n"
                             f"Preview file {inspect.getfile(reduce_type)} at {reduce_type.__name__}")
@@ -732,7 +778,12 @@ class Field(__BaseField__):
             ret = Field(init_data)
             ret.__alias__ = self.__name__
             return ret
-
+        elif isinstance(other,dict):
+            ret = Field("")
+            ret.__alias__ = self.__name__
+            ret.__data__ = other
+            ret.__name__ = None
+            return ret
         else:
             raise Exception(f"Thous can not alias mongodb expression with {type(other)}")
         return self
@@ -759,10 +810,7 @@ class Field(__BaseField__):
         return ret
 
 
-
-
-
-def to_json_convertable(data,predict_content_handler=None):
+def to_json_convertable(data, predict_content_handler=None):
     if isinstance(data, dict):
         ret = {}
         for k, v in data.items():
@@ -1020,6 +1068,7 @@ class DBDocument:
         for document in await ret.to_list(length=100):
             ret_items += [DocumentObject(document)]
         return ret_items
+
     def find(self, filter, linmit=10000):
         """
         Find documents with filter
@@ -1161,8 +1210,8 @@ class DBDocument:
         _inc_ = {}
         _set_ = {}
 
-        for k,v in updater.items():
-            if k=="$inc":
+        for k, v in updater.items():
+            if k == "$inc":
                 _inc_[k] = v
             else:
                 _set_[k] = v
@@ -1170,10 +1219,10 @@ class DBDocument:
 
         }
 
-        if len(_set_.keys())>0:
+        if len(_set_.keys()) > 0:
             _update_["$set"] = _set_
-        if len(_inc_.keys())>0:
-            _update_= {**_update_,**_inc_}
+        if len(_inc_.keys()) > 0:
+            _update_ = {**_update_, **_inc_}
         ret = self.collection.update_many(
             filter=_filter,
             update=_update_
@@ -1229,6 +1278,25 @@ class AggregateDocument:
         self.pipeline = []
 
     def project(self, *args, **kwargs):
+        """
+        Exmaple:
+        project(
+            mydocument.Name,
+            cy_docs.fields.code>> mydocument.Code,
+            ....,
+            cy_docs.fields.day >> mydocument.Mydate.dayOfMonth()
+        )
+        or
+        project(
+            {   "name":1,
+                "code":"$Code",
+                "day":{"$dayOfMonth":"$Mydate"}
+            }
+        )
+        :param args:
+        :param kwargs:
+        :return:
+        """
 
         stage = {
 
@@ -1327,6 +1395,56 @@ class AggregateDocument:
         self.pipeline += [
             {
                 "$limit": len
+            }
+        ]
+        return self
+
+    def group(self, group_by, accumulators):
+        _id = {}
+        _fields = {}
+        if isinstance(group_by,dict):
+            _id= group_by
+        elif isinstance(group_by,tuple) or isinstance(group_by,list):
+            for x in group_by:
+                if isinstance(x,dict):
+                    _id = {**_id,**x}
+                elif isinstance(x,Field) and x.__alias__:
+                    if isinstance(x.__data__,dict) and x.__alias__:
+                        _id = {**_id, **{x.__alias__: x.__data__}}
+                    elif x.__name__:
+                        _id = {**_id, **{x.__name__:f"${x.__name__}"}}
+                    else:
+                        raise Exception("Invalid expression")
+        if isinstance(accumulators,dict):
+            _fields = accumulators
+        elif isinstance(accumulators,Field):
+            if isinstance(accumulators.__data__, dict):
+                if accumulators.__alias__:
+                    _fields = {**_fields, **{accumulators.__alias__: accumulators.__data__}}
+                else:
+                    _fields = {**_fields, **accumulators.__data__}
+            else:
+                _fields = {**_fields, **{accumulators.__name__: f"${accumulators.__name__}"}}
+        elif isinstance(accumulators,tuple) or isinstance(accumulators,list):
+            for x in accumulators:
+                if isinstance(x,dict):
+                    _fields = {**_fields,**x}
+                elif isinstance(x,Field):
+                    if isinstance(x.__data__,dict):
+                        _fields = {**_fields, **x.__data__}
+                    else:
+                        _fields = {**_fields, **{x.__name__:f"${x.__name__}"}}
+        _group_ = {**{"_id":_id},**_fields}
+        _project_ = {"_id":0}
+        for k,v in _id.items():
+            _project_[k]=f"$_id.{k}"
+        for k,v in _fields.items():
+            _project_[k] = f"${k}"
+        self.pipeline += [
+            {
+                "$group": _group_
+            },{
+                "$project":_project_
             }
         ]
         return self
@@ -1547,6 +1665,7 @@ def document_define(name: str, indexes: List[str], unique_keys: List[str]):
     :param unique_keys:
     :return:
     """
+
     def wrapper(cls):
         setattr(cls, "__document_name__", name)
         setattr(cls, "__document_indexes__", indexes)
@@ -1565,9 +1684,6 @@ def context(client, cls):
         client=client
     )
     return ret
-
-
-
 
 
 def file_get(client, db_name: str, file_id):
@@ -1745,7 +1861,6 @@ def get_file_info_by_id(client, db_name, files_id):
 
 
 async def get_file_async(client, db_name: str, file_id):
-
     async_client = AsyncIOMotorClient()
     async_client.delegate = client
     gfs = AsyncIOMotorGridFSBucket(async_client.get_database(db_name))
@@ -1767,16 +1882,74 @@ async def find_file_async(client, db_name: str, rel_file_path: str):
     # ret = gridfs.GridFS(__client__.get_database(__db_name__)).get(file_id)
     return ret
 
+
 def EXPR(expr):
-    if isinstance(expr,dict):
+    if isinstance(expr, dict):
         ret = Field()
         ret.__data__ = {
             "$expr": expr
         }
         return ret
-    elif isinstance(expr,Field):
+    elif isinstance(expr, Field):
         ret = Field()
         ret.__data__ = {
             "$expr": expr.to_mongo_db_expr()
         }
         return ret
+
+
+class FUNCS:
+    @staticmethod
+    def count(field:typing.Optional[typing.Union[Field,str]]=None):
+        if field is None:
+            return {"$sum":1}
+        if isinstance(field,Field)  and field.__name__:
+            ret =Field(init_value=field.__name__)
+            ret.__data__ = {
+                "$count":f"${field.__name__}"
+            }
+            return ret
+        elif isinstance(field,str):
+            ret = Field(init_value=field)
+            ret.__data__ = {
+                "$count": f"{field}"
+            }
+            return ret
+        elif isinstance(field,Field) and field.__data__:
+            ret = Field(init_value="_")
+            ret.__data__ = {
+                "$count": field.__data__
+            }
+            return ret
+        else:
+            raise Exception(f"{field} is invalid in count")
+    @staticmethod
+    def sum(field:typing.Union[Field,str]):
+        if isinstance(field,str):
+            ret = Field(init_value="_")
+            ret.__name__ = None
+            ret.__data__ = {
+                "$count": f"${field}"
+            }
+            return ret
+        elif isinstance(field,Field):
+            if field.__name__ and field.__data__ is None:
+                ret = Field(init_value="_")
+                ret.__name__ = None
+                ret.__data__ = {
+                    "$sum": f"${field.__name__}"
+                }
+                return ret
+            elif isinstance(field.__data__,dict):
+                ret = Field(init_value="_")
+                ret.__name__ = None
+                ret.__data__ = {
+                    "$sum": field.__data__
+                }
+                return ret
+            else:
+                raise  Exception(f"{field} is invalid")
+
+        raise Exception(f"{field} is invalid")
+
+

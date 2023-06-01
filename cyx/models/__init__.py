@@ -26,14 +26,15 @@ class SysMessage:
 @cy_docs.define(
     name="fs.files",
     uniques=["rel_file_path"],
-    indexes=["filename"]
+    indexes=["filename","uploadDate"]
 )
 class FsFile:
     _id: bson.ObjectId
     rel_file_path: str
     filename: str
     contentType: str
-
+    uploadDate:datetime.datetime
+    length:int
 
 @cy_docs.define(
     name="fs.chunks",
