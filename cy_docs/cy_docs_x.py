@@ -1976,30 +1976,27 @@ def EXPR(expr):
 
 
 class FUNCS:
-    @staticmethod
-    def __count__(field: typing.Optional[typing.Union[Field, str]] = None):
-        if field is None:
-            return {"$sum": 1}
-        if isinstance(field, Field) and field.__name__:
-            ret = Field(init_value=field.__name__)
-            ret.__data__ = {
-                "$count": f"${field.__name__}"
-            }
-            return ret
-        elif isinstance(field, str):
-            ret = Field(init_value=field)
-            ret.__data__ = {
-                "$count": f"{field}"
-            }
-            return ret
-        elif isinstance(field, Field) and field.__data__:
-            ret = Field(init_value="_")
-            ret.__data__ = {
-                "$count": field.__data__
-            }
-            return ret
+
+
+    @classmethod
+    def cond(cls, check, then_case, else_case):
+        _cond_  = {}
+        if isinstance(check,Field):
+            _cond_["if"] = check.to_mongo_db_expr()
         else:
-            raise Exception(f"{field} is invalid in count")
+            _cond_["if"] = check
+        if isinstance(then_case,Field):
+            _cond_["then"] = then_case.to_mongo_db_expr()
+        else:
+            _cond_["then"] = then_case
+        if isinstance(else_case,Field):
+            _cond_["else"] = else_case.to_mongo_db_expr()
+        else:
+            _cond_["else"] = else_case
+        ret_field = Field(init_value= {
+            "$cond":_cond_
+        })
+        return  ret_field
 
     @staticmethod
     def count(field: typing.Optional[typing.Union[Field, str]] = None):
@@ -2055,5 +2052,7 @@ class FUNCS:
                 raise Exception(f"{field} is invalid")
 
         raise Exception(f"{field} is invalid")
+
+
 
 

@@ -38,11 +38,12 @@ for app in list_of_apps:
     ).project(
         cy_docs.fields.total_size_mb >> cy_docs.FUNCS.sum(files_context.fields.SizeInBytes / mb),
         cy_docs.fields.total_size_gb >> cy_docs.FUNCS.sum(files_context.fields.SizeInBytes / gb),
-        cy_docs.fields.count_of_files >> cy_docs.FUNCS.count(files_context.fields.id),
-        cy_docs.fields.start >> cy_docs.FUNCS.min(files_context.fields.RegisterOn),
-        cy_docs.fields.end >> cy_docs.FUNCS.max(files_context.fields.RegisterOn),
-        cy_docs.fields.first >> cy_docs.FUNCS.first(files_context.fields.RegisterOn),
-        cy_docs.fields.last >> cy_docs.FUNCS.last(files_context.fields.RegisterOn),
+        # cy_docs.fields.count_of_files >> cy_docs.FUNCS.count(files_context.fields.id),
+        # cy_docs.fields.start >> cy_docs.FUNCS.min(files_context.fields.RegisterOn),
+        # cy_docs.fields.end >> cy_docs.FUNCS.max(files_context.fields.RegisterOn),
+        # cy_docs.fields.first >> cy_docs.FUNCS.first(files_context.fields.RegisterOn),
+        # cy_docs.fields.last >> cy_docs.FUNCS.last(files_context.fields.RegisterOn),
+        cy_docs.fields.count1>> cy_docs.FUNCS.sum(cy_docs.FUNCS.cond(files_context.fields.RegisterOn.year() == 2023,files_context.fields.SizeInBytes,0))
     )
     compiler_time = (datetime.datetime.utcnow()-t).total_seconds()*1000
     print(f"\t Expression compiler {compiler_time}")
