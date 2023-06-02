@@ -1,0 +1,14 @@
+{
+  "type": "module",
+  "name": "nodejs-console-app1",
+  "version": "0.0.0",
+  "description": "NodejsConsoleApp1",
+  "main": "app.js",
+  "author": {
+    "name": ""
+  },
+  "dependencies": {
+    "loadtest": "^5.2.0",
+    "rabbitmq-client": "^3.0.0"
+  }
+}
