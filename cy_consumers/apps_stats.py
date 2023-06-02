@@ -30,20 +30,27 @@ for app in list_of_apps:
     total_files = files_context.context.count({})
     print(f"\t grand total {total_files}")
     t = datetime.datetime.utcnow()
+    calculator  =[
+        cy_docs.fields.total_size_mb >> cy_docs.FUNCS.sum(files_context.fields.SizeInBytes / mb), # totla size in MB
+        cy_docs.fields.total_size_gb >> cy_docs.FUNCS.sum(files_context.fields.SizeInBytes / gb) # totla size in GB
+    ]
+    for year in range(2022,datetime.datetime.now().year+1):
+        SizeMB = cy_docs.fields[f"SizeMB{year}"] >>cy_docs.FUNCS.sum(
+            cy_docs.FUNCS.cond(files_context.fields.RegisterOn.year() == year,
+                               files_context.fields.SizeInBytes/mb,0)
+        )
+        SizeGB = cy_docs.fields[f"SizeGB{year}"] >> cy_docs.FUNCS.sum(
+            cy_docs.FUNCS.cond(files_context.fields.RegisterOn.year() == year,
+                               files_context.fields.SizeInBytes / gb, 0)
+        )
+        calculator+=[SizeMB,SizeGB]
     agg_get_size_of_uploaded = files_context.context.aggregate().match(
         cy_docs.EXPR(
             (files_context.fields.SizeUploaded == files_context.fields.SizeInBytes) & \
             (files_context.fields.Status == 1)
         )
     ).project(
-        cy_docs.fields.total_size_mb >> cy_docs.FUNCS.sum(files_context.fields.SizeInBytes / mb),
-        cy_docs.fields.total_size_gb >> cy_docs.FUNCS.sum(files_context.fields.SizeInBytes / gb),
-        # cy_docs.fields.count_of_files >> cy_docs.FUNCS.count(files_context.fields.id),
-        # cy_docs.fields.start >> cy_docs.FUNCS.min(files_context.fields.RegisterOn),
-        # cy_docs.fields.end >> cy_docs.FUNCS.max(files_context.fields.RegisterOn),
-        # cy_docs.fields.first >> cy_docs.FUNCS.first(files_context.fields.RegisterOn),
-        # cy_docs.fields.last >> cy_docs.FUNCS.last(files_context.fields.RegisterOn),
-        cy_docs.fields.count1>> cy_docs.FUNCS.sum(cy_docs.FUNCS.cond(files_context.fields.RegisterOn.year() == 2023,files_context.fields.SizeInBytes,0))
+        *calculator
     )
     compiler_time = (datetime.datetime.utcnow()-t).total_seconds()*1000
     print(f"\t Expression compiler {compiler_time}")
