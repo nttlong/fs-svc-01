@@ -31,12 +31,10 @@ for app in list_of_apps:
             (files_context.fields.SizeUploaded==files_context.fields.SizeInBytes) & \
             (files_context.fields.Status == 1)
         )
-    ).group(
-        accumulators= (
-            cy_docs.fields.total_size_mb >> cy_docs.FUNCS.sum(files_context.fields.SizeInBytes/mb),
-            cy_docs.fields.total_size_gb >> cy_docs.FUNCS.sum(files_context.fields.SizeInBytes / gb)
-        ),
-        group_by= {}
+    ).project(
+        cy_docs.fields.total_size_mb >> cy_docs.FUNCS.sum(files_context.fields.SizeInBytes / mb),
+        cy_docs.fields.total_size_gb >> cy_docs.FUNCS.sum(files_context.fields.SizeInBytes / gb),
+        cy_docs.fields.count_of_files >> cy_docs.FUNCS.count(files_context.fields.id)
     )
     fx = list(agg_get_size_of_uploaded)
     print(fx)

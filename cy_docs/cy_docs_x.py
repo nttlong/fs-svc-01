@@ -162,6 +162,7 @@ class __BaseField__:
             return
         self.__name__ = None
         self.__data__ = None
+        self.__agg__function_call__ = None
         self.__oprator__ = oprator
         if isinstance(init_value, str):
             self.__name__ = init_value
@@ -244,6 +245,7 @@ class Field(__BaseField__):
 
         }
         return ret
+
     def year(self):
         ret = Field(self.__name__)
         ret.__data__ = {
@@ -251,6 +253,7 @@ class Field(__BaseField__):
 
         }
         return ret
+
     def hour(self):
         ret = Field(self.__name__)
         ret.__data__ = {
@@ -258,6 +261,7 @@ class Field(__BaseField__):
 
         }
         return ret
+
     def minute(self):
         ret = Field(self.__name__)
         ret.__data__ = {
@@ -265,6 +269,7 @@ class Field(__BaseField__):
 
         }
         return ret
+
     def second(self):
         ret = Field(self.__name__)
         ret.__data__ = {
@@ -272,6 +277,7 @@ class Field(__BaseField__):
 
         }
         return ret
+
     def reduce(self, data, reduce_type: type = None):
         reduce_type = reduce_type or self.__delegate_type__
         ret = {"_id": data.get("_id")}
@@ -759,12 +765,14 @@ class Field(__BaseField__):
             else:
                 ret = Field(other.__name__)
             ret.__alias__ = self.__name__
+            ret.__agg__function_call__ = other.__agg__function_call__
 
             return ret
         elif type(other) in [int, str, float, bool, datetime.datetime]:
             ret = Field("")
             ret.__name__ = other
             ret.__alias__ = self.__name__
+
             return ret
         elif isinstance(other, tuple):
             init_data = {}
@@ -778,7 +786,7 @@ class Field(__BaseField__):
             ret = Field(init_data)
             ret.__alias__ = self.__name__
             return ret
-        elif isinstance(other,dict):
+        elif isinstance(other, dict):
             ret = Field("")
             ret.__alias__ = self.__name__
             ret.__data__ = other
@@ -1302,28 +1310,35 @@ class AggregateDocument:
 
         }
         if isinstance(args, Field):
+            if args.__agg__function_call__:
+                return self.group(args)
             if args.__alias__ is not None:
                 stage[args.__alias__] = args.to_mongo_db_expr()
             elif args.__name__ is not None:
                 stage[args.__name__] = 1
             else:
                 raise Exception(f"Thous can not use project stage with {args}")
-        for x in args:
-            if isinstance(x, Field):
-                if x.__alias__ is not None:
-                    stage[x.__alias__] = x.to_mongo_db_expr()
-                elif x.__name__ is not None:
-                    stage[x.__name__] = 1
-                else:
-                    raise Exception(f"Thous can not use project stage with {x}")
-            elif isinstance(x, dict):
-                stage = {**stage, **x}
-            elif isinstance(x, str):
-                stage[x] = 1
+        elif isinstance(args,tuple) or isinstance(args,list):
+            agg_fields = [x for x in args if isinstance(x,Field)and x.__agg__function_call__]
+            if len(agg_fields)>0:
+                return self.group(*args)
             else:
-                raise Exception(f"Thous can not use project stage with {x}")
+                for x in args:
+                    if isinstance(x, Field):
+                        if x.__alias__ is not None:
+                            stage[x.__alias__] = x.to_mongo_db_expr()
+                        elif x.__name__ is not None:
+                            stage[x.__name__] = 1
+                        else:
+                            raise Exception(f"Thous can not use project stage with {x}")
+                    elif isinstance(x, dict):
+                        stage = {**stage, **x}
+                    elif isinstance(x, str):
+                        stage[x] = 1
+                    else:
+                        raise Exception(f"Thous can not use project stage with {x}")
 
-        stage = {**stage, **kwargs}
+                stage = {**stage, **kwargs}
         if stage.get("_id") is None:
             stage["_id"] = 0
 
@@ -1399,25 +1414,66 @@ class AggregateDocument:
         ]
         return self
 
-    def group(self, group_by, accumulators):
+
+    def __inspect__(self,field):
+        assert isinstance(field, Field)
+        if field.__agg__function_call__:
+            return None, field
+        else:
+            return field, None
+
+    def group(self, *selector):
+        if isinstance(selector, dict):
+            select_fields = list((selector.get('_id') | {}).keys())
+            select_fields += list(selector.keys())
+            select_fields = list(set(select_fields))
+            project_pipe = {}
+            for x in select_fields:
+                project_pipe[x] = f"${x.lstrip('$')}"
+            self.pipeline += [
+                {
+                    "$group": selector
+                },
+                {
+                    "$project": project_pipe
+                }
+            ]
+        if isinstance(selector, Field):
+            _id, _field = self.__inspect__(selector)
+            return self.__group__(_id, _field)
+        elif isinstance(selector, tuple):
+            _ids, _fields = [], []
+            for x in selector:
+                assert isinstance(x, Field)
+                _id, _field = self.__inspect__(x)
+                if _id:
+                    _ids += [_id]
+                if _field:
+                    _fields += [_field]
+            return self.__group__(
+                group_by=tuple(_ids),
+                accumulators=tuple(_fields)
+            )
+
+    def __group__(self, group_by, accumulators):
         _id = {}
         _fields = {}
-        if isinstance(group_by,dict):
-            _id= group_by
-        elif isinstance(group_by,tuple) or isinstance(group_by,list):
+        if isinstance(group_by, dict):
+            _id = group_by
+        elif isinstance(group_by, tuple) or isinstance(group_by, list):
             for x in group_by:
-                if isinstance(x,dict):
-                    _id = {**_id,**x}
-                elif isinstance(x,Field) and x.__alias__:
-                    if isinstance(x.__data__,dict) and x.__alias__:
+                if isinstance(x, dict):
+                    _id = {**_id, **x}
+                elif isinstance(x, Field) and x.__alias__:
+                    if isinstance(x.__data__, dict) and x.__alias__:
                         _id = {**_id, **{x.__alias__: x.__data__}}
                     elif x.__name__:
-                        _id = {**_id, **{x.__name__:f"${x.__name__}"}}
+                        _id = {**_id, **{x.__name__: f"${x.__name__}"}}
                     else:
                         raise Exception("Invalid expression")
-        if isinstance(accumulators,dict):
+        if isinstance(accumulators, dict):
             _fields = accumulators
-        elif isinstance(accumulators,Field):
+        elif isinstance(accumulators, Field):
             if isinstance(accumulators.__data__, dict):
                 if accumulators.__alias__:
                     _fields = {**_fields, **{accumulators.__alias__: accumulators.__data__}}
@@ -1425,29 +1481,36 @@ class AggregateDocument:
                     _fields = {**_fields, **accumulators.__data__}
             else:
                 _fields = {**_fields, **{accumulators.__name__: f"${accumulators.__name__}"}}
-        elif isinstance(accumulators,tuple) or isinstance(accumulators,list):
+        elif isinstance(accumulators, tuple) or isinstance(accumulators, list):
             for x in accumulators:
-                if isinstance(x,dict):
-                    _fields = {**_fields,**x}
-                elif isinstance(x,Field):
-                    if isinstance(x.__data__,dict):
-                        if x.__alias__:
-                            _fields = {**_fields, **{ x.__alias__:x.__data__}}
+                if isinstance(x, dict):
+                    _fields = {**_fields, **x}
+                elif isinstance(x, Field):
+                    if isinstance(x.__data__, dict):
+                        if x.__agg__function_call__ == "$count" and x.__alias__:
+                            _id = {**_id,
+                                   **{list(x.__data__.keys())[0].lstrip('$') + "_count": list(x.__data__.keys())[0]}}
+                            _fields = {**_fields, **{x.__alias__: {
+                                "$sum": 1
+                            }}}
+
+                        elif x.__alias__:
+                            _fields = {**_fields, **{x.__alias__: x.__data__}}
                         else:
                             _fields = {**_fields, **x.__data__}
                     else:
-                        _fields = {**_fields, **{x.__name__:f"${x.__name__}"}}
-        _group_ = {**{"_id":_id},**_fields}
-        _project_ = {"_id":0}
-        for k,v in _id.items():
-            _project_[k]=f"$_id.{k}"
-        for k,v in _fields.items():
+                        _fields = {**_fields, **{x.__name__: f"${x.__name__}"}}
+        _group_ = {**{"_id": _id}, **_fields}
+        _project_ = {"_id": 0}
+        for k, v in _id.items():
+            _project_[k] = f"$_id.{k}"
+        for k, v in _fields.items():
             _project_[k] = f"${k}"
         self.pipeline += [
             {
                 "$group": _group_
-            },{
-                "$project":_project_
+            }, {
+                "$project": _project_
             }
         ]
         return self
@@ -1903,22 +1966,22 @@ def EXPR(expr):
 
 class FUNCS:
     @staticmethod
-    def count(field:typing.Optional[typing.Union[Field,str]]=None):
+    def __count__(field: typing.Optional[typing.Union[Field, str]] = None):
         if field is None:
-            return {"$sum":1}
-        if isinstance(field,Field)  and field.__name__:
-            ret =Field(init_value=field.__name__)
+            return {"$sum": 1}
+        if isinstance(field, Field) and field.__name__:
+            ret = Field(init_value=field.__name__)
             ret.__data__ = {
-                "$count":f"${field.__name__}"
+                "$count": f"${field.__name__}"
             }
             return ret
-        elif isinstance(field,str):
+        elif isinstance(field, str):
             ret = Field(init_value=field)
             ret.__data__ = {
                 "$count": f"{field}"
             }
             return ret
-        elif isinstance(field,Field) and field.__data__:
+        elif isinstance(field, Field) and field.__data__:
             ret = Field(init_value="_")
             ret.__data__ = {
                 "$count": field.__data__
@@ -1926,33 +1989,43 @@ class FUNCS:
             return ret
         else:
             raise Exception(f"{field} is invalid in count")
+
     @staticmethod
-    def sum(field:typing.Union[Field,str]):
-        if isinstance(field,str):
+    def count(field: typing.Optional[typing.Union[Field, str]] = None):
+        return FUNCS.__agg_func_call_("$count", field)
+
+    @staticmethod
+    def sum(field: typing.Union[Field, str]):
+        return FUNCS.__agg_func_call_("$sum", field)
+
+    @staticmethod
+    def __agg_func_call_(function_name: str, field):
+        if isinstance(field, str):
             ret = Field(init_value="_")
             ret.__name__ = None
             ret.__data__ = {
-                "$count": f"${field}"
+                function_name: f"${field}"
             }
+            ret.__agg__function_call__ = function_name
             return ret
-        elif isinstance(field,Field):
+        elif isinstance(field, Field):
             if field.__name__ and field.__data__ is None:
                 ret = Field(init_value="_")
                 ret.__name__ = None
                 ret.__data__ = {
-                    "$sum": f"${field.__name__}"
+                    function_name: f"${field.__name__}"
                 }
+                ret.__agg__function_call__ = function_name
                 return ret
-            elif isinstance(field.__data__,dict):
+            elif isinstance(field.__data__, dict):
                 ret = Field(init_value="_")
                 ret.__name__ = None
                 ret.__data__ = {
-                    "$sum": field.__data__
+                    function_name: field.__data__
                 }
+                ret.__agg__function_call__ = function_name
                 return ret
             else:
-                raise  Exception(f"{field} is invalid")
+                raise Exception(f"{field} is invalid")
 
         raise Exception(f"{field} is invalid")
-
-
