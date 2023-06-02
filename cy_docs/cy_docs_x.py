@@ -1458,6 +1458,7 @@ class AggregateDocument:
     def __group__(self, group_by, accumulators):
         _id = {}
         _fields = {}
+        _ignore_ = {}
         if isinstance(group_by, dict):
             _id = group_by
         elif isinstance(group_by, tuple) or isinstance(group_by, list):
@@ -1475,6 +1476,13 @@ class AggregateDocument:
             _fields = accumulators
         elif isinstance(accumulators, Field):
             if isinstance(accumulators.__data__, dict):
+                if accumulators.__agg__function_call__:
+                    _ignore_[list(accumulators.__data__.keys())[0].lstrip('$')+ "_count"] =1
+                    _id = {**_id,
+                           **{list(accumulators.__data__.keys())[0].lstrip('$') + "_count": list(accumulators.__data__.keys())[0]}}
+                    _fields = {**_fields, **{accumulators.__alias__: {
+                        "$sum": 1
+                    }}}
                 if accumulators.__alias__:
                     _fields = {**_fields, **{accumulators.__alias__: accumulators.__data__}}
                 else:
@@ -1488,6 +1496,7 @@ class AggregateDocument:
                 elif isinstance(x, Field):
                     if isinstance(x.__data__, dict):
                         if x.__agg__function_call__ == "$count" and x.__alias__:
+                            _ignore_[list(x.__data__.keys())[0].lstrip('$')+ "_count"] = 1
                             _id = {**_id,
                                    **{list(x.__data__.keys())[0].lstrip('$') + "_count": list(x.__data__.keys())[0]}}
                             _fields = {**_fields, **{x.__alias__: {
@@ -1503,9 +1512,11 @@ class AggregateDocument:
         _group_ = {**{"_id": _id}, **_fields}
         _project_ = {"_id": 0}
         for k, v in _id.items():
-            _project_[k] = f"$_id.{k}"
+            if _ignore_.get(k) is None:
+                _project_[k] = f"$_id.{k}"
         for k, v in _fields.items():
-            _project_[k] = f"${k}"
+            if _ignore_.get(k) is None:
+                _project_[k] = f"${k}"
         self.pipeline += [
             {
                 "$group": _group_
@@ -1999,6 +2010,21 @@ class FUNCS:
         return FUNCS.__agg_func_call_("$sum", field)
 
     @staticmethod
+    def min(field: typing.Union[Field, str]):
+        return FUNCS.__agg_func_call_("$min", field)
+
+    @staticmethod
+    def max(field: typing.Union[Field, str]):
+        return FUNCS.__agg_func_call_("$max", field)
+
+    @classmethod
+    def first(cls, field: typing.Union[Field, str]):
+        return FUNCS.__agg_func_call_("$first", field)
+
+    @classmethod
+    def last(cls, field: typing.Union[Field, str]):
+        return FUNCS.__agg_func_call_("$last", field)
+    @staticmethod
     def __agg_func_call_(function_name: str, field):
         if isinstance(field, str):
             ret = Field(init_value="_")
@@ -2029,3 +2055,5 @@ class FUNCS:
                 raise Exception(f"{field} is invalid")
 
         raise Exception(f"{field} is invalid")
+
+
