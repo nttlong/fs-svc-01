@@ -24,5 +24,5 @@ list_of_apps = list(apps_context.context.aggregate().project(
 from cy_xdoc.services.apps_stat import AppStatServices
 app_stat_service = cy_kit.singleton(AppStatServices)
 for app in list_of_apps:
-    fx = app_stat_service.quick_stats(app.Name,2020,2024)
+    fx = app_stat_service.quick_stats(app.Name,2023,2023)
     print(fx)

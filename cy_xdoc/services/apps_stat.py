@@ -56,6 +56,8 @@ Stats of File-Service including:
         └── 2024
 
 """
+import datetime
+
 import cy_docs
 import cy_kit
 from cyx.base import DbConnect
@@ -83,6 +85,7 @@ class AppStatServices:
         self.db_connect = db_connect
 
     def quick_stats(self, app_name: str, from_year: int, to_year: int):
+        t= datetime.datetime.now()
         unit = 1024 * 1024
         docs = self.db_connect.db(app_name).doc(DocUploadRegister)
         total_items = cy_docs.fields.total_items >> cy_docs.FUNCS.sum(
@@ -250,9 +253,12 @@ class AppStatServices:
                         total_size_day,
                         total_unfinished_size_day
                     ]
+        n = (datetime.datetime.now() - t).total_seconds()
+        print(n)
         agg = docs.context.aggregate().project(
             *tuple(selector)
         )
+
         # agg.project(
         #     {
         #         "Year":
