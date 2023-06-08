@@ -52,7 +52,7 @@ class VnSegmenterService:
                     if start>0:
 
                         ret_x+=f"^{start+1}"
-                        boot_index = (boot_index+1) % boot.__len__()
+                        boot_index = (boot_index+1) % len(boot)
                         start = 0
                 ret_x += x
             return f'(\\"{ret.rstrip(" ")}\\")^{word_count} OR ({ret_x.rstrip(" ")})'

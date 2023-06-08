@@ -6,6 +6,19 @@ metadata:
     name: {{$.Values.namespace}}
 
 ---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: xdoc-storage
+spec:
+  accessModes:
+    #- ReadWriteOnce
+    - ReadWriteMany
+  storageClassName: longhorn-storage-delete
+  resources:
+    requests:
+      storage: 2Gi
+---
 {{if ne $.Values.existConfigMap true}}
 ---
 apiVersion: v1

@@ -63,7 +63,7 @@ class MongoDbFileStorage:
 
 
 
-    def seek(self, position: int):
+    def seek(self, position):
         # self.position = position
         # a,b = divmod(self.position,self.chunk_size)
         # self.chunk_index = a
@@ -71,14 +71,14 @@ class MongoDbFileStorage:
 
         return self.fs.seek(position)
 
-    def get_size(self) -> int:
+    def get_size(self):
         return self.fs.length
 
-    def tell(self) -> int:
+    def tell(self):
         # return self.position
         return self.fs.tell()
 
-    def read(self, size: int) -> bytes:
+    def read(self, size) -> bytes:
         return self.fs.read(size)
 
 

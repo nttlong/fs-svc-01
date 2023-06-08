@@ -1,28 +1,39 @@
 FROM nttlong/files-service-slim:rc.0.2.3
 RUN cd /
 RUN mkdir -p /app
+COPY ./../compact.py /app/compact.py
 COPY ./../cy_consumers /app/cy_consumers
 COPY ./../cy_docs /app/cy_docs
+RUN python3 /app/compact.py /app/cy_docs
+RUN python3 /app/cy_docs/check_cy_docs_x.py
 COPY ./../cy_es /app/cy_es
+RUN python3 /app/compact.py /app/cy_es
+RUN python3 /app/cy_es/check_cy_es_x.py
 COPY ./../cy_kit /app/cy_kit
+RUN python3 /app/compact.py /app/cy_kit
 
 COPY ./../cy_utils /app/cy_utils
+RUN python3 /app/compact.py /app/cy_utils
 COPY ./../cy_web /app/cy_web
+RUN python3 /app/compact.py /app/cy_web
 COPY ./../cy_xdoc /app/cy_xdoc
+RUN python3 /app/compact.py /app/cy_xdoc
 COPY ./../cyx /app/cyx
+RUN python3 /app/compact.py /app/cyx
 COPY ./../resource /app/resource
 COPY ./../config.yml /app/config.yml
 RUN mkdir -p /app/production_test
 COPY ./../production_test /app/production_test
 RUN mkdir -p /app/pre_test_build
 COPY ./../pre_test_build /app/pre_test_build
-RUN cd /app
-RUN python3 cy_es/setup.py build_ext --inplace
-RUN python3 cy_docs/setup.py build_ext --inplace
-RUN cd /
-RUN python3 /app/cy_es/check_cy_es_x.py
+#RUN cd /app
+#RUN python3 cy_es/setup.py build_ext --inplace
+#RUN python3 cy_docs/setup.py build_ext --inplace
+#RUN cd /
 
-RUN python3 /app/cy_docs/check_cy_docs_x.py
+
+
+
 ARG TARGETARCH
 
 RUN pip uninstall packaging -y
