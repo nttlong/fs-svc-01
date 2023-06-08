@@ -101,10 +101,10 @@ list_of_files  = get_list_of_file(full_compiler_dir)
 os.chdir(working_dir)
 
 
+module_name = pathlib.Path(full_compiler_dir).name
 
 
-
-content = get_content_with_files(files =list_of_files,module_name="test")
+content = get_content_with_files(files =list_of_files,module_name=module_name)
 
 
 

@@ -463,7 +463,7 @@ def __wrap_pydantic__(pre, cls, is_lock=True):
                 setattr(sys.modules[cls.__module__], k, re_modify)
 
         for k, v in cls.__annotations__.items():
-            if v.__module__ == typing.__name__:
+            if not isinstance(v,str) and ( v.__module__ == typing.__name__):
                 temp = []
                 for fv in v.__args__:
 
@@ -510,6 +510,11 @@ def __wrap_pydantic__(pre, cls, is_lock=True):
 
 
 def check_is_need_pydantic(cls):
+    if isinstance(cls,typing.ForwardRef):
+        return check_is_need_pydantic(cls.__forward_arg__)
+    if isinstance(cls,str):
+        return False
+
     if inspect.isclass(cls):
         if cls.__module__ == bytes.__module__ and cls.__name__ == "NoneType":
             return False
@@ -771,6 +776,8 @@ class BaseWebApp:
         return wrapper
 
     def load_controller_from_file(self, full_file_path, prefix):
+        if os.path.splitext(full_file_path)[1] not in ['.py','.so']:
+            return
         if not os.path.isfile(full_file_path):
             return
         if os.path.splitext(full_file_path).__len__() != 2 and os.path.splitext(full_file_path)[1] != ".py":
@@ -779,14 +786,18 @@ class BaseWebApp:
         src = machinery.SourceFileLoader(full_file_path, full_file_path)
 
         spec = importlib.util.spec_from_loader(full_file_path, src)
-        _mdl_ = importlib.util.module_from_spec(spec)
+        _mdl_ = None
+        if os.path.splitext(full_file_path)[1] == '.py':
+            _mdl_ = importlib.util.module_from_spec(spec)
+        elif os.path.splitext(full_file_path)[1] == '.so':
+            _mdl_ = importlib.util.module_from_spec(spec)
 
         sys.modules[_mdl_.__name__] = _mdl_
         if hasattr(sys.modules[_mdl_.__name__], "__cy_web_has_load_controller__"):
             return
         __cy_web_has_load_controller__ = False
-
-        spec.loader.exec_module(_mdl_)
+        if os.path.splitext(full_file_path)[1] == '.py':
+            spec.loader.exec_module(_mdl_)
         for k, v in _mdl_.__dict__.items():
             if isinstance(v, RequestHandler):
 

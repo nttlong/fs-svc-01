@@ -864,7 +864,13 @@ class DocumentObject(dict):
             return dict.get(self, key)
 
     def __getattr__(self, item):
-        return self.get(item)
+        ret = self.get(item)
+        if isinstance(ret,bson.ObjectId):
+            return  str(ret)
+        if isinstance(ret,uuid.UUID):
+            return str(ret)
+        return  str(ret)
+
 
     def __setattr__(self, key, value):
         if isinstance(value, dict):

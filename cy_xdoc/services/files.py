@@ -125,7 +125,7 @@ class FileServices:
     def find_file_async(self, app_name, relative_file_path):
         pass
 
-    def get_main_main_thumb_file(self, app_name, upload_id):
+    def get_main_main_thumb_file(self, app_name:str, upload_id:str):
         upload = self.db_connect.db(app_name).doc(DocUploadRegister).context @ upload_id
         if upload is None:
             return None
@@ -134,7 +134,7 @@ class FileServices:
         return ret
 
     def add_new_upload_info(self,
-                            app_name,
+                            app_name:str,
                             client_file_name: str,
                             is_public: bool,
                             file_size: int,
@@ -484,7 +484,7 @@ class FileServices:
                 check_types[x.Type.lower().strip()] = x
         return privileges_server, privileges_client
 
-    def get_main_file_of_upload_by_rel_file_path(self, app_name, rel_file_path, runtime_file_reader: type = None):
+    def get_main_file_of_upload_by_rel_file_path(self, app_name, rel_file_path, runtime_file_reader = None):
         if runtime_file_reader is not None:
             return runtime_file_reader.get_file_by_name(
                 app_name=app_name,

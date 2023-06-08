@@ -25,6 +25,7 @@ async def get_thumb_of_files(app_name: str, directory: str, request: Request):
 
     upload_id = directory.split('/')[0]
     fs = cy_xdoc.container.service_file.get_main_main_thumb_file(app_name,upload_id)
+    cy_xdoc.container.service_file.db_connect.db(app_name)
     if fs is None:
         return Response(
             status_code=401
