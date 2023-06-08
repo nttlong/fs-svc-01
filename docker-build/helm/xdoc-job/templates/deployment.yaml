@@ -4,20 +4,24 @@ metadata:
   name: {{$.Values.namespace}}
   labels:
     name: {{$.Values.namespace}}
-
+---
+{{if eq  $.Values.storageConfig.isUse true}}
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: xdoc-storage
+  name: {{$.Values.storageConfig.name}}
+  namespace: {{$.Values.namespace}}
 spec:
   accessModes:
     #- ReadWriteOnce
     - ReadWriteMany
-  storageClassName: longhorn-storage-delete
+  storageClassName: {{$.Values.storageConfig.className}}
   resources:
     requests:
-      storage: 2Gi
+      storage: {{$.Values.storageConfig.size}}
+---
+{{end}}
 ---
 {{if ne $.Values.existConfigMap true}}
 ---
@@ -61,12 +65,18 @@ spec:
       labels:
         app: files-{{$value.name}}
     spec:
+
+
       volumes:
-        - name: xdoc-storage
+        - name: {{$.Values.storageConfig.name}}
+        {{if eq  $.Values.storageConfig.isUse true}}
+          persistentVolumeClaim:
+            claimName: {{$.Values.storageConfig.name}}
+        {{else}}
           nfs:
             server: {{$.Values.nfs.server}}
             path: {{$.Values.nfs.directory}}
-
+        {{end}}
 
       containers:
         - args:
@@ -94,7 +104,7 @@ spec:
 
           volumeMounts:
             - mountPath: /app/share-storage
-              name: xdoc-storage
+              name:  {{$.Values.storageConfig.name}}
 
 ---
 {{- end }}
@@ -112,10 +122,15 @@ spec:
   template:
     spec:
       volumes:
-        - name: xdoc-storage
+        - name: {{$.Values.storageConfig.name}}
+          {{if eq  $.Values.storageConfig.isUse true}}
+          persistentVolumeClaim:
+            claimName: {{$.Values.storageConfig.name}}
+          {{else}}
           nfs:
             server: {{$.Values.nfs.server}}
             path: {{$.Values.nfs.directory}}
+          {{end}}
       containers:
       - image: {{ $value.image  }}
         name: {{$value.name}}
@@ -123,7 +138,7 @@ spec:
 
         volumeMounts:
           - mountPath: /app/share-storage
-            name: xdoc-storage
+            name:  {{$.Values.storageConfig.name}}
       restartPolicy: Never
   backoffLimit: 4
 ---
