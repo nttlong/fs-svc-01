@@ -172,10 +172,10 @@ class SearchEngine:
     def full_text_search(self,
                          app_name,
                          content,
-                         page_size: int,
-                         page_index: int,
-                         highlight: bool,
-                         privileges: dict,
+                         page_size: typing.Optional[int],
+                         page_index: typing.Optional[int],
+                         highlight: typing.Optional[bool],
+                         privileges: typing.Optional[dict],
                          sort: typing.List[str] = ["data_item.RegisterOn:desc"],
                          logic_filter=None):
         """
@@ -408,7 +408,7 @@ class SearchEngine:
 
     def create_or_update_privileges(
             self,
-            app_name, upload_id, data_item: dict, privileges,
+            app_name, upload_id, data_item: typing.Union[dict,cy_docs.DocumentObject], privileges,
             meta_info: dict = None):
         """
         Create or update privileges tag

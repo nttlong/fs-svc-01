@@ -869,7 +869,7 @@ class DocumentObject(dict):
             return  str(ret)
         if isinstance(ret,uuid.UUID):
             return str(ret)
-        return  str(ret)
+        return ret
 
 
     def __setattr__(self, key, value):

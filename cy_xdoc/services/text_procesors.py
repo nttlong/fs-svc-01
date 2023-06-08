@@ -1,4 +1,5 @@
 import re
+import typing
 
 
 class TextProcessService:
@@ -12,12 +13,13 @@ class TextProcessService:
             '[ùúủũụưừứửữự]': 'u',
             '[ỳýỷỹỵ]': 'y'}
 
-    def vn_clear_accent_mark(self, content: str):
+    def vn_clear_accent_mark(self, content: typing.Optional[str]):
         """
             Convert from 'Tieng Viet co dau' thanh 'Tieng Viet khong dau'
             text: input string to be converted
             Return: string converted
             """
+        content = content or ''
         output = content
         for regex, replace in self.patterns_vn.items():
             try:

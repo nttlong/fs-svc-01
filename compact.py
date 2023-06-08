@@ -126,7 +126,6 @@ print(full_file)
 cmd = [
      sys.executable,full_file,
     'build_ext','--inplace']
-
 command_line  = " ".join(cmd)
 print(" ".join(cmd))
 # subprocess.Popen(cmd_compile, cwd=root_dir)

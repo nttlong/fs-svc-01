@@ -744,7 +744,14 @@ class BaseWebApp:
         sys.path.append(root_dir)
         for x in dirs:
             sys.path.append(x)
-        for _file_ in files:
+        so_files = [x for x in files if os.path.splitext(x)[1]=='.so']
+        so_files_name = [x.split('.')[0] for x in files if os.path.splitext(x)[1] == '.so']
+        py_files = [x.split('.')[0] for x in files if os.path.splitext(x)[1] == '.py']
+
+        for _file_ in py_files:
+            # if _file_ not in so_files_name:
+            self.load_controller_from_file(os.path.join(root_dir,f"{_file_}.py"), route_prefix)
+        for _file_ in so_files:
             self.load_controller_from_file(os.path.join(root_dir, _file_), route_prefix)
         for dir in dirs:
             self.load_controller_module_dir(os.path.join(root_dir, dir), route_prefix)

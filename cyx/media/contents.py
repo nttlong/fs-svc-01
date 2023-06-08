@@ -1,6 +1,7 @@
 import os
 import pathlib
 import sys
+import typing
 
 
 class ContentsServices:
@@ -18,7 +19,7 @@ class ContentsServices:
         if sys.modules.get("tika") is not None:
             import importlib
             importlib.reload(sys.modules["tika"])
-    def get_text(self, file_path) -> (str, dict):
+    def get_text(self, file_path) -> typing.Tuple[str, dict]:
         """
         With Giga bytes file pdf, or other office file, need split to small doc with 100 pages oer doc
         :param file_path:
