@@ -14,6 +14,8 @@ from cyx.common.msg import MessageInfo
 sys_messages_document_name = "Sys_messages_v3"
 import datetime
 import cy_docs
+
+
 @cy_docs.define(
     name=sys_messages_document_name,
     indexes=["MsgType", "CreatedOn", "AppName", "MsgId"]
@@ -32,7 +34,8 @@ class SysMessage:
     InstancesLock: dict
     RunInsLock: str
     LockedBy: dict
-    UnlockCount:int
+    UnlockCount: int
+
 
 @cy_kit.must_imlement(MessageService)
 class Broker:
@@ -60,7 +63,7 @@ class Broker:
         else:
             self.instance_id = val_id
 
-    def consume(self,handler,msg_type:str):
+    def consume(self, handler, msg_type: str):
         """
         somehow to implement thy source here ...
         """
@@ -73,19 +76,16 @@ class Broker:
                 max_items=1
             )
             for x in items:
-
                 self.lock(x)
                 handler(x)
-
-
-
 
     def get_type(self) -> str:
         """
         somehow to implement thy source here ...
         """
         return "mongdb"
-    def emit(self, app_name: str, message_type: str, data: typing.Optional[typing.Union[dict,cy_docs.DocumentObject]]):
+
+    def emit(self, app_name: str, message_type: str, data: typing.Optional[typing.Union[dict, cy_docs.DocumentObject]]):
         doc_context = self.db_connect.db('admin').doc(SysMessage)
         doc_context.context.insert_one(
             doc_context.fields.Data << data,
@@ -201,5 +201,3 @@ class Broker:
         somehow to implement thy source here ...
         """
         pass
-
-

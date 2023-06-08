@@ -10,7 +10,7 @@
 #    (- Cơ sở dữ liệu MongodDb, thể hiện bằng các bộ: máy chủ, authSource, tên người dùng, mật khẩu. My Lambkin! đừng lo lắng về từng thông tin cho điều đó. Giải thích sẽ được hiển thị mỗi dòng trong Giá trị Helm này.)
 # 2- Need one database in MongoDb to manage all Tenants even if File-Service just sevrve for only one Tenant. (Cần một cơ sở dữ liệu trong MongoDb để quản lý tất cả các Đối tượng thuê ngay cả khi Dịch vụ tệp chỉ phục vụ cho một Đối tượng thuê.)
 # 3- At Least one ElasticSearch in which embody in tuples of: server and prefix_index ('prefix_index will be explained when it was declare')
-# 4- One broker message. When Pod wana to inform to others. The Pod could not directly  inform. It just informs to broker message and broker message will inform to another.
+# 4- One broker message. When Pod wanna to inform to others. The Pod could not directly  inform. It just informs to broker message and broker message will inform to another.
 # 5- One temporary storage
 
 existConfigMap: false
@@ -24,7 +24,7 @@ storageConfig:
   type: longhorn
   # the type of storage
   longhorn:
-    # If thou would like to use longhorn-strorage turn this value into false.
+    # If thou would like to use longhorn-storage turn this value into false.
       size: 30Gi
     # storage request size is at least 30 GB (why? some Pods in deployment need AI-dataset. The volume for AI-dataset, sometime reach 30GB. So, 30GB is OK )
       name: xdoc-storage
@@ -52,6 +52,7 @@ defaults:
 # Below value is really important info. Thou must sure that value of all attributes
 config:
     configName: 'dev'
+    # Make sure that thou select correct configName. Wrong config properly corrupt all Pods
     lacviet:
       db:
      # At the mention at a top of file. All Pods will run if all below config are correct
@@ -82,20 +83,20 @@ config:
     # Server of Broker message
       temp_directory: ./brokers/tmp
     dev:
-       db:
+      db:
         admin_db_name: 'lv-docs'
         authSource: 'hps-file-test'
         host: '192.168.18.36'
         password: ''
         port: '27018'
         username: ''
-        elastic_search:
-          prefix_index: 'lv-codx'
-          server: 'http://192.168.18.36:9200'
-        rabbitmq:
-          port: '5672'
-          server: 'rabbitmq.rabbitmq-dev'
-          temp_directory: './brokers/tmp'
+      elastic_search:
+        prefix_index: 'lv-codx'
+        server: 'http://192.168.18.36:9200'
+      rabbitmq:
+        port: '5672'
+        server: 'rabbitmq.rabbitmq-dev'
+        temp_directory: './brokers/tmp'
 
 
 

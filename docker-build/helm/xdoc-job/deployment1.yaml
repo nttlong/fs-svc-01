@@ -1,24 +1,14 @@
 {{ $configName := $.Values.config.configName -}}
 {{ $storageConfigType := $.Values.storageConfig.type -}}
-{{ $configuration := $.Values.config -}}
-
+{{ $configuration := $.Values.config}}
 {{ $storageConfig := get $.Values.storageConfig $storageConfigType -}}
-{{ $configs := get $configuration $configName -}}
+{{ $configs := get $configuration "dev" -}}
 {{ $jsonConfig := toPrettyJson  $configs -}}
 {{ $jsonStorageConfig := toPrettyJson  $storageConfig -}}
-
-
-
-#{{ print "Thou is deploying with config :" }}
-#{{ print "All information is bellow :" }}
-
-#{{- range $key, $value := $configs}}
-#  {{print $key}} : {{print $value}}
-# {{end}}
-#{{- range $key, $value := $storageConfig}}
-#  {{print $key}} : {{print $value}}
-# {{end}}
----
+{{ print "Thou is deploying with config :"}}
+{{ print $configName}}
+{{ print "All information is bellow :"}}
+{{ print $jsonStorageConfig}}
 kind: Namespace
 apiVersion: v1
 metadata:
@@ -164,3 +154,6 @@ spec:
   backoffLimit: 4
 ---
 {{- end }}
+#helm uninstall xdoc-job-v16
+#helm install xdoc-job-v16 xdoc-job-10
+#scp -r root@172.16.13.72:/home/vmadmin/python/v6/file-service-02/docker-build/helm/xdoc-job /nttlong/helm/xdoc-job
