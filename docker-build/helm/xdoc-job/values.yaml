@@ -1,6 +1,5 @@
-# Thou! please carefuly readding to avoid mistake !!!!!
-# This Helm values declare all you need to deploy LV-File-Servce to Developer enviroment, On Premise infrasrure or AWS
-
+# Thou! please carefully reading to avoid mistake !!!!!
+# This Helm values declare all you need to deploy LV-File-Service to Developer environment, On Premise infrastructure or AWS
 # Ngươi! xin vui lòng đọc kỹ để tránh sai lầm !!!!!
 # Các giá trị Helm này khai báo tất cả những gì bạn cần để triển khai LV-File-Servce cho môi trường Nhà phát triển, Cơ sở hạ tầng tại chỗ hoặc AWS
 #
@@ -27,11 +26,14 @@ storageConfig:
   longhorn:
     # If thou would like to use longhorn-strorage turn this value into false.
       size: 30Gi
-    # storage request size is at least 30 GB (why? Some Pods in deployment need AI-dataset. The volume for AI-dataset, sometime reach 30GB. So, 30GB is OK )
+    # storage request size is at least 30 GB (why? some Pods in deployment need AI-dataset. The volume for AI-dataset, sometime reach 30GB. So, 30GB is OK )
       name: xdoc-storage
       className: longhorn-storage-delete
   nfs:
     server: 10.0.2.217
+    directory: /var/nfs_share_dir_for_k8s
+  nfs_dev:
+    server: 172.16.7.91
     directory: /var/nfs_share_dir_for_k8s
 # Make sure when thou use this value. Thou could inquire about class-name of storage by thee's DE-OP
 defaults:
@@ -49,61 +51,59 @@ defaults:
 
 # Below value is really important info. Thou must sure that value of all attributes
 config:
-  db:
- # At the mention at a top of file. All Pods will run if all below config are correct
- #
-    admin_db_name: 'hps-file-test'
-# Tenant-manage-database even if thee's system just serve for only one Tenant
-    authSource: 'hps-file-test'
-# When a Pod conects to MongoDb Database they will verify Auth at this database. As usually, authSource used to be 'admin'
-    host: '10.0.2.140'
-# Server MongodDb or Mondgos router address
-    password: ""
-# Password: if thee's MongoDb did not set Auth-Require, set this value is ''
-    port: '27017'
-#Port: remmeber that this value should be in "'"
-    username: ""
-  elastic_search:
- # At the mention at a top of file. All Pods will run if all below config are correct
-    prefix_index: 'lv-codx'
-# Each Tenant require a ElasticSearch index with prefix is this value
-# Exmaple Tenant name default ElasticSearch Index is 'lv-doc_default'
-    server: 'http://10.0.2.140:9200'
-# Full url to ElasticSearch
-  rabbitmq:
-# Broker clarification
-    port: '5672'
-# Port: Thou! please quote this value
-    server: 'rabbitmq.rabbitmq-dev.svc.cluster.local'
-# Server of Broker message
-  temp_directory: ./brokers/tmp
+    configName: 'dev'
+    lacviet:
+      db:
+     # At the mention at a top of file. All Pods will run if all below config are correct
+     #
+        admin_db_name: 'hps-file-test'
+    # Tenant-manage-database even if thee's system just serve for only one Tenant
+        authSource: 'hps-file-test'
+    # When a Pod connects to MongoDb Database they will verify Auth at this database. As usually, authSource used to be 'admin'
+        host: '10.0.2.140'
+    # Server MongodDb or Mondgos router address
+        password: ""
+    # Password: if thee's MongoDb did not set Auth-Require, set this value is ''
+        port: '27017'
+    #Port: remmeber that this value should be in "'"
+        username: ""
+      elastic_search:
+     # At the mention at a top of file. All Pods will run if all below config are correct
+        prefix_index: 'lv-codx'
+    # Each Tenant require a ElasticSearch index with prefix is this value
+    # Exmaple Tenant name default ElasticSearch Index is 'lv-doc_default'
+        server: 'http://10.0.2.140:9200'
+    # Full url to ElasticSearch
+      rabbitmq:
+    # Broker clarification
+        port: '5672'
+    # Port: Thou! please quote this value
+        server: 'rabbitmq.rabbitmq-dev.svc.cluster.local'
+    # Server of Broker message
+      temp_directory: ./brokers/tmp
+    dev:
+       db:
+        admin_db_name: 'lv-docs'
+        authSource: 'hps-file-test'
+        host: '192.168.18.36'
+        password: ''
+        port: '27018'
+        username: ''
+        elastic_search:
+          prefix_index: 'lv-codx'
+          server: 'http://192.168.18.36:9200'
+        rabbitmq:
+          port: '5672'
+          server: 'rabbitmq.rabbitmq-dev'
+          temp_directory: './brokers/tmp'
 
-#------------------------------------------
-#- Below values use for Developer environment
-#------------------------------------------
-config_dev:
-  db:
-    admin_db_name: 'lv-docs'
-    authSource: 'hps-file-test'
-    host: '192.168.18.36'
-    password: ''
-    port: '27018'
-    username: ''
-  elastic_search:
-    prefix_index: 'lv-codx'
-    server: 'http://192.168.18.36:9200'
-  rabbitmq:
-    port: '5672'
-    server: 'rabbitmq.rabbitmq-dev'
-    temp_directory: './brokers/tmp'
+
 
 
 namespace: xdoc-job-v7
 # The namespace of all K8S resource
 
-nfs_dev:
-  server: 172.16.7.91
-  directory: /var/nfs_share_dir_for_k8s
+
 
 image:
   repository: nttlong/files-service-final

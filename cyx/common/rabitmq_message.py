@@ -2,6 +2,7 @@ import json
 import threading
 import time
 
+import cy_docs
 import cy_kit
 from cyx.common.msg import MessageInfo
 import cyx.common.msg
@@ -233,7 +234,7 @@ class RabitmqMsg:
             print(f"delete msg {item} error")
             raise e
 
-    def emit(self, app_name: str, message_type: str, data: dict):
+    def emit(self, app_name: str, message_type: str, data: typing.Optional[typing.Union[dict,cy_docs.DocumentObject]]):
         """
         somehow to implement thy source here ...
         """

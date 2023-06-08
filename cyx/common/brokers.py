@@ -85,7 +85,7 @@ class Broker:
         somehow to implement thy source here ...
         """
         return "mongdb"
-    def emit(self, app_name: str, message_type: str, data: dict):
+    def emit(self, app_name: str, message_type: str, data: typing.Optional[typing.Union[dict,cy_docs.DocumentObject]]):
         doc_context = self.db_connect.db('admin').doc(SysMessage)
         doc_context.context.insert_one(
             doc_context.fields.Data << data,

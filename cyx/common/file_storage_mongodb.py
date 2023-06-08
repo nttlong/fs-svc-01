@@ -87,7 +87,7 @@ class MongoDbFileStorage:
     def get_id(self) -> str:
         return str(self.fs._id)
 
-    def push(self, content: bytes, chunk_index: int):
+    def push(self, content: bytes, chunk_index):
         cy_docs.file_add_chunks(
             client= self.db.client,
             db_name=self.db.name,

@@ -79,7 +79,7 @@ class FileStorageService:
         raise NotImplemented
 
     def create(self, app_name: str, rel_file_path: str, content_type: str, chunk_size: int,
-               size: int) -> FileStorageObject:
+               size) -> FileStorageObject:
         """
         some how to implement thy source here ...
         """
@@ -87,6 +87,6 @@ class FileStorageService:
 
     def delete_files_by_id(self, app_name: str, ids: typing.List[str], run_in_thread: bool):
         """
-        some how to implement thy source here ...
+        somehow to implement thy source here ...
         """
         raise NotImplemented
