@@ -17,17 +17,6 @@ metadata:
   name: xdoc-web-config
   namespace: xdoc
 data:
-#  elastic_search.server: "http://lv-es.es-sn:9092" #http://172.16.0.83:9200/
-#  rabbitmq.server: "rabitmq-service.lv-broker" #	rabbitmq.rabbitmq-dev.svc.cluster.local5672
-#
-#
-#  elastic_search.prefix_index: "lv-codx"
-#  rabbitmq.port: "5672"
-#  host_url: "http://172.16.7.91/lvfile" #http://172.16.0.240/lvfile
-#  db.host: "192.168.18.36" #172.16.0.83
-#  db.port: "27018" #27017
-#
-#  temp_directory: "./brokers/tmp"
     db.authSource: hps-file-test
     db.host: 10.0.2.140
     db.password: ""

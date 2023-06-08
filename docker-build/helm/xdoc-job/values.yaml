@@ -142,11 +142,23 @@ namespace: xdoc-job-v7
 
 
 image:
+  #Important select correct image in repository
   repository: nttlong/files-service-final
   pullPolicy: IfNotPresent
-  # Overrides the image tag whose default is the chart appVersion.
-
   tag: "rc.0.5.3.0"
+  #The tag name is describe how many stage in image:
+  # rc: release candidate
+  # 1 - The first number is embodied of the generation of image, it is also a first stage of image
+  # where all necessary components at OS level support for all PODs run  (till now is the first generation)
+  # 2 - The second number is embodied of the Open-Core-Stage where Open-Core-Stage were installed.
+  # Those libraries did not write at Lac Viet. Such as MongoDb driver, pytorch,...
+  # 3 - The third number is embodied of the Core-Stage . All core-library were write and compile at Lac Viet.
+  # 4 - The final number is embodied of End-Point Pod start . All End-Point Pod were write and compile at Lac Viet.
+
+
+
+
+
 deployments:
   - name: files-upload
     endpoint: files_upload.py
