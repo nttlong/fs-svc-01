@@ -16,12 +16,31 @@
 existConfigMap: false
 # if thou are deploying all Pods in K8S with an existing congfig map.
 # Thou can turn this value into false
+webConfig:
+  isAllowDeploy: true
 
-
-
+  # Thou! read carefully !!!!
+  # For web deployment turn this value is true
+  # As usual, the deployment includes web and all jobs. But sometime, web deployment and all jobs were separated.
+  # For example Web in a K8S cluster A whilst All Job in K8S cluster B
+  # if this value is true
+  # The deployment template will include Web deployment without ingress controller config. Remember that no ingress-controller in template
+  type: 'dev'
+  dev:
+    name: xdoc
+    namespace: xdoc
+    hostUrl: http://172.16.7.91/lvfile
+  aws:
+    name: xdoc-web
+    namespace: xdoc-web
+    host_url: https://apps.codx.vn/lvfile
+  lacviet:
+    name: xdoc-web
+    namespace: xdoc-web
+    hostUrl: https://codx.lacviet.vn
 storageConfig:
   # This configuration  describes how and where all Pods in all deployments use shared-files when they need to process.
-  type: longhorn
+  type: nfs_dev
   # the type of storage
   longhorn:
     # If thou would like to use longhorn-storage turn this value into false.
@@ -54,6 +73,7 @@ config:
     configName: 'dev'
     # Make sure that thou select correct configName. Wrong config properly corrupt all Pods
     lacviet:
+
       db:
      # At the mention at a top of file. All Pods will run if all below config are correct
      #
@@ -82,7 +102,9 @@ config:
         server: 'rabbitmq.rabbitmq-dev.svc.cluster.local'
     # Server of Broker message
       temp_directory: ./brokers/tmp
+
     dev:
+
       db:
         admin_db_name: 'lv-docs'
         authSource: 'hps-file-test'
@@ -97,7 +119,20 @@ config:
         port: '5672'
         server: 'rabbitmq.rabbitmq-dev'
         temp_directory: './brokers/tmp'
+    aws:
 
+      db:
+        authSource: hps-file-test
+        host: 10.0.2.140
+        password: ""
+        port: '27017'
+        username: ""
+      elastic_search:
+        prefix_index: lv-codx
+        server: http://10.0.2.140:9200
+      rabbitmq:
+        port: '5672'
+        server: rabbitmq.rabbitmq-dev.svc.cluster.local
 
 
 
