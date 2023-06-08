@@ -54,7 +54,7 @@ storageConfig:
   nfs_dev:
     server: 172.16.7.91
     directory: /var/nfs_share_dir_for_k8s
-# Make sure when thou use this value. Thou could inquire about class-name of storage by thee's DE-OP
+# Make sure when thou use this value. Thou could inquire about class-name of storage by thee's DEV-OP
 defaults:
   replicas: 2
 # if thou are deploying all Pods in K8S with 3 Worker-Nodes
