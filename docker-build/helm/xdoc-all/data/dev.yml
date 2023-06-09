@@ -112,6 +112,7 @@ webApi:
   # inquire about Web Host server from thee's DEV-OP
   configMapName: xdoc-config
   replicas: 2
+  repository:  nttlong/files-service-final
   # number of replicate, depend on numof K8S workers
   tag: "rc.0.5.3.0"
   #The tag name is describe how many stage in image:
