@@ -87,7 +87,7 @@ storage:
   # Example: chown nodbody:nobody  /var/nfs_share_dir_for_k8s so all PODs in other worker can access.
   # Thou may check by "stat /var/nfs_share_dir_for_k8s"
   #
-
+  namespace: xdoc-storage
 
 
 storage_longhorn:

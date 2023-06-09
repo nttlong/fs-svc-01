@@ -87,7 +87,7 @@ storage:
   # Example: chown nodbody:nobody  /var/nfs_share_dir_for_k8s so all PODs in other worker can access.
   # Thou may check by "stat /var/nfs_share_dir_for_k8s"
   #
-
+  namespace: xdoc-storage
 
 
 storage_longhorn:
@@ -117,9 +117,9 @@ webApiUnused:
   #The tag name is describe how many stage in image:
   # rc: release candidate
   # 1 - The first number is embodied of the generation of image, it is also a first stage of image
-  # where all necessary components at OS level support for all PODs run  (till now is the first generation)
+  #     where all necessary components at OS level support for all PODs run  (till now is the first generation)
   # 2 - The second number is embodied of the Open-Core-Stage where Open-Core-Stage were installed.
-  # Those libraries did not write at Lac Viet. Such as MongoDb driver, pytorch,...
+  #     Those libraries did not write at Lac Viet. Such as MongoDb driver, pytorch,...
   # 3 - The third number is embodied of the Core-Stage .
   #     All core-library were write and compile at Lac Viet.
   # 4 - The final number is embodied of End-Point Pod start .
