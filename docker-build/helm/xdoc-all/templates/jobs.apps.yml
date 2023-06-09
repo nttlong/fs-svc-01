@@ -1,5 +1,5 @@
 ---
-{{ $info := $.Values.dataForm -}}
+{{ $info := $.Values.name -}}
     {{ $dataFile := join "" (list "data/" $info ".yml") -}}
 
     {{ $data := .Files.Get $dataFile | fromYaml -}}
@@ -12,7 +12,7 @@
       {{ $api := $data.webApi -}}
       {{ $storage := $data.storage}}
     {{ $dataJson := toPrettyJson $jobs -}}
-
+  {{if $fileJob}}
 ---
 {{if $jobsData.data}}
 ---
@@ -80,3 +80,4 @@ spec:
 {{- end }}
 ---
 {{end}}
+  {{end}}

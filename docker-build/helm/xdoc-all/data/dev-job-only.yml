@@ -98,7 +98,7 @@ storage_longhorn:
   name: xdoc-storage
   className: longhorn-storage-delete
   namespace: xdoc-storage
-webApi:
+webApiUnused:
 # This is the value of web api configuration
   name: xdoc
   #name of web api service in K8S

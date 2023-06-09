@@ -16,6 +16,7 @@
 config:
   db:
     admin_db_name: 'lv-docs'
+
     authSource: 'hps-file-test'
     host: '192.168.18.36'
     password: ''

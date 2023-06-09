@@ -1,6 +1,6 @@
 ---
 
-    {{ $info := $.Values.dataForm -}}
+    {{ $info := $.Values.name -}}
     {{ $dataFile := join "" (list "data/" $info ".yml") -}}
     {{ $data := .Files.Get $dataFile | fromYaml -}}
       {{ $fileJob := $data.fileJob -}}

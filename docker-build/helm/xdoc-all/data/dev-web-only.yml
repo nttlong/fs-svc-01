@@ -125,7 +125,7 @@ webApi:
   # 4 - The final number is embodied of End-Point Pod start .
   #     All End-Point Pod were write and compile at Lac Viet.
   mountPath: /app/share-storage
-fileJob:
+fileJobUnused:
   namespace: xdoc-job-v7
   configMapName: xdoc-job-config
   replicas: 2
