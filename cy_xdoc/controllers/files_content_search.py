@@ -102,11 +102,12 @@ def file_search(app_name: str, content: Optional[str],
     :param token:
     :return:
     """
+    from cy_xdoc.controllers import files_content_search_utils
     # from cy_xdoc.controllers.apps import check_app
     # check_app(app_name)
     if highlight is None:
         highlight=False
-    search_services:cy_xdoc.services.search_engine.SearchEngine = cy_kit.singleton(cy_xdoc.services.search_engine.SearchEngine)
+    search_services: cy_xdoc.services.search_engine.SearchEngine = cy_kit.singleton(cy_xdoc.services.search_engine.SearchEngine)
     # search_result = search_content_of_file(app_name, content, page_size, page_index)
     json_filter = None
 
@@ -142,24 +143,14 @@ def file_search(app_name: str, content: Optional[str],
         logic_filter=logic_filter
     )
 
-    ret_items = []
-    url = cy_web.get_host_url()+"/api"
-    for x in search_result.items:
-        upload_doc_item = x._source.data_item
-        if upload_doc_item:
-            # upload_doc_item.UploadId = upload_doc_item._id
-            upload_doc_item.Highlight = x.highlight
 
-            upload_doc_item.AppName = app_name
-            if hasattr(upload_doc_item, "FullFileName") and upload_doc_item.FullFileName is not None:
-                upload_doc_item.RelUrlOfServerPath = f"/{app_name}/file/{upload_doc_item.FullFileName}"
-                upload_doc_item.UrlOfServerPath = f"{url}/{app_name}/file/{upload_doc_item.FullFileName}"
-            if hasattr(upload_doc_item,"FileName") and upload_doc_item.FileName is not None:
-                upload_doc_item.ThumbUrl = url + f"/{app_name}/thumb/{upload_doc_item['_id']}/{upload_doc_item.FileName}.png"
-            upload_doc_item.meta_data = x._source.get('meta_data')
-            upload_doc_item.privileges = x._source.get('privileges')
-            upload_doc_item.meta_info = x._source.get('meta_info')
-            ret_items += [upload_doc_item]
+
+
+    ret_items = files_content_search_utils.pack_list(
+        url= cy_web.get_host_url() + "/api",
+        app_name= app_name,
+        items = search_result.items
+    )
 
     return dict(
         total_items=search_result.hits.total,
