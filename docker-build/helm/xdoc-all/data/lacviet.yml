@@ -15,29 +15,45 @@
 
 config:
   db:
-    admin_db_name: 'lv-docs'
+    # At the mention at a top of file. All Pods will run if all below config are correct
+    #
+    admin_db_name: 'hps-file-test'
+    # Tenant-manage-database even if thee's system just serve for only one Tenant
     authSource: 'hps-file-test'
-    host: '192.168.18.36'
-    password: ''
-    port: '27018'
-    username: ''
-  elastic_search:
-    prefix_index: 'lv-codx'
-    server: 'http://192.168.18.36:9200'
-  rabbitmq:
-    port: '5672'
-    server: 'rabbitmq.rabbitmq-dev'
-    temp_directory: './brokers/tmp'
-storage:
-  # This configuration  describes how and where all Pods in all deployments use shared-files when they need to process.
-  server: 172.16.7.91
-  directory: /var/nfs_share_dir_for_k8s
-  name: xdoc-storage
+    # When a Pod connects to MongoDb Database they will verify Auth at this database. As usually, authSource used to be 'admin'
+    host: '10.0.2.140'
+    # Server MongodDb or Mondgos router address
+    password: ""
+    # Password: if thee's MongoDb did not set Auth-Require, set this value is ''
+    port: '27017'
+    #Port: remmeber that this value should be in "'"
+    username: ""
+    elastic_search:
+      # At the mention at a top of file. All Pods will run if all below config are correct
+      prefix_index: 'lv-codx'
+      # Each Tenant require a ElasticSearch index with prefix is this value
+      # Exmaple Tenant name default ElasticSearch Index is 'lv-doc_default'
+      server: 'http://10.0.2.140:9200'
+    # Full url to ElasticSearch
+    rabbitmq:
+      # Broker clarification
+      port: '5672'
+      # Port: Thou! please quote this value
+      server: 'rabbitmq.rabbitmq-dev.svc.cluster.local'
+    # Server of Broker message
+    temp_directory: ./brokers/tmp
 
+storage:
+  # If thou would like to use longhorn-storage turn this value into false.
+  size: 30Gi
+  # storage request size is at least 30 GB (why? some Pods in deployment need AI-dataset. The volume for AI-dataset, sometime reach 30GB. So, 30GB is OK )
+  name: xdoc-storage
+  className: longhorn-storage-delete
+  namespace: xdoc-storage
 webApi:
-  name: xdoc
-  namespace: xdoc
-  hostUrl: http://172.16.7.91/lvfile
+  name: xdoc-web
+  namespace: xdoc-web
+  hostUrl: https://codx.lacviet.vn
   configMapName: xdoc-config
   replicas: 2
   repository: nttlong/files-service-final
@@ -52,7 +68,6 @@ webApi:
   # 3 - The third number is embodied of the Core-Stage . All core-library were write and compile at Lac Viet.
   # 4 - The final number is embodied of End-Point Pod start . All End-Point Pod were write and compile at Lac Viet.
   mountPath: /app/share-storage
-
 fileJob:
   namespace: xdoc-job-v7
   configMapName: xdoc-job-config

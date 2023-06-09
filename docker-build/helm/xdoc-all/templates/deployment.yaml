@@ -2,4 +2,3 @@
     {{ $dataFile := join "" (list "data/" $info ".yml") }}
     {{ $data := .Files.Get $dataFile | fromYaml -}}
     {{- $dataJson := toPrettyJson $data }}
-    {{print $dataJson}}
