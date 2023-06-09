@@ -33,7 +33,7 @@ storage:
   # This configuration  describes how and where all Pods in all deployments use shared-files when they need to process.
   server: 172.16.7.91
   directory: /var/nfs_share_dir_for_k8s
-  namespace: xdoc-storage
+  name: xdoc-storage
 webApi:
   name: xdoc
   namespace: xdoc

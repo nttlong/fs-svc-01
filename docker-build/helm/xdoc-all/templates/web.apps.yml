@@ -49,6 +49,8 @@ spec:
             - elastic_search.prefix_index=$(elastic_search.prefix_index)
             - db.host=$(db.host)
             - db.port=$(db.port)
+            - db.username=$(db.username)
+            - db.password=$(db.passsword)
             - admin_db_name= $(admin_db_name)
             - temp_directory=$(temp_directory)
             - rabbitmq.server=$(rabbitmq.server)
