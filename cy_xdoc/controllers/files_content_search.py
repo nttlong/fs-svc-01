@@ -158,6 +158,7 @@ def file_search(app_name: str, content: Optional[str],
                 upload_doc_item.ThumbUrl = url + f"/{app_name}/thumb/{upload_doc_item['_id']}/{upload_doc_item.FileName}.png"
             upload_doc_item.meta_data = x._source.get('meta_data')
             upload_doc_item.privileges = x._source.get('privileges')
+            upload_doc_item.meta_info = x._source.get('meta_info')
             ret_items += [upload_doc_item]
 
     return dict(

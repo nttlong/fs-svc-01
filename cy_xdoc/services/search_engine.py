@@ -272,7 +272,7 @@ class SearchEngine:
             limit=page_size,
             excludes=[
                 cy_es.buiders.content,
-                cy_es.buiders.meta_info,
+                cy_es.buiders.meta_data,
                 cy_es.buiders.vn_on_accent_content],
             index=self.get_index(app_name),
             highlight=highlight_expr,

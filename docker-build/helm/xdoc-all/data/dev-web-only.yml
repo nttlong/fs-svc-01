@@ -105,7 +105,7 @@ webApi:
   # This value really extremely important.
   # If wrong value no-one can access Web Api. As usual,
   # this is unchangeable value. But, when thou deploy in a certain K8S with ingress-controller.
-  # Thou mjust inquire thee's DEV-OP about ingress-controller and get correct name
+  # Thou must inquire thee's DEV-OP about ingress-controller and get correct name
   namespace: xdoc
   # namespace: The same rule of name
   hostUrl: http://172.16.7.91/lvfile
