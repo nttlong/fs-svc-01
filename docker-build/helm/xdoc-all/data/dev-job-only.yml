@@ -127,7 +127,7 @@ webApiUnused:
   #     All End-Point Pod were write and compile at Lac Viet.
   mountPath: /app/share-storage
 fileJob:
-  namespace: xdoc-job-v7
+  namespace: xdoc-job-v8
   configMapName: xdoc-job-config
   replicas: 2
   repository: nttlong/files-service-final

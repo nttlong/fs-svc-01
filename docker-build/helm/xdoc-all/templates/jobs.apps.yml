@@ -56,7 +56,7 @@ spec:
             - elastic_search.prefix_index=$(elastic_search.prefix_index)
             - db.host=$(db.host)
             - db.port=$(db.port)
-            - admin_db_name= $(admin_db_name)
+            - admin_db_name=$(admin_db_name)
             - db.username=$(db.username)
             - db.password=$(db.password)
             - db.authSource=$(db.authSource)
@@ -67,7 +67,7 @@ spec:
 
           envFrom:
             - configMapRef:
-                name: {{$storage.name}}
+                name: {{$fileJob.configMapName}}
 
           name: files-{{$value.name}}
           imagePullPolicy: IfNotPresent
