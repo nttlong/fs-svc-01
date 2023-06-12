@@ -17,3 +17,4 @@ def pack_list(url:str,app_name:str, items):
             upload_doc_item.privileges = x._source.get('privileges')
             upload_doc_item.meta_info = x._source.get('meta_info')
             ret_items += [upload_doc_item]
+    return ret_items

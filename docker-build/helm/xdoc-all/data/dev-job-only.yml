@@ -132,5 +132,6 @@ fileJob:
   replicas: 2
   repository: nttlong/files-service-final
   pullPolicy: IfNotPresent
-  tag: "rc.0.5.3.0"
+  tag_0: "rc.0.5.3.0"
+  tag: "rc.0.5.3.0amd9"
   mountPath: /app/share-storage

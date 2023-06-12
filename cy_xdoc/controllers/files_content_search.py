@@ -103,6 +103,7 @@ def file_search(app_name: str, content: Optional[str],
     :return:
     """
     from cy_xdoc.controllers import files_content_search_utils
+
     # from cy_xdoc.controllers.apps import check_app
     # check_app(app_name)
     if highlight is None:

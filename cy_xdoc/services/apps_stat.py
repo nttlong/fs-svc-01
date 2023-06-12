@@ -84,6 +84,12 @@ class AppStatServices:
     def __init__(self, db_connect: DbConnect = cy_kit.singleton(DbConnect)):
         self.db_connect = db_connect
 
+    def auto_stats(self, app_name: str):
+        print("auto_stats")
+        docs = self.db_connect.db(app_name).doc(DocUploadRegister)
+        yearly_agg = docs.context.aggregate().project(
+            cy_docs.fields.min_year >> cy_docs.FUNCS.min())
+
     def quick_stats(self, app_name: str, from_year: int, to_year: int):
         t= datetime.datetime.now()
         unit = 1024 * 1024
