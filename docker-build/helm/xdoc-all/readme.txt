@@ -21,3 +21,14 @@ templates
 ├── jobs.namespace.yml                  # Namespace for Job and cron job deploy
 ├── long.horn.namespace.yml             # Longhorn namespace.Till now, Longhorn is unofficially volume (pilot test)
 └── long.horn.yml                       # Longhorn claim
+
+In directory data at helm chart directory, thera a fews of YAML files in which is data of template render
+In order to deploy with a new environment (environment is a collect of Mongo Database server, ElasticSearch, RabbitMQ ,..)
+Thou should clone /data/dev.yml into new file in /data with a new name.
+Example: cp /data/dev/yml /data/my-data.yml
+The run command looks like helm --set name=<data file name only in /data directory> install <release name> <path to helm chart directory>
+Example: helm --set name=dev-job-only install xdoc-job-17 xdoc-all
+Use ssh copy to copy
+scp -r root@172.16.13.72:/home/vmadmin/python/v6/file-service-02/docker-build/helm/xdoc-all /nttlong/helm/xdoc-job
+
+

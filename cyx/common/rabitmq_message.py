@@ -118,7 +118,7 @@ class RabitmqMsg:
             self.__channel__.start_consuming()
         except pika.exceptions.ConnectionClosedByBroker as e:
             """
-            Sometime RabbitMQ wasc fail with unknown reason. The function will re-connect
+            Sometime RabbitMQ was fail with unknown reason. The function will re-connect
             Đôi khi RabbitMQ bị lỗi mà không rõ lý do. Chức năng sẽ kết nối lại
 
             """
