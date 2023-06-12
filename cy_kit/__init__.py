@@ -194,7 +194,7 @@ def trip_content(data):
     :param data:
     :return:
     """
-    if hasattr(cy_kit_x,"trip_content") and callable(cy_kit_x.trip_content):
+    if hasattr(cy_kit_x, "trip_content") and callable(cy_kit_x.trip_content):
         return cy_kit_x.trip_content(data)
     if isinstance(data, dict):
         for k, v in data.items():
@@ -360,8 +360,68 @@ def clean_up():
 
 Graceful_Application = cy_kit_x.Graceful_Application
 
+__cpu_count__ = None
 
-def parallel_loop(data:typing.Union[range,list,set]):
-    def __wrapper__(func:typing.Callable):
-        print(func)
+
+def loop_process(data: typing.Union[range, list, set]):
+
+    import multiprocessing as mp
+    def __wrapper__(func: typing.Callable):
+
+        def __start__(q:mp.Queue,x):
+            ret = func(x)
+            q.put(ret)
+        def __run__():
+            rets = []
+            ths = []
+            q = mp.Queue()
+            for row in data:
+
+                th = mp.Process(target=__start__, args=(q,row,))
+                ths+=[th]
+
+            for x in ths:
+                x.start()
+            for p in ths:
+                ret = q.get()  # will block
+                rets.append(ret)
+            # for p in ths:
+            #     p.join()
+            return rets
+
+        return __run__
+
+    return __wrapper__
+
+
+def async_call():
+    import time
+    import asyncio
+    from functools import wraps, partial
+    def wrap(func):
+        @wraps(func)
+        async def run(*args, loop=None, executor=None, **kwargs):
+            if loop is None:
+                loop = asyncio.get_event_loop()
+            def __run__(*args,**kwargs):
+                time.sleep(0.01)
+                ret = func(*args,**kwargs)
+                return ret
+
+            # pfunc = partial(func, *args, **kwargs)
+            return await loop.run_in_executor(executor, __run__,*args, **kwargs)
+
+        return run
+
+    return wrap
+
+
+def sync_call():
+    import asyncio
+    def __wrapper__(func):
+        def run(*args, **kwargs):
+            asyncio.run(func(*args, ** kwargs))
+
+        return run
+
     return __wrapper__

@@ -7,3 +7,4 @@ librosa
 soundfile
 html-to-json
 donut-python
+awaits
