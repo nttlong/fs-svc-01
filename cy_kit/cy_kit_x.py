@@ -843,6 +843,7 @@ def sync_call():
 
 def watch_forever():
     import multiprocessing as mp
+    import time
     def wraper(func):
         def run(*args, **kwargs):
             check, running = func(*args, **kwargs)
@@ -850,11 +851,11 @@ def watch_forever():
                 if check():
                     running()
                 time.sleep(0.001)
-                cy_kit_x.clean_up()
+                clean_up()
 
         def start(*args, **kwargs):
             p = mp.Process(target=run, args=args,kwargs=kwargs)
-            cy_kit_x.clean_up()
+            clean_up()
             return p
 
         return start

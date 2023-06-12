@@ -56,6 +56,8 @@ Stats of File-Service including:
         └── 2024
 
 """
+
+
 import datetime
 import typing
 
@@ -91,15 +93,21 @@ class AppStatServices:
         unit_type= 2
         unit = 1024 ** unit_type
         return agg.project(
-            cy_docs.fields.total >> cy_docs.FUNCS.sum(
+            cy_docs.fields.total_volume >> cy_docs.FUNCS.sum(
                 cy_docs.FUNCS.cond(
                     docs.fields.SizeUploaded==docs.fields.SizeInBytes,docs.fields.SizeUploaded/unit,0)
 
             ),
-            cy_docs.fields.total_unfinished >> cy_docs.FUNCS.sum(
+            cy_docs.fields.total_unfinished_volume >> cy_docs.FUNCS.sum(
                 cy_docs.FUNCS.cond(
                     docs.fields.SizeUploaded<docs.fields.SizeInBytes,docs.fields.SizeUploaded/ unit,0
                 )
+            ),
+            cy_docs.fields.total_unfinished_files >> cy_docs.FUNCS.sum(cy_docs.FUNCS.cond(
+                    docs.fields.SizeUploaded ==docs.fields.SizeInBytes,1,0)
+            ),
+            cy_docs.fields.total_files >> cy_docs.FUNCS.sum(cy_docs.FUNCS.cond(
+                    docs.fields.SizeUploaded <docs.fields.SizeInBytes,1,0)
             )
         )
 
@@ -352,7 +360,7 @@ class AppStatServices:
 
         docs = self.db_connect.db(app_name).doc(DocUploadRegister)
         agg = docs.context.aggregate().match(
-            docs.fields.RegisterOn.year() == year
+            cy_docs.EXPR(docs.fields.RegisterOn.year() == year)
         )
         ret = self.make_sum(agg, docs, unit_type).first_item()
         return ret
@@ -370,4 +378,35 @@ class AppStatServices:
             (docs.fields.RegisterOn <= to_time)
         )
         ret = self.make_sum(agg, docs, unit_type).first_item()
+        return ret
+
+    def get_stat_of_app(self, app_name: str):
+        ret  = {}
+        from_year, to_year = self.get_year_range(app_name)
+        if to_year:
+            for year in range(from_year, to_year + 1):
+                stat_data = self.stat_by_year(app_name,year)
+                ret["{:04d}".format(year)] = stat_data
+                from_month, to_month = self.get_month_range(app_name, year)
+
+                if to_month:
+                    for month in range(from_month, to_month + 1):
+                        stat_data = self.stat_by_month(
+                            app_name=app_name,
+                            year=year,
+                            month=month
+
+                        )
+                        ret["{:02d}".format(month)] = stat_data
+                        from_day, to_day = self.get_day_range(app_name, year, month)
+                        if to_day:
+                            for day in range(from_day, to_day + 1):
+                                stat_data = self.stat_by_day(
+                                    app_name=app_name,
+                                    year=year,
+                                    month=month,
+                                    day=day
+
+                                )
+                                ret["{:02d}".format(day)] = stat_data
         return ret

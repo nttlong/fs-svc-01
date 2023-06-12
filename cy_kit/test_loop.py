@@ -27,7 +27,7 @@ import cy_kit
 #     return ret
 
 fx="aaaaa"
-@cy_kit.trigger_on_time()
+@cy_kit.watch_forever()
 def running(app_name:str):
     def check():
         return datetime.datetime.now().second % 5==0

@@ -10,7 +10,7 @@ import sys
 __release_mode__ = True
 __working_dir__ = pathlib.Path(__file__).parent.__str__()
 
-import cy_docs
+
 
 sys.path.append(__working_dir__)
 import cy_docs_x
@@ -203,7 +203,7 @@ class QueryableCollection(Generic[T]):
         Query context full Mongodb Access
         :return:
         """
-        ret = cy_docs.context(
+        ret = cy_docs_x.context(
             client=self.__client__,
             cls=self.__cls__
         )[self.__db_name__]
@@ -211,7 +211,7 @@ class QueryableCollection(Generic[T]):
 
     @property
     def fields(self) -> T:
-        return cy_docs.expr(self.__cls__)
+        return cy_docs_x.expr(self.__cls__)
 
 
 def queryable_doc(
@@ -220,8 +220,8 @@ def queryable_doc(
         document_name: str = None) -> \
 QueryableCollection[T]:
     if document_name is None and not hasattr(instance_tye, "__document_name__"):
-        raise Exception(f"{instance_tye} was not {cy_docs.define}")
+        raise Exception(f"{instance_tye} was not {cy_docs_x.define}")
     if isinstance(document_name, str) and not hasattr(instance_tye, "__document_name__"):
-        ret_type = cy_docs.define(name=document_name)(instance_tye)
+        ret_type = cy_docs_x.define(name=document_name)(instance_tye)
         return QueryableCollection[T](ret_type, client, db_name)
     return QueryableCollection[T](instance_tye, client, db_name)
