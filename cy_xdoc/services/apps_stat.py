@@ -57,9 +57,11 @@ Stats of File-Service including:
 
 """
 import datetime
+import typing
 
 import cy_docs
 import cy_kit
+import cyx.base
 from cyx.base import DbConnect
 
 """
@@ -84,14 +86,70 @@ class AppStatServices:
     def __init__(self, db_connect: DbConnect = cy_kit.singleton(DbConnect)):
         self.db_connect = db_connect
 
-    def auto_stats(self, app_name: str):
-        print("auto_stats")
+    def make_sum(self, agg: cy_docs.AggregateDocument,
+                 docs: cyx.base.DbCollection[cy_xdoc.models.files.DocUploadRegister], unit_type: int = 3):
+        unit_type= 2
+        unit = 1024 ** unit_type
+        return agg.project(
+            cy_docs.fields.total >> cy_docs.FUNCS.sum(
+                cy_docs.FUNCS.cond(
+                    docs.fields.SizeUploaded==docs.fields.SizeInBytes,docs.fields.SizeUploaded/unit,0)
+
+            ),
+            cy_docs.fields.total_unfinished >> cy_docs.FUNCS.sum(
+                cy_docs.FUNCS.cond(
+                    docs.fields.SizeUploaded<docs.fields.SizeInBytes,docs.fields.SizeUploaded/ unit,0
+                )
+            )
+        )
+
+    def get_year_range(self, app_name: str) -> typing.Tuple[typing.Optional[int], typing.Optional[int]]:
+
         docs = self.db_connect.db(app_name).doc(DocUploadRegister)
         yearly_agg = docs.context.aggregate().project(
-            cy_docs.fields.min_year >> cy_docs.FUNCS.min())
+            cy_docs.fields.min_year >> cy_docs.FUNCS.min(docs.fields.RegisterOn.year()),
+            cy_docs.fields.max_year >> cy_docs.FUNCS.max(docs.fields.RegisterOn.year()),
+        )
+        data = yearly_agg.first_item()
+        if data:
+            return data.min_year, data.max_year
+        else:
+            return None, None
+
+    def get_day_range(self, app_name: str, year: int, month: int) -> typing.Tuple[
+        typing.Optional[int], typing.Optional[int]]:
+
+        docs = self.db_connect.db(app_name).doc(DocUploadRegister)
+        yearly_agg = docs.context.aggregate().match(
+            cy_docs.EXPR((docs.fields.RegisterOn.year() == year) & \
+                         (docs.fields.RegisterOn.month() == month))
+        ).project(
+            cy_docs.fields.min_year >> cy_docs.FUNCS.min(docs.fields.RegisterOn.day()),
+            cy_docs.fields.max_year >> cy_docs.FUNCS.max(docs.fields.RegisterOn.day()),
+        )
+        data = yearly_agg.first_item()
+        if data:
+            return data.min_year, data.max_year
+        else:
+            return None, None
+
+    def get_month_range(self, app_name: str, year: int) -> typing.Tuple[typing.Optional[int], typing.Optional[int]]:
+
+        docs = self.db_connect.db(app_name).doc(DocUploadRegister)
+        yearly_agg = docs.context.aggregate().match(
+            cy_docs.EXPR(docs.fields.RegisterOn.year() == year)
+        ).project(
+            cy_docs.fields.min_year >> cy_docs.FUNCS.min(docs.fields.RegisterOn.month()),
+            cy_docs.fields.max_year >> cy_docs.FUNCS.max(docs.fields.RegisterOn.month()),
+        )
+        data = yearly_agg.first_item()
+        if data:
+            return data.min_year, data.max_year
+        else:
+            return None, None
 
     def quick_stats(self, app_name: str, from_year: int, to_year: int):
-        t= datetime.datetime.now()
+
         unit = 1024 * 1024
         docs = self.db_connect.db(app_name).doc(DocUploadRegister)
         total_items = cy_docs.fields.total_items >> cy_docs.FUNCS.sum(
@@ -209,7 +267,7 @@ class AppStatServices:
                 ]
 
                 for day in range(1, 32):
-                    day_str = "{:02d}".format(montth)
+                    day_str = "{:02d}".format(day)
                     total_items_day = cy_docs.fields[f"total_items_{year_str}_{montth_str}_{day_str}"] >> \
                                       cy_docs.FUNCS.sum(
                                           cy_docs.FUNCS.cond((
@@ -259,16 +317,57 @@ class AppStatServices:
                         total_size_day,
                         total_unfinished_size_day
                     ]
-        n = (datetime.datetime.now() - t).total_seconds()
-        print(n)
+
         agg = docs.context.aggregate().project(
             *tuple(selector)
         )
 
-        # agg.project(
-        #     {
-        #         "Year":
-        #     }
-        # )
         ret = agg.first_item()
+        return ret
+
+    def stat_app(self, app_name: str):
+        from_year, to_year = self.get_year_range(app_name)
+        if from_year is None:
+            return None
+        else:
+            ret = self.quick_stats(app_name, from_year, to_year)
+            return ret
+
+    def stat_by_month(self, app_name: str, year: int, month: int, unit_type: int = 3):
+
+        check = datetime.datetime(year=year, month=month, day=1, hour=23, minute=59, second=59)
+        if check.year != year or check.month != month:
+            raise Exception(f"Invalid time {year}-{month}")
+
+        docs = self.db_connect.db(app_name).doc(DocUploadRegister)
+        agg = docs.context.aggregate().match(
+            cy_docs.EXPR((docs.fields.RegisterOn.year() == year) & \
+                         (docs.fields.RegisterOn.month() == month))
+        )
+        agg = self.make_sum(agg, docs, unit_type)
+        ret = agg.first_item()
+        return ret
+
+    def stat_by_year(self, app_name: str, year: int, unit_type: int = 3):
+
+        docs = self.db_connect.db(app_name).doc(DocUploadRegister)
+        agg = docs.context.aggregate().match(
+            docs.fields.RegisterOn.year() == year
+        )
+        ret = self.make_sum(agg, docs, unit_type).first_item()
+        return ret
+
+    def stat_by_day(self, app_name: str, year: int, month: int, day: int, unit_type: int = 3):
+
+        check = datetime.datetime(year=year, month=month, day=day, hour=23, minute=59, second=59)
+        if check.year != year or check.month != month and check.day != day:
+            raise Exception(f"Invalid time {year}-{month}-{day}")
+        from_time = datetime.datetime(year=year, month=month, day=day, hour=0, minute=0, second=0)
+        to_time = check
+        docs = self.db_connect.db(app_name).doc(DocUploadRegister)
+        agg = docs.context.aggregate().match(
+            (docs.fields.RegisterOn >= from_time) & \
+            (docs.fields.RegisterOn <= to_time)
+        )
+        ret = self.make_sum(agg, docs, unit_type).first_item()
         return ret

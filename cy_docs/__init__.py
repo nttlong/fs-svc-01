@@ -19,7 +19,7 @@ from typing import TypeVar, Generic, List
 
 T = TypeVar('T')
 
-
+AggregateDocument = cy_docs_x.AggregateDocument
 def expr(cls: T) -> T:
     """
     Create mongodb build expression base on __cls__

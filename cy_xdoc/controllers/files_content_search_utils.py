@@ -13,8 +13,8 @@ def pack_list(url:str,app_name:str, items):
                 upload_doc_item.UrlOfServerPath = f"{url}/{app_name}/file/{upload_doc_item.FullFileName}"
             if hasattr(upload_doc_item, "FileName") and upload_doc_item.FileName is not None:
                 upload_doc_item.ThumbUrl = url + f"/{app_name}/thumb/{upload_doc_item['_id']}/{upload_doc_item.FileName}.png"
-            upload_doc_item.meta_data = x._source.get('meta_data')
+
             upload_doc_item.privileges = x._source.get('privileges')
-            upload_doc_item.meta_info = x._source.get('meta_info')
+            upload_doc_item.meta_data =upload_doc_item.meta_data or  x._source.get('meta_info')
             ret_items += [upload_doc_item]
     return ret_items

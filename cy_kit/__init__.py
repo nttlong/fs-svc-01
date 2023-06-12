@@ -97,6 +97,7 @@ get_runtime_type( instance)
 import os.path
 import pathlib
 import sys
+import typing
 from typing import TypeVar
 
 __working_dir__ = pathlib.Path(__file__).parent.__str__()
@@ -358,3 +359,9 @@ def clean_up():
 
 
 Graceful_Application = cy_kit_x.Graceful_Application
+
+
+def parallel_loop(data:typing.Union[range,list,set]):
+    def __wrapper__(func:typing.Callable):
+        print(func)
+    return __wrapper__

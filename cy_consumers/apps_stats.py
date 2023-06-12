@@ -22,7 +22,33 @@ list_of_apps = list(apps_context.context.aggregate().project(
     apps_context.fields._id
 ))
 from cy_xdoc.services.apps_stat import AppStatServices
+
 app_stat_service = cy_kit.singleton(AppStatServices)
 for app in list_of_apps:
-    fx = app_stat_service.auto_stats()
-    print(fx)
+    from_year, to_year = app_stat_service.get_year_range(app.Name)
+    if to_year:
+        for year in range(from_year, to_year + 1):
+            from_month, to_month = app_stat_service.get_month_range(app.Name, year)
+
+            if to_month:
+                for month in range(from_month, to_month + 1):
+                    stat_data = app_stat_service.stat_by_month(
+                        app_name=app.Name,
+                        year=year,
+                        month=month
+
+                    )
+                    print(stat_data)
+                    from_day, to_day = app_stat_service.get_day_range(app.Name, year, month)
+                    if to_day:
+                        for day in range(from_day,to_day+1):
+                            stat_data = app_stat_service.stat_by_day(
+                                app_name = app.Name,
+                                year = year,
+                                month = month,
+                                day= day
+
+                            )
+                            print(stat_data)
+
+fx= range()
