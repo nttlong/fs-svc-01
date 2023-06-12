@@ -792,3 +792,71 @@ def trip_content(data):
             elif isinstance(v,dict):
                 data[k] = trip_content(v)
     return data
+import typing
+def loop_process(loop_data: typing.Union[range, list, set, tuple]):
+    import multiprocessing as mp
+    def __wrapper__(func: typing.Callable):
+
+        def __start__(q: mp.Queue, x):
+            ret = func(x)
+            q.put(ret)
+
+        def __run__():
+            rets = []
+            ths = []
+            q = mp.Queue()
+            for row in loop_data:
+                th = mp.Process(target=__start__, args=(q, row,))
+                ths += [th]
+                clean_up()
+
+            for x in ths:
+                x.start()
+                clean_up()
+            for p in ths:
+                ret = q.get()  # will block
+                rets.append(ret)
+                clean_up()
+            # for p in ths:
+            #     p.join()
+            clean_up()
+            return rets
+
+        return __run__
+
+    return __wrapper__
+
+
+
+
+
+def sync_call():
+    import asyncio
+    def __wrapper__(func):
+        def run(*args, **kwargs):
+
+            asyncio.run(func(*args, **kwargs))
+            clean_up()
+        return run
+
+    return __wrapper__
+
+def watch_forever():
+    import multiprocessing as mp
+    def wraper(func):
+        def run(*args, **kwargs):
+            check, running = func(*args, **kwargs)
+            while (True):
+                if check():
+                    running()
+                time.sleep(0.001)
+                cy_kit_x.clean_up()
+
+        def start(*args, **kwargs):
+            p = mp.Process(target=run, args=args,kwargs=kwargs)
+            cy_kit_x.clean_up()
+            return p
+
+        return start
+
+    return wraper
