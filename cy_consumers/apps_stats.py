@@ -35,7 +35,7 @@ def run(app_name: str):
             if to_month:
                 for month in range(from_month, to_month + 1):
                     stat_data = app_stat_service.stat_by_month(
-                        app_name=app.Name,
+                        app_name=app_name,
                         year=year,
                         month=month
 
@@ -50,11 +50,19 @@ def run(app_name: str):
                                 day=day
 
                             )
+app_stat_service.get_stat_of_app("default")
+app_names = [app.Name for app in list_of_apps]
 
+@cy_kit.loop_process([app.Name for app in list_of_apps])
+def get_data(app_name:str):
+    ret = app_stat_service.get_stat_of_app(app_name)
+    return {app_name:ret}
 
-
-for app in list_of_apps:
-    data = app_stat_service.get_stat_of_app(app.Name)
-    print(data)
+data_list = get_data()
+default_app = [x for x in data_list if x.get('default') is not None][0]
+print(default_app)
+# for app in list_of_apps:
+#     data = app_stat_service.get_stat_of_app(app.Name)
+#     print(data)
 
 

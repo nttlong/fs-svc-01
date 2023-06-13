@@ -795,32 +795,33 @@ def trip_content(data):
 import typing
 def loop_process(loop_data: typing.Union[range, list, set, tuple]):
     import multiprocessing as mp
+    from threading import Thread
     def __wrapper__(func: typing.Callable):
 
-        def __start__(q: mp.Queue, x):
+        def __start__(q:typing.List, x):
             ret = func(x)
-            q.put(ret)
+            q.append(ret)
 
         def __run__():
             rets = []
             ths = []
-            q = mp.Queue()
+            q = []
             for row in loop_data:
-                th = mp.Process(target=__start__, args=(q, row,))
+                th = Thread(target=__start__, args=(q, row,))
                 ths += [th]
                 clean_up()
 
             for x in ths:
                 x.start()
                 clean_up()
-            for p in ths:
-                ret = q.get()  # will block
-                rets.append(ret)
-                clean_up()
             # for p in ths:
-            #     p.join()
+            #     ret = q.get()  # will block
+            #     rets.append(ret)
+            #     clean_up()
+            for p in ths:
+                p.join()
             clean_up()
-            return rets
+            return q
 
         return __run__
 
@@ -854,7 +855,7 @@ def watch_forever():
                 clean_up()
 
         def start(*args, **kwargs):
-            p = mp.Process(target=run, args=args,kwargs=kwargs)
+            p = threading.Thread(target=run, args=args, kwargs=kwargs)
             clean_up()
             return p
 
