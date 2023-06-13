@@ -26,6 +26,8 @@ from cy_xdoc.services.apps_stat import AppStatServices
 app_stat_service = cy_kit.singleton(AppStatServices)
 
 from cy_xdoc.models.apps import App
+
+
 def run(app_name: str):
     from_year, to_year = app_stat_service.get_year_range(app_name)
     if to_year:
@@ -50,19 +52,42 @@ def run(app_name: str):
                                 day=day
 
                             )
+
+
 app_stat_service.get_stat_of_app("default")
 app_names = [app.Name for app in list_of_apps]
 
-@cy_kit.loop_process([app.Name for app in list_of_apps])
-def get_data(app_name:str):
-    ret = app_stat_service.get_stat_of_app(app_name)
-    return {app_name:ret}
 
-data_list = get_data()
-default_app = [x for x in data_list if x.get('default') is not None][0]
-print(default_app)
+@cy_kit.loop_process([app.Name for app in list_of_apps])
+def get_data(app_name: str):
+    ret = app_stat_service.get_stat_of_app(app_name)
+    return {app_name: ret}
+
+
+@cy_kit.watch_forever(sleep_time=1)
+def my_run(seconds: int):
+    start_time = datetime.datetime.now()
+    data = dict(count=0)
+    print(f"Start at ={start_time}")
+    print(f"This is the demonstrated how to print 'Hello!' in every 5 second")
+
+    def check(data):
+        return datetime.datetime.now().second % seconds == 0
+
+    def run(data):
+        global count
+        count = data["count"]
+        count+=1
+        data["count"]=count
+        print(f"Hello. This is {count} is say")
+
+    return data, check, run
+
+
+my_run(5)
+# data_list = get_data()
+# default_app = [x for x in data_list if x.get('default') is not None][0]
+# print(default_app)
 # for app in list_of_apps:
 #     data = app_stat_service.get_stat_of_app(app.Name)
 #     print(data)
-
-

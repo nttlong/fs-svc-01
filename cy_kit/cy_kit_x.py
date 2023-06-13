@@ -47,6 +47,8 @@ import datetime
 import ctypes
 import signal
 import sys
+
+
 def __resolve_container__(cls: type):
     if not hasattr(cls, "__annotations__"):
         return inject(cls)
@@ -500,8 +502,6 @@ def config_provider(from_class: type, implement_class: type):
         __config_provider_cache__[key] = implement_class
 
 
-
-
 __lazy_cache__ = {}
 
 
@@ -643,15 +643,12 @@ def thread_makeup():
 
 
 def get_local_host_ip():
-
     hostname = socket.gethostname()
     IPAddr = socket.gethostbyname(hostname)
     return IPAddr
 
 
 def create_logs(logs_dir, name: str) -> logging.Logger:
-
-
     full_dir = os.path.abspath(
         os.path.join(
             logs_dir, name
@@ -700,9 +697,6 @@ def singleton_from_path(injector_path: str):
         raise ModuleNotFoundError(f"{class_name} was not found in {module_name}")
 
 
-
-
-
 def __to_json_convertable__(data):
     if isinstance(data, dict):
         ret = {}
@@ -728,12 +722,8 @@ def to_json(data) -> str:
 
 def clean_up():
     if sys.platform == "linux":
-
         libc = ctypes.CDLL("libc.so.6")
         libc.malloc_trim(0)
-
-
-
 
 
 class Graceful_Application(object):
@@ -742,9 +732,7 @@ class Graceful_Application(object):
     """
 
     def __init__(self, on_run, on_stop):
-
         if sys.platform == "linux":
-
             self.shutdown = False
             # Registering the signals
             signal.signal(signal.SIGINT, self.__exit_graceful__)
@@ -755,11 +743,11 @@ class Graceful_Application(object):
         self.on_stop = on_stop
 
     def __exit_graceful__(self, signum, frame):
-
         self.shutdown = True
         print(f"app will stop {self.on_stop}")
         self.on_stop()
         sys.exit(0)
+
     # def __run__(self):
     #     time.sleep(1)
     #     print("running App: ")
@@ -785,20 +773,24 @@ def trip_content(data):
         :return:
     """
 
-    if isinstance(data,dict):
-        for k,v in data.items():
-            if isinstance(v,str):
-                data[k]=v.rstrip(' ').lstrip(' ')
-            elif isinstance(v,dict):
+    if isinstance(data, dict):
+        for k, v in data.items():
+            if isinstance(v, str):
+                data[k] = v.rstrip(' ').lstrip(' ')
+            elif isinstance(v, dict):
                 data[k] = trip_content(v)
     return data
+
+
 import typing
+
+
 def loop_process(loop_data: typing.Union[range, list, set, tuple]):
     import multiprocessing as mp
     from threading import Thread
     def __wrapper__(func: typing.Callable):
 
-        def __start__(q:typing.List, x):
+        def __start__(q: typing.List, x):
             ret = func(x)
             q.append(ret)
 
@@ -828,34 +820,68 @@ def loop_process(loop_data: typing.Union[range, list, set, tuple]):
     return __wrapper__
 
 
-
-
-
 def sync_call():
     import asyncio
     def __wrapper__(func):
         def run(*args, **kwargs):
-
             asyncio.run(func(*args, **kwargs))
             clean_up()
+
         return run
 
     return __wrapper__
 
-def watch_forever():
+
+def watch_forever(sleep_time=0.0001):
+    """
+    This decoration will make up a function run in thread.
+    The inner wrapper function must return a tuple of (Function, Function) in which:
+        The first function in return values use for time checking. It looks like this:
+            def check()->bool:
+                return datetime.datetime.now().day()==2
+        The second function in return values use for forever looping routine
+            while True:
+                if check():
+                    ... The second function call here
+    Full example:
+        @cy_kit.watch_forever(sleep_time=1)
+        def my_run(seconds: int):
+            start_time = datetime.datetime.now()
+            data = dict(count=0)
+            print(f"Start at ={start_time}")
+            print(f"This is the demonstrated how to print 'Hello!' in every 5 second")
+
+            def check(data):
+                return datetime.datetime.now().second % seconds == 0
+
+            def run(data):
+                global count
+                count = data["count"]
+                count+=1
+                data["count"]=count
+                print(f"Hello. This is {count} is say")
+
+            return data, check, run
+
+
+    :return:
+    """
     import multiprocessing as mp
     import time
     def wraper(func):
         def run(*args, **kwargs):
-            check, running = func(*args, **kwargs)
+            data, check, running = func(*args, **kwargs)
             while (True):
-                if check():
-                    running()
-                time.sleep(0.001)
+                if check(data):
+                    th = threading.Thread(target=running,args=(data,))
+                    th.start()
+                time.sleep(sleep_time)
                 clean_up()
 
         def start(*args, **kwargs):
             p = threading.Thread(target=run, args=args, kwargs=kwargs)
+            p.start()
+            p.join()
             clean_up()
             return p
 

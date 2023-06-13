@@ -364,5 +364,34 @@ Graceful_Application = cy_kit_x.Graceful_Application
 loop_process = cy_kit_x.loop_process
 sync_call = cy_kit_x.sync_call
 watch_forever = cy_kit_x.watch_forever
-
+"""
+    This decoration will make up a function run in thread.
+    The inner wrapper function must return a tuple of (Function, Function) in which:
+        The first function in return values use for time checking. It looks like this:
+            def check()->bool:
+                return datetime.datetime.now().day()==2
+        The second function in return values use for forever looping routine
+            while True:
+                if check():
+                    ... The second function call here
+    Full example:
+        @cy_kit.watch_forever(sleep_time=1)
+        def my_run(seconds: int):
+            start_time = datetime.datetime.now()
+            data = dict(count=0)
+            print(f"Start at ={start_time}")
+            print(f"This is the demonstrated how to print 'Hello!' in every 5 second")
+        
+            def check(data):
+                return datetime.datetime.now().second % seconds == 0
+        
+            def run(data):
+                global count
+                count = data["count"]
+                count+=1
+                data["count"]=count
+                print(f"Hello. This is {count} is say")
+        
+            return data, check, run
+"""
 
