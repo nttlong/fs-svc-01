@@ -10,8 +10,6 @@ import sys
 __release_mode__ = True
 __working_dir__ = pathlib.Path(__file__).parent.__str__()
 
-
-
 sys.path.append(__working_dir__)
 import cy_docs_x
 
@@ -20,6 +18,8 @@ from typing import TypeVar, Generic, List
 T = TypeVar('T')
 
 AggregateDocument = cy_docs_x.AggregateDocument
+
+
 def expr(cls: T) -> T:
     """
     Create mongodb build expression base on __cls__
@@ -60,6 +60,8 @@ For any expression
 """
 
 FUNCS = cy_docs_x.FUNCS
+
+
 def context(client, cls):
     return cy_docs_x.context(client, cls)
 
@@ -191,37 +193,34 @@ def EXPR(expr):
         raise Exception(f"{expr} is invalid data type, args in EXPR must be dict or cy_docs_x.Field")
 
 
-class QueryableCollection(Generic[T]):
-    def __init__(self, cls, client: pymongo.MongoClient, db_name: str):
-        self.__cls__ = cls
-        self.__client__ = client
-        self.__db_name__ = db_name
+# class QueryableCollection(Generic[T]):
+#     def __init__(self, cls, client: pymongo.MongoClient, db_name: str):
+#         self.__cls__ = cls
+#         self.__client__ = client
+#         self.__db_name__ = db_name
+#
+#     @property
+#     def context(self):
+#         """
+#         Query context full Mongodb Access
+#         :return:
+#         """
+#         ret = context(
+#             client=self.__client__,
+#             cls=self.__cls__
+#         )[self.__db_name__]
+#         return ret
+#
+#     @property
+#     def fields(self) -> T:
+#         return cy_docs_x.fields[self.__cls__]
 
-    @property
-    def context(self):
-        """
-        Query context full Mongodb Access
-        :return:
-        """
-        ret = cy_docs_x.context(
-            client=self.__client__,
-            cls=self.__cls__
-        )[self.__db_name__]
-        return ret
-
-    @property
-    def fields(self) -> T:
-        return cy_docs_x.expr(self.__cls__)
 
 
-def queryable_doc(
-        client: pymongo.MongoClient,
-        db_name: str, instance_tye: T,
-        document_name: str = None) -> \
-QueryableCollection[T]:
-    if document_name is None and not hasattr(instance_tye, "__document_name__"):
-        raise Exception(f"{instance_tye} was not {cy_docs_x.define}")
-    if isinstance(document_name, str) and not hasattr(instance_tye, "__document_name__"):
-        ret_type = cy_docs_x.define(name=document_name)(instance_tye)
-        return QueryableCollection[T](ret_type, client, db_name)
-    return QueryableCollection[T](instance_tye, client, db_name)
+# def queryable_doc(
+#         client: pymongo.MongoClient,
+#         db_name: str, instance_tye: T,
+#         document_name: str = None) -> \
+#         QueryableCollection[T]:
+#     return cy_docs_x.queryable_doc(client, db_name, instance_tye, document_name)
+queryable_doc = cy_docs_x.queryable_doc

@@ -87,6 +87,9 @@ class AppStatServices:
 
     def __init__(self, db_connect: DbConnect = cy_kit.singleton(DbConnect)):
         self.db_connect = db_connect
+    def get_context(self,app_name:str)->cyx.base.DbCollection[DocUploadRegister]:
+        docs = self.db_connect.db(app_name).doc(DocUploadRegister)
+        return docs
 
     def make_sum(self, agg: cy_docs.AggregateDocument,
                  docs: cyx.base.DbCollection[cy_xdoc.models.files.DocUploadRegister], unit_type: int = 3):
@@ -410,3 +413,21 @@ class AppStatServices:
                                 )
                                 ret["{:02d}".format(day)] = stat_data
         return ret
+
+    def update_grant_stat(self, app_name:str):
+        docs = self.get_context(app_name)
+        agg = docs.context.aggregate().project(
+            cy_docs.fields.total_volume >> cy_docs.FUNCS.sum(
+                cy_docs.FUNCS.cond(
+                    docs.fields.SizeInBytes==docs.fields.SizeUploaded, docs.fields.SizeInBytes, 0
+                )
+            ),
+            cy_docs.fields.total_unfinished_volume >> cy_docs.FUNCS.sum(
+                cy_docs.FUNCS.cond(
+                    docs.fields.SizeInBytes > docs.fields.SizeUploaded, docs.fields.SizeUploaded, 0
+                )
+            )
+        )
+        
+
+

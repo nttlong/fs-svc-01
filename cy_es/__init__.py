@@ -233,7 +233,8 @@ def __create_mapping_from_dict__(body):
     }
 
 
-def create_doc(client: Elasticsearch, index: str, id: str, body,
+ESDocumentObjectInfo = cy_es_x.ESDocumentObjectInfo
+def create_doc(client: Elasticsearch, index: str, id: str, body :typing.Optional[typing.Union[dict,ESDocumentObjectInfo]],
                doc_type: str = "_doc") -> cy_es_x.ESDocumentObjectInfo:
 
 
@@ -455,3 +456,7 @@ def parse_expr(expr: str, suggest_handler=None) -> DocumentFields:
 
     )
     return ret
+
+delete_index = cy_es_x.delete_index
+get_info  = cy_es_x.get_info
+get_version = cy_es_x.get_version

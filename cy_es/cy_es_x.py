@@ -2,6 +2,7 @@ import datetime
 import inspect
 import json
 import os
+import time
 import typing
 import uuid
 
@@ -11,6 +12,15 @@ from typing import List
 import pydantic
 from enum import Enum
 import os
+def get_info(client: Elasticsearch):
+
+    return client.info()
+
+
+def get_version(client: Elasticsearch):
+    ret = get_info(client)
+    __version__ = ret.get('version').get('number').spit('.')
+    return __version__
 
 
 def version() -> str:
@@ -277,11 +287,11 @@ class DocumentFields:
             # }
 
             src = f"(doc['{self.__name__}.keyword'].size()>0) && doc['{self.__name__}.keyword'].value.contains(params.item)"
-            if item[0]!='*' and item[-1]=='*':
+            if item[0] != '*' and item[-1] == '*':
                 src = f"(doc['{self.__name__}.keyword'].size()>0) && (doc['{self.__name__}.keyword'].value.indexOf(params.item)==0)"
-            elif item[0]=='*' and item[-1]!='*':
+            elif item[0] == '*' and item[-1] != '*':
                 src = f"(doc['{self.__name__}.keyword'].size()>0) && doc['{self.__name__}.keyword'].value.endsWith(params.item)"
-            #value
+            # value
             ret.__es_expr__ = {
                 "filter": {
                     "script": {
@@ -299,7 +309,7 @@ class DocumentFields:
             }
             ret.__is_bool__ = True
             fx_check_field = DocumentFields(self.__name__) != None
-            ret= fx_check_field & ret
+            ret = fx_check_field & ret
             ret.__highlight_fields__ = [self.__name__]
             return ret
         elif isinstance(item, list):
@@ -842,17 +852,19 @@ class DocumentFields:
         if isinstance(self.__es_expr__, dict):
             self.__es_expr__["boost"] = value
         return self
+
     def __rshift__(self, other):
-        ret= DocumentFields()
+        ret = DocumentFields()
         ret.__es_expr__ = {
-            "filter":{
-            "simple_query_string": {
-                "fields": [self.__name__],
-                "query": other
-            }}
+            "filter": {
+                "simple_query_string": {
+                    "fields": [self.__name__],
+                    "query": other
+                }}
         }
         ret.__is_bool__ = True
         return ret
+
     def __lshift__(self, other):
         if self.__name__ is None:
             raise Exception("Thous can not update expression")
@@ -1181,6 +1193,7 @@ class SearchResult(dict):
 
 
 def get_docs(client: Elasticsearch, index: str, doc_type: str = "_doc", limit=100, _from=0):
+    index = index.lower()
     res = client.search(index=index, doc_type="_doc", body={
         'size': limit,
         'from': _from,
@@ -1196,7 +1209,7 @@ def get_docs(client: Elasticsearch, index: str, doc_type: str = "_doc", limit=10
 
 
 def select(client: Elasticsearch, index: str, doc_type: str = "_doc", fields=[], filter=None, sort=None, skip=0,
-           limit=1000,highlight_fields=None) -> SearchResult:
+           limit=1000, highlight_fields=None) -> SearchResult:
     """
     Select some field in Elasticsearch index
     :param client:
@@ -1209,6 +1222,7 @@ def select(client: Elasticsearch, index: str, doc_type: str = "_doc", fields=[],
     :param limit:
     :return:
     """
+    index = index.lower()
     _select_fields_ = []
     if isinstance(fields, dict):
         _select_fields_ = list(fields.keys())
@@ -1262,7 +1276,7 @@ def select(client: Elasticsearch, index: str, doc_type: str = "_doc", fields=[],
     if fields is not None:
         body["_source"] = False
     if highlight_fields is not None:
-        if isinstance(highlight_fields,str):
+        if isinstance(highlight_fields, str):
             body["highlight"] = {
                 "pre_tags": ["<b>"],
                 "post_tags": ["</b>"],
@@ -1270,7 +1284,7 @@ def select(client: Elasticsearch, index: str, doc_type: str = "_doc", fields=[],
                     highlight_fields: {}
                 }
             }
-        elif isinstance(highlight_fields,DocumentFields):
+        elif isinstance(highlight_fields, DocumentFields):
             body["highlight"] = {
                 "pre_tags": ["<b>"],
                 "post_tags": ["</b>"],
@@ -1278,15 +1292,15 @@ def select(client: Elasticsearch, index: str, doc_type: str = "_doc", fields=[],
                     highlight_fields.__name__: {}
                 }
             }
-        elif isinstance(highlight_fields,list):
+        elif isinstance(highlight_fields, list):
             _highlight_fields_ = {}
             for x in highlight_fields:
-                if isinstance(x,str):
+                if isinstance(x, str):
                     _highlight_fields_[x] = {}
-                elif isinstance(x,DocumentFields):
+                elif isinstance(x, DocumentFields):
                     _highlight_fields_[x.__name__] = {}
 
-            body["highlight"]={
+            body["highlight"] = {
                 "pre_tags": ["<_highlight_fields_>"],
                 "post_tags": ["</_highlight_fields_>"],
                 "fields": _highlight_fields_
@@ -1305,6 +1319,7 @@ def get_map_struct(client: Elasticsearch, index: str):
     :param index:
     :return:
     """
+    index = index.lower()
     map = get_mapping(client, index)
     map_index = map[index]['mappings']
 
@@ -1338,6 +1353,7 @@ def search(client: Elasticsearch,
            sort=None,
            doc_type: str = "_doc",
            logic_filter=None) -> SearchResult:
+    index = index.lower()
     body = {}
     if isinstance(logic_filter, DocumentFields):
         if isinstance(filter, DocumentFields):
@@ -1422,6 +1438,7 @@ docs = DocumentFields()
 
 
 def is_index_exist(client: Elasticsearch, index: str):
+    index = index.lower()
     return client.indices.exists(index)
 
 
@@ -1467,6 +1484,19 @@ class ESDocumentObject(dict):
     def to_pydantic(self) -> pydantic.BaseModel:
         return pydantic.BaseModel(self)
 
+    def to_dict(self) -> dict:
+        ret = {}
+        for k, v in self.items():
+            if isinstance(v, ESDocumentObject):
+                ret = {**ret, **{k: v.to_dict()}}
+            else:
+                ret = {**ret, **{k: v}}
+        return ret
+
+    def __repr__(self):
+        import json
+        return json.dumps(self.to_dict())
+
 
 class ESDocumentObjectInfo:
     """
@@ -1507,6 +1537,7 @@ class ESDocumentObjectInfo:
 
 
 def get_doc(client: Elasticsearch, index: str, id: str, doc_type: str = "_doc") -> ESDocumentObjectInfo:
+    index = index.lower()
     try:
         ret = client.get(index=index, id=id, doc_type=doc_type)
         return ESDocumentObjectInfo(data=ret)
@@ -1528,16 +1559,75 @@ def __convert_exception__(e):
     return e
 
 
-def create_doc(client: Elasticsearch, index: str, body, id: str = None, doc_type: str = "_doc", es_type:str = None):
-    id = id or str(uuid.uuid4())
+def __es_create_index_if_not_exists__(es, index):
+    """Create the given ElasticSearch index and ignore error if it already exists"""
+    index = index.lower()
     try:
+        es.indices.create(index, master_timeout='60s', timeout='60s', wait_for_active_shards=1)
+
+        ret = es.indices.stats(index=index)
+
+        return ret
+    except elasticsearch.exceptions.RequestError as ex:
+        if ex.error == 'resource_already_exists_exception':
+            es.indices.open(index=index)
+            pass  # Index already exists. Ignore.
+        else:  # Other exception - raise it
+            raise ex
+
+
+def __create_doc__(client: Elasticsearch, index: str, body: typing.Optional[typing.Union[dict, ESDocumentObjectInfo]],
+                   id: str = None, doc_type: str = "_doc", es_type: str = None, try_count=30):
+    try:
+        index = index.lower()
+        id = id or str(uuid.uuid4())
+        if isinstance(body, ESDocumentObjectInfo):
+            id = body.id or str(uuid.uuid4())
+            body = body.source.to_dict()
         res = client.create(index=index, doc_type=doc_type, id=id, body=body)
         res["_source"] = body
-        return ESDocumentObjectInfo(res)
-    except elasticsearch.RequestError as e:
-        e1 = __convert_exception__(e)
-        raise e1
+        return ESDocumentObjectInfo(res), None
+    except elasticsearch.RequestError as er:
+        if er.status_code == 400:
+            if try_count > 0:
+                print(f"Create doc in {index} with id {id} fails, resume count ={try_count}")
+                time.sleep(1)
+                ret, error = __create_doc__(
+                    client,
+                    index,
+                    body,
+                    id,
+                    doc_type,
+                    es_type,
+                    try_count - 1
+                )
+                return ret, error
+            else:
+                return None, er
+
+        else:
+            return None, er
+    except Exception as e:
+        return None, e
+
+
+def create_doc(client: Elasticsearch, index: str, body: typing.Optional[typing.Union[dict, ESDocumentObjectInfo]],
+               id: str = None, doc_type: str = "_doc", es_type: str = None):
+    try:
+        ret, error = __create_doc__(
+            client=client,
+            index=index,
+            body=body,
+            id=id,
+            doc_type=doc_type,
+            es_type=es_type
+        )
+
+        if error:
+            raise error
+        return ret
     except elasticsearch.exceptions.ConflictError as e:
+
         pass
 
 
@@ -1601,6 +1691,7 @@ def create_index(client: Elasticsearch, index: str, body: typing.Union[dict, typ
     :param body:
     :return:
     """
+    index = index.lower()
     if client.indices.exists(index=index):
         """
         if exist return
@@ -1608,8 +1699,10 @@ def create_index(client: Elasticsearch, index: str, body: typing.Union[dict, typ
         return
     if inspect.isclass(body) and body not in [str, datetime.datetime, int, bool, float, int]:
         ret = client.indices.create(index=index, body=get_map(body))
+        client.indices.open(index=index)
     else:
         ret = client.indices.create(index=index, body=body)
+        client.indices.open(index=index)
     return ret
 
 
@@ -2531,6 +2624,7 @@ def convert_to_vn_predict_seg(data, handler, segment_handler, clear_accent_mark_
     :param clear_accent_mark_handler:
     :return:
     """
+
     def add_more_content(data, handler, segment_handler, clear_accent_mark_handler):
         if isinstance(data, dict):
             ret = {}
@@ -2810,3 +2904,11 @@ def natural_logic_parse(expr: str):
     if not isinstance(ret, dict):
         raise Exception(f"'{expr}' is incorrect syntax")
     return ret
+
+
+def delete_index(client: Elasticsearch, index: str):
+
+    client.indices.delete(index=index, ignore=[400, 404])
+
+
+

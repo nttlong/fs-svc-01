@@ -37,6 +37,10 @@ class App:
     Latest access time
     """
     AccessCount: typing.Optional[int]
+    Stats: typing.Optional[dict]
+    """
+    Stat of app
+    """
 
 
 

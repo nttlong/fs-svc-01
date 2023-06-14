@@ -865,12 +865,11 @@ class DocumentObject(dict):
 
     def __getattr__(self, item):
         ret = self.get(item)
-        if isinstance(ret,bson.ObjectId):
-            return  str(ret)
-        if isinstance(ret,uuid.UUID):
+        if isinstance(ret, bson.ObjectId):
+            return str(ret)
+        if isinstance(ret, uuid.UUID):
             return str(ret)
         return ret
-
 
     def __setattr__(self, key, value):
         if isinstance(value, dict):
@@ -1324,9 +1323,9 @@ class AggregateDocument:
                 stage[args.__name__] = 1
             else:
                 raise Exception(f"Thous can not use project stage with {args}")
-        elif isinstance(args,tuple) or isinstance(args,list):
-            agg_fields = [x for x in args if isinstance(x,Field)and x.__agg__function_call__]
-            if len(agg_fields)>0:
+        elif isinstance(args, tuple) or isinstance(args, list):
+            agg_fields = [x for x in args if isinstance(x, Field) and x.__agg__function_call__]
+            if len(agg_fields) > 0:
                 return self.group(*args)
             else:
                 for x in args:
@@ -1420,8 +1419,7 @@ class AggregateDocument:
         ]
         return self
 
-
-    def __inspect__(self,field):
+    def __inspect__(self, field):
         assert isinstance(field, Field)
         if field.__agg__function_call__:
             return None, field
@@ -1483,9 +1481,10 @@ class AggregateDocument:
         elif isinstance(accumulators, Field):
             if isinstance(accumulators.__data__, dict):
                 if accumulators.__agg__function_call__:
-                    _ignore_[list(accumulators.__data__.keys())[0].lstrip('$')+ "_count"] =1
+                    _ignore_[list(accumulators.__data__.keys())[0].lstrip('$') + "_count"] = 1
                     _id = {**_id,
-                           **{list(accumulators.__data__.keys())[0].lstrip('$') + "_count": list(accumulators.__data__.keys())[0]}}
+                           **{list(accumulators.__data__.keys())[0].lstrip('$') + "_count":
+                                  list(accumulators.__data__.keys())[0]}}
                     _fields = {**_fields, **{accumulators.__alias__: {
                         "$sum": 1
                     }}}
@@ -1502,7 +1501,7 @@ class AggregateDocument:
                 elif isinstance(x, Field):
                     if isinstance(x.__data__, dict):
                         if x.__agg__function_call__ == "$count" and x.__alias__:
-                            _ignore_[list(x.__data__.keys())[0].lstrip('$')+ "_count"] = 1
+                            _ignore_[list(x.__data__.keys())[0].lstrip('$') + "_count"] = 1
                             _id = {**_id,
                                    **{list(x.__data__.keys())[0].lstrip('$') + "_count": list(x.__data__.keys())[0]}}
                             _fields = {**_fields, **{x.__alias__: {
@@ -1983,26 +1982,25 @@ def EXPR(expr):
 
 class FUNCS:
 
-
     @classmethod
     def cond(cls, check, then_case, else_case):
-        _cond_  = {}
-        if isinstance(check,Field):
+        _cond_ = {}
+        if isinstance(check, Field):
             _cond_["if"] = check.to_mongo_db_expr()
         else:
             _cond_["if"] = check
-        if isinstance(then_case,Field):
+        if isinstance(then_case, Field):
             _cond_["then"] = then_case.to_mongo_db_expr()
         else:
             _cond_["then"] = then_case
-        if isinstance(else_case,Field):
+        if isinstance(else_case, Field):
             _cond_["else"] = else_case.to_mongo_db_expr()
         else:
             _cond_["else"] = else_case
-        ret_field = Field(init_value= {
-            "$cond":_cond_
+        ret_field = Field(init_value={
+            "$cond": _cond_
         })
-        return  ret_field
+        return ret_field
 
     @staticmethod
     def count(field: typing.Optional[typing.Union[Field, str]] = None):
@@ -2027,6 +2025,7 @@ class FUNCS:
     @classmethod
     def last(cls, field: typing.Union[Field, str]):
         return FUNCS.__agg_func_call_("$last", field)
+
     @staticmethod
     def __agg_func_call_(function_name: str, field):
         if isinstance(field, str):
@@ -2060,5 +2059,42 @@ class FUNCS:
         raise Exception(f"{field} is invalid")
 
 
+from typing import Generic, TypeVar
+
+T = TypeVar('T')
 
 
+class QueryableCollection(Generic[T]):
+    def __init__(self, cls, client: pymongo.MongoClient, db_name: str):
+        self.__cls__ = cls
+        self.__client__ = client
+        self.__db_name__ = db_name
+
+    @property
+    def context(self):
+        """
+        Query context full Mongodb Access
+        :return:
+        """
+        ret = context(
+            client=self.__client__,
+            cls=self.__cls__
+        )[self.__db_name__]
+        return ret
+
+    @property
+    def fields(self) -> T:
+        return fields[self.__cls__]
+
+
+def queryable_doc(
+        client: pymongo.MongoClient,
+        db_name: str, instance_tye: T,
+        document_name: str = None) -> \
+        QueryableCollection[T]:
+    if document_name is None and not hasattr(instance_tye, "__document_name__"):
+        raise Exception(f"{instance_tye} was not 'cy_docs.define'")
+    if isinstance(document_name, str) and not hasattr(instance_tye, "__document_name__"):
+        ret_type = document_define(name=document_name)(instance_tye)
+        return QueryableCollection[T](ret_type, client, db_name)
+    return QueryableCollection[T](instance_tye, client, db_name)

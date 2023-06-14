@@ -786,6 +786,8 @@ import typing
 
 
 def loop_process(loop_data: typing.Union[range, list, set, tuple]):
+
+
     import multiprocessing as mp
     from threading import Thread
     def __wrapper__(func: typing.Callable):
@@ -794,8 +796,13 @@ def loop_process(loop_data: typing.Union[range, list, set, tuple]):
             ret = func(x)
             q.append(ret)
 
-        def __run__():
-            rets = []
+        def __run__(use_thread = True):
+            if not use_thread:
+                ret = []
+                for row in loop_data:
+                    ret += [func(row)]
+                return ret
+
             ths = []
             q = []
             for row in loop_data:
@@ -875,7 +882,8 @@ def watch_forever(sleep_time=0.0001):
                 if check(data):
                     th = threading.Thread(target=running,args=(data,))
                     th.start()
-                time.sleep(sleep_time)
+                if sleep_time>0:
+                    time.sleep(sleep_time)
                 clean_up()
 
         def start(*args, **kwargs):
