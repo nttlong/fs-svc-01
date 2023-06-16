@@ -146,10 +146,10 @@ class DocumentFields:
                  }
     """
 
-    def __init__(self, name: str = None):
+    def __init__(self, name: str = None,is_bool=False):
         self.__name__ = name
         self.__es_expr__ = None
-        self.__is_bool__ = False
+        self.__is_bool__ = is_bool
         self.__value__ = None
         self.__has_set_value__ = None
         self.__minimum_number_should_match__ = None
@@ -1916,21 +1916,33 @@ def __build_search__(fields, content, suggest_handler=None):
 
     fx_query_string_content_exactly = DocumentFields()
     content_exactly = []
+    skip_count = 1
     for ((left,left_len),(right,right_len),(left_suggest,_),(right_suggest,_)) in list_of_hash:
-        content_exactly += [
-            {"query_string": {
-                "query": f'\"{left}\"  \"{left_suggest}\"',
-                "fields": fields,
-                "boost": 2000 * (left_len + 1)
-            }}
-        ]
-        content_exactly += [
-            {"query_string": {
-                "query": f'\"{right}\" \"{right_suggest}\"',
-                "fields": fields,
-                "boost": 1000 * (right_len + 1)
-            }}
-        ]
+        if left_len> skip_count:
+            content_exactly += [
+                {"constant_score":
+                     {
+                         "boost": 2000 * (left_len + 1),
+                         "filter": {
+                             "query_string": {
+                                 "query": f'\"{left}\"  \"{left_suggest}\"',
+                                 "fields": fields,
+                                 "fuzziness": "0.5"
+                }}}}
+            ]
+        if right_len > skip_count:
+            content_exactly += [
+                {"constant_score":
+                    {
+                        "boost": 2000 * (right_len + 1),
+                        "filter": {
+                            "query_string": {
+                                "query": f'\"{right}\"  \"{right_suggest}\"',
+                                "fields": fields,
+                                "fuzziness": "0.5"
+                            }}}}
+            ]
+
 
 
     fx_query_string_content_exactly.__es_expr__ = {
@@ -1948,8 +1960,9 @@ def __build_search__(fields, content, suggest_handler=None):
         "must": {
             "query_string": {
                 "query": content,
-                "fields": fields
-
+                "fields": fields,
+                "min_term_freq": 4,
+                "max_query_terms": 12
             }
         }
     }
@@ -1960,16 +1973,43 @@ def __build_search__(fields, content, suggest_handler=None):
         "must": {
             "query_string": {
                 "query": suggest_content,
-                "fields": fields
-
+                "fields": fields,
+                "min_term_freq": 1,
+                "max_query_terms": 12
             }
         }
     }
     fx_query_string_content_suggest.__is_bool__ = True
+    """
+        {
+            "query": {
+                "more_like_this" : {
+                    "fields" : ["title"],
+                    "like" : "elasticsearch is fast",
+                    "min_term_freq" : 1,
+                    "max_query_terms" : 12
+                }
+            }
+        
+        }
+    """
+    fx_more_like_this = DocumentFields(is_bool=True)
+    fx_more_like_this.__es_expr__ = {
+        "must":{
+            "more_like_this":{
+                "fields":fields,
+                "like": content,
+                "min_term_freq": 1,
+                "max_query_terms": 12,
+                "boost":10000
+            }
+        }
+    }
+    fx_more_like_this.__highlight_fields__ = fields
 
     ret = fx_query_string_content_exactly | \
           fx_query_string_content
-
+    ret =  fx_query_string_content
     return ret
 
 

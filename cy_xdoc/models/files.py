@@ -324,3 +324,7 @@ class DocUploadRegister:
     """
     Content of file each page 
     """
+    HasProcessContent: typing.Optional[bool]
+    """
+    A flag is make sure that 
+    """
