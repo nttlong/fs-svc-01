@@ -92,8 +92,11 @@ def generate_compile_file(dir:str=None):
 
 full_compiler_dir = sys.argv[1]
 is_clear = False
+is_dev = False
 if len(sys.argv)>2 and 'clear' in sys.argv:
     is_clear =True
+if len(sys.argv) > 2 and 'dev' in sys.argv:
+    is_dev = True
     #python cy_es/setup.py build_ext --inplace
     #test/models
 # list_of_files = generate_compile_file(full_compiler_dir)
@@ -103,9 +106,10 @@ list_of_files  = get_list_of_file(full_compiler_dir)
 python_files = [x for x in list_of_files if os.path.splitext(x)[1] =='.py']
 c_so_files = [x for x in list_of_files if os.path.splitext(x)[1] in ['.c','.so']]
 c_files_only = [x for x in list_of_files if os.path.splitext(x)[1] == '.c']
-for x in c_so_files:
-    os.remove(x)
-    print(f"{x} was delete")
+if not is_dev:
+    for x in c_so_files:
+        os.remove(x)
+        print(f"{x} was delete")
 # os.chdir(working_dir)
 if is_clear:
     print("all temp files was clear ")
@@ -137,5 +141,6 @@ ret = subprocess.run(cmd)
 list_of_files  = get_list_of_file(full_compiler_dir)
 c_files_only = [x for x in list_of_files if os.path.splitext(x)[1] == '.c']
 print("compiler is completed")
-for x in c_files_only:
-    os.remove(x)
+if not is_dev:
+    for x in c_files_only:
+        os.remove(x)

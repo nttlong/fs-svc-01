@@ -1,26 +1,16 @@
 import cy_docs
 import cy_es
 from elasticsearch.client import Elasticsearch
+
+
 from  pymongo.mongo_client import  MongoClient
+
 import cy_kit
 from cy_xdoc.services.apps import AppServices
 from cy_xdoc.models.apps import App
 from cy_xdoc.models.files import DocUploadRegister
-from cyx.base import DbConnect
 
-source_client = Elasticsearch(
-    "http://192.168.18.36:9200"
-)
-dest_client = Elasticsearch(
-    "http://172.16.0.242:9200"
-)
-info = cy_es.get_info(source_client)
-dest_client.create(
-    index = "lv-codx_lv-docs",
-    doc_type = "_doc",
-    id="1223",
-    body = dict(xx="OK")
-)
+from cyx.base import DbConnect
 mongodb_source_client = MongoClient(
     host="192.168.18.36",
     port=27018,
@@ -28,6 +18,20 @@ mongodb_source_client = MongoClient(
     username='admin-doc',
     password='123456'
 )
+source_app_docs = cy_docs.queryable_doc(mongodb_source_client,"lv-docs",App)
+list_of_apps = source_app_docs.context.aggregate().project(
+    source_app_docs.fields.Name
+)
+app_names  = [x.Name for x in list_of_apps]
+source_client = Elasticsearch(
+    "http://192.168.18.36:9200"
+)
+dest_client = Elasticsearch(
+    "http://172.16.0.242:9200"
+)
+info = cy_es.get_info(source_client)
+from json import dumps
+
 
 # mongodb_dest_client = MongoClient(
 #     host= "192.168.18.36",
@@ -36,12 +40,9 @@ mongodb_source_client = MongoClient(
 #     username = 'admin-doc',
 #     password = '123456'
 # )
-source_app_docs = cy_docs.queryable_doc(mongodb_source_client,"lv-docs",App)
 
-list_of_apps = source_app_docs.context.aggregate().project(
-    source_app_docs.fields.Name
-)
-app_names  = [x.Name for x in list_of_apps]
+
+
 print(app_names)
 print(f"Connect... to {'http://192.168.18.36:9200'} ")
 if not source_client.ping():
@@ -57,7 +58,7 @@ for x in app_names:
     index_name = f"lv-codx_{x}"
     if not cy_es.cy_es_x.is_index_exist(client =dest_client,index=index_name):
         # print(f"delete index {index_name} ...")
-        # cy_es.delete_index(client=dest_client, index=index_name)
+        cy_es.delete_index(client=dest_client, index=index_name)
         # print(f"Delete index {index_name} is ok")
         print(f"Create index {index_name} ...")
         cy_es.create_index(client =dest_client,index=index_name)

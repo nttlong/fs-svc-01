@@ -1,7 +1,9 @@
 import json
 import pathlib
 import sys
+import os
 sys.path.append(pathlib.Path(__file__).parent.parent.__str__())
+sys.path.append(os.path.join(pathlib.Path(__file__).parent.parent.__str__(),"cy_core"))
 import cyx.common
 from cyx.common import config
 

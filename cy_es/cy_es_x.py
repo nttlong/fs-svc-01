@@ -12,8 +12,9 @@ from typing import List
 import pydantic
 from enum import Enum
 import os
-def get_info(client: Elasticsearch):
 
+
+def get_info(client: Elasticsearch):
     return client.info()
 
 
@@ -1801,6 +1802,91 @@ def nested(prefix: str, filter):
     return filter
 
 
+def __clean_up__():
+    try:
+        import sys
+        import ctypes
+        if sys.platform == "linux":
+            libc = ctypes.CDLL("libc.so.6")
+            libc.malloc_trim(0)
+    except Exception:
+        pass
+
+
+def loop_threading(loop_data: typing.Union[range, list, set, tuple]):
+    import multiprocessing as mp
+    from threading import Thread
+    def __wrapper__(func: typing.Callable):
+
+        def __start__(q: typing.List, x):
+            ret = func(x)
+            q.append(ret)
+
+        def __run__(use_thread=True):
+            if not use_thread:
+                ret = []
+                for row in loop_data:
+                    ret += [func(row)]
+                return ret
+
+            ths = []
+            q = []
+            for row in loop_data:
+                th = Thread(target=__start__, args=(q, row,))
+                ths += [th]
+                __clean_up__()
+
+            for x in ths:
+                x.start()
+                __clean_up__()
+            # for p in ths:
+            #     ret = q.get()  # will block
+            #     rets.append(ret)
+            #     clean_up()
+            for p in ths:
+                p.join()
+            __clean_up__()
+            return q
+
+        return __run__
+
+    return __wrapper__
+
+
+def hash_words(content: str, suggest_handler=None):
+    words = content.lstrip(' ').rstrip(' ').replace('  ', ' ').split(' ')
+    index_hash = []
+    for i in range(0, len(words)):
+        index_hash += [
+            dict(
+                index=i,
+                # suggest_handler=suggest_handler,
+                words=words
+
+            )
+        ]
+
+    @loop_threading(index_hash)
+    def calculate_hash(data: dict):
+        left_len = len(data["words"]) - data["index"]
+        right_len = data["index"] - len(data["words"])
+        left = " ".join(data["words"][:left_len])
+        right = " ".join(data["words"][right_len:])
+        if suggest_handler:
+            try:
+                left_remain = suggest_handler(left)
+            except Exception  as e:
+                left_remain = left
+            try:
+                right_remain = suggest_handler(right)
+            except Exception   as e:
+                right_remain = right
+        return (left,left_len), (right,-right_len), (left_remain,left_len), (right_remain,-right_len)
+
+    ret = calculate_hash(False)
+    return ret
+
+
 def __build_search__(fields, content, suggest_handler=None):
     """
 
@@ -1816,23 +1902,74 @@ def __build_search__(fields, content, suggest_handler=None):
     }
   }
     """
-    ret = DocumentFields()
+    multi_match_ret = DocumentFields()
     match_fields = []
+    list_of_hash = hash_words(content, suggest_handler)
     if callable(suggest_handler):
-        content = content + " " + suggest_handler(content)
+        suggest_content = suggest_handler(content)
 
-    for x in fields:
-        if "^" in x:
-            match_fields += [x]
-        else:
-            match_fields += [x, f"{x}_seg^2", f"{x}_bm25_seg^1"]
-    ret.__es_expr__ = {
-        "multi_match": {
-            "fields": fields,
-            "query": content
+    # for x in fields:
+    #     if "^" in x:
+    #         match_fields += [x]
+    #     else:
+    #         match_fields += [x, f"{x}_seg^2", f"{x}_bm25_seg^1"]
+
+    fx_query_string_content_exactly = DocumentFields()
+    content_exactly = []
+    for ((left,left_len),(right,right_len),(left_suggest,_),(right_suggest,_)) in list_of_hash:
+        content_exactly += [
+            {"query_string": {
+                "query": f'\"{left}\"  \"{left_suggest}\"',
+                "fields": fields,
+                "boost": 2000 * (left_len + 1)
+            }}
+        ]
+        content_exactly += [
+            {"query_string": {
+                "query": f'\"{right}\" \"{right_suggest}\"',
+                "fields": fields,
+                "boost": 1000 * (right_len + 1)
+            }}
+        ]
+
+
+    fx_query_string_content_exactly.__es_expr__ = {
+        "should": content_exactly
+    }
+    fx_query_string_content_exactly.__is_bool__ = True
+
+    # fx_query_string_content_suggest_exactly = DocumentFields()
+    # fx_query_string_content_suggest_exactly.__es_expr__ = {
+    #     "should": content_suggest_exactly
+    # }
+    # fx_query_string_content_suggest_exactly.__is_bool__ = True
+    fx_query_string_content = DocumentFields()
+    fx_query_string_content.__es_expr__ = {
+        "must": {
+            "query_string": {
+                "query": content,
+                "fields": fields
+
+            }
         }
     }
-    ret.__highlight_fields__ = fields
+    fx_query_string_content.__is_bool__ = True
+
+    fx_query_string_content_suggest = DocumentFields()
+    fx_query_string_content_suggest.__es_expr__ = {
+        "must": {
+            "query_string": {
+                "query": suggest_content,
+                "fields": fields
+
+            }
+        }
+    }
+    fx_query_string_content_suggest.__is_bool__ = True
+
+    ret = fx_query_string_content_exactly | \
+          fx_query_string_content
+
     return ret
 
 
@@ -2907,8 +3044,4 @@ def natural_logic_parse(expr: str):
 
 
 def delete_index(client: Elasticsearch, index: str):
-
     client.indices.delete(index=index, ignore=[400, 404])
-
-
-

@@ -5,7 +5,10 @@ RUN mkdir -p /app
 COPY ./../compact.py /app/compact.py
 COPY ./../cy_consumers /app/cy_consumers
 COPY ./../cy_docs /app/cy_docs
-
+COPY ./../pymongo /app/pymongo
+COPY ./../gridfs /app/gridfs
+COPY ./../bson /app/bson
+COPY ./../elasticsearch /app/elasticsearch
 COPY ./../cy_es /app/cy_es
 COPY ./../cy_kit /app/cy_kit
 COPY ./../cy_utils /app/cy_utils

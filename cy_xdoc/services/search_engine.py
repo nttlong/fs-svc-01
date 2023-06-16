@@ -205,7 +205,7 @@ class SearchEngine:
         content = content or ""
         original_content = content
 
-        privileges = self.fix_privilges_contains_error(privileges)
+
         if isinstance(privileges, dict):
             privileges = cy_es.text_lower(privileges)
         content = self.vn_predictor.get_text(content)
