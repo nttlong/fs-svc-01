@@ -1887,7 +1887,7 @@ def hash_words(content: str, suggest_handler=None):
     return ret
 
 
-def __build_search__(fields, content, suggest_handler=None):
+def __build_search__depreciate_(fields, content, suggest_handler=None):
     """
 
     :param fields:
@@ -1960,9 +1960,7 @@ def __build_search__(fields, content, suggest_handler=None):
         "must": {
             "query_string": {
                 "query": content,
-                "fields": fields,
-                "min_term_freq": 4,
-                "max_query_terms": 12
+                "fields": fields
             }
         }
     }
@@ -2010,6 +2008,63 @@ def __build_search__(fields, content, suggest_handler=None):
     ret = fx_query_string_content_exactly | \
           fx_query_string_content
     ret =  fx_query_string_content
+    return ret
+
+
+def __build_search__(fields, content:str, suggest_handler=None):
+    """
+
+    :param fields:
+    :param content:
+    :return:
+    """
+    """
+    "query": {
+    "multi_match" : {
+      "query" : "this is a test",
+      "fields" : [ "subject^3", "message" ] 
+    }
+  }
+    """
+    content = content.replace('  ',' ').lstrip(' ').rstrip(' ')
+    suggest_content = None
+    suggest_search_content= None
+    if callable(suggest_handler):
+        suggest_content = suggest_handler(content)
+    if suggest_content :
+        suggest_words = suggest_content.replace('  ', ' ').lstrip(' ').rstrip(' ').split(' ')
+        suggest_search_word = " ".join([f'\"{x}\"' for x in suggest_words])
+        suggest_search_content = f"(\"{suggest_content}\") OR (f{suggest_search_word})"
+        # fx_suggest_query_string_content = DocumentFields(is_bool=True)
+        # fx_suggest_query_string_content.__es_expr__ = {
+        #     "must": {
+        #         "query_string": {
+        #             "query": suggest_search_content,
+        #             "fields": fields,
+        #             "boost": 500
+        #         }
+        #     }
+        # }
+
+    words = content.replace('  ',' ').lstrip(' ').rstrip(' ').split(' ')
+    search_word = " ".join([f'\"{x}\"' for x in words])
+
+    search_content = f"(\"{content}\") OR (f{search_word})"
+    if suggest_content != content and suggest_search_content:
+        search_content = suggest_search_content
+
+    fx_query_string_content = DocumentFields(is_bool=True)
+    fx_query_string_content.__es_expr__ = {
+        "must": {
+            "query_string": {
+                "query": search_content,
+                "fields": fields,
+                "boost":1000
+            }
+        }
+    }
+
+    ret = fx_query_string_content
     return ret
 
 
