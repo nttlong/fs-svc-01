@@ -20,8 +20,8 @@ COPY ./../config.yml /app/config.yml
 COPY ./../production_test /app/production_test
 COPY ./../pre_test_build /app/pre_test_build
 COPY ./../docker-build/files-service-final.compact.sh /app/files-service-final.compact.sh
-RUN  chmod +x /app/files-service-final.compact.sh && \
-    /app/files-service-final.compact.sh
+#RUN  chmod +x /app/files-service-final.compact.sh && \
+#    /app/files-service-final.compact.sh
 
 RUN python3 /app/cy_docs/check_cy_docs_x.py
 RUN python3 /app/cy_es/check_cy_es_x.py
@@ -39,7 +39,7 @@ RUN python3 /app/cy_es/check_cy_es_x.py
 
 
 
-ARG TARGETARCH
+
 
 RUN pip uninstall packaging -y
 COPY ./../docker-build/files-service-final-req.txt ./files-service-final-req.txt

@@ -692,17 +692,5 @@ class SearchEngine:
         return data_privileges
 
 
-    def get_unfinished_doc(self, app_name:str, page_size:str=100):
-        settings =self.client.indices.get_settings(
-            index=self.get_index(app_name)
-        )
-        mappings = cy_es.get_mapping(
-            client=  self.client, index = self.get_index(app_name)
 
-        )
-        filter = cy_es.DocumentFields("similarity_data")
-        self.client.search(
-            index = self.get_index(app_name),
-            body = (filter == None)
-        )
 

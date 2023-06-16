@@ -2047,8 +2047,8 @@ def __build_search__(fields, content:str, suggest_handler=None):
         # }
 
     words = content.replace('  ',' ').lstrip(' ').rstrip(' ').split(' ')
-    search_word = " ".join([f'\"{x}\"' for x in words])
-
+    search_word = " ".join([f'(\"{x}\") AND' for x in words])
+    search_word = search_word.rstrip('AND')
     search_content = f"(\"{content}\") OR (f{search_word})"
     if suggest_content != content and suggest_search_content:
         search_content = suggest_search_content
