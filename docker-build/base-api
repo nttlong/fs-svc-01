@@ -1,9 +1,19 @@
 FROM  debian as core-libre-office
-RUN apt update
-RUN apt install python3 -y
-RUN mkdir -p /test
-COPY ./../docker-build/base_api_check.py /test/base_api_check.py
-RUN python3 /test/base_api_check.py
+
+
+RUN apt update && apt upgrade && apt-get install wget -y && apt-get install build-essential -y
+RUN wget https://www.python.org/ftp/python/3.9.5/Python-3.9.5.tgz  && tar xzf Python-3.9.5.tgz
+RUN /Python-3.9.5/configure --enable-optimizations
+RUN cd Python-3.9.5
+RUN apt install libffi-dev zlib1g-dev
+RUN make altinstall
+#RUN update-alternatives --install /usr/local/bin/python3 python  /usr/local/bin/python3.9
+RUN mv /usr/local/bin/python3.9  /usr/local/bin/python3
+RUN mkdir -p  /temp
+COPY ./../docker-build/base_api_check.py /temp/base_api_check.py
+RUN python3 /temp/base_api_check.py
+
+
 RUN apt install default-jre -y
 RUN apt install libreoffice-java-common -y
 RUN apt-get  install libreoffice -y
