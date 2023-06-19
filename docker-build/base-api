@@ -1,7 +1,11 @@
 FROM  debian as core-libre-office
 RUN apt update
-RUN apt-get  install libreoffice -y; exit 0
-RUN apt-get update --fix-missing
+RUN apt install python3 -y
+RUN mkdir -p /test
+COPY ./../docker-build/base_api_check.py /test/base_api_check.py
+RUN python3 /test/base_api_check.py
+RUN apt install default-jre -y
+RUN apt install libreoffice-java-common -y
 RUN apt-get  install libreoffice -y
 FROM core-libre-office
 RUN apt install htop -y

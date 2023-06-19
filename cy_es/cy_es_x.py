@@ -25,7 +25,7 @@ def get_version(client: Elasticsearch):
 
 
 def version() -> str:
-    return f"0.0.8{os.path.splitext(__file__)[1]}"
+    return f"0.0.9{os.path.splitext(__file__)[1]}"
 
 
 def get_all_index(client: Elasticsearch) -> List[str]:
@@ -2033,8 +2033,10 @@ def __build_search__(fields, content:str, suggest_handler=None):
         suggest_content = suggest_handler(content)
     if suggest_content :
         suggest_words = suggest_content.replace('  ', ' ').lstrip(' ').rstrip(' ').split(' ')
-        suggest_search_word = " ".join([f'\"{x}\"' for x in suggest_words])
+        suggest_search_word = " ".join([f'(\"{x}\") AND' for x in suggest_words])
+        suggest_search_word = suggest_search_word.rstrip('AND')
         suggest_search_content = f"(\"{suggest_content}\") OR (f{suggest_search_word})"
+
         # fx_suggest_query_string_content = DocumentFields(is_bool=True)
         # fx_suggest_query_string_content.__es_expr__ = {
         #     "must": {
@@ -2430,25 +2432,28 @@ Configuring a custom similarity is considered an expert feature and the builtin 
         settings_index = settings[index]
         if settings_index.get('settings') and settings_index['settings'].get('index') and settings_index['settings'][
             'index'].get('similarity') and settings_index['settings']['index']['similarity'].get('bm25_similarity'):
-            client.indices.put_mapping(
-                index=index,
-                body=
-                {
-                    "properties": {
-                        field_name: {
-                            "type": "text",
-                            "similarity": "bm25_similarity",
-                            "fielddata": True
-                        },
-                        f"{field_name}_lower": {
-                            "type": "text",
-                            "similarity": "bm25_similarity",
-                            "fielddata": True
-                        }
+            try:
+                client.indices.put_mapping(
+                    index=index,
+                    body=
+                    {
+                        "properties": {
+                            field_name: {
+                                "type": "text",
+                                "similarity": "bm25_similarity",
+                                "fielddata": True
+                            },
+                            f"{field_name}_lower": {
+                                "type": "text",
+                                "similarity": "bm25_similarity",
+                                "fielddata": True
+                            }
 
+                        }
                     }
-                }
-            )
+                )
+            except Exception as e:
+                print(e)
 
 
 
@@ -2486,7 +2491,7 @@ Configuring a custom similarity is considered an expert feature and the builtin 
         )
         client.indices.open(index=index)
     except Exception as e:
-        pass
+        print(e)
 
 
 import bson

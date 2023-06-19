@@ -2,6 +2,8 @@ FROM nttlong/files-service-slim:rc.0.2.3
 ARG TARGETARCH
 RUN cd /
 RUN mkdir -p /app
+RUN pip uninstall pymonggo -y
+RUN pip uninstall elasticsearch -y
 COPY ./../compact.py /app/compact.py
 COPY ./../cy_consumers /app/cy_consumers
 COPY ./../cy_docs /app/cy_docs
@@ -19,12 +21,28 @@ COPY ./../resource /app/resource
 COPY ./../config.yml /app/config.yml
 COPY ./../production_test /app/production_test
 COPY ./../pre_test_build /app/pre_test_build
-COPY ./../docker-build/files-service-final.compact.sh /app/files-service-final.compact.sh
+RUN python3 /app/compact.py /app/cy_es
+RUN python3 /app/cy_es/check_cy_es_x.py
+RUN pip uninstall pymonggo -y
+RUN pip uninstall elasticsearch -y
+RUN python3 /app/compact.py /app/pymongo
+RUN python3 /app/compact.py /app/bson
+RUN python3 /app/compact.py /app/elasticsearch
+RUN python3 /app/compact.py /app/gridfs
+RUN python3 /app/compact.py /app/cy_docs
+RUN python3 /app/compact.py /app/cy_utils
+RUN python3 /app/compact.py /app/cy_web
+RUN python3 /app/compact.py /app/cy_xdoc
+RUN python3 /app/compact.py /app/cyx
+RUN python3 /app/compact.py /app/cy_kit
+
+#COPY ./../docker-build/files-service-final.compact.sh /app/files-service-final.compact.sh
+
 #RUN  chmod +x /app/files-service-final.compact.sh && \
 #    /app/files-service-final.compact.sh
 
 RUN python3 /app/cy_docs/check_cy_docs_x.py
-RUN python3 /app/cy_es/check_cy_es_x.py
+
 
 
 #RUN mkdir -p /app/production_test

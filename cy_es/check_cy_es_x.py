@@ -2,8 +2,8 @@ import sys
 import pathlib
 sys.path.append(pathlib.Path(__file__).parent.parent.__str__())
 import cy_es
-
-if cy_es.cy_es_x.version()!='0.0.8.so':
-    raise Exception("Incorrect version of cy_es.cy_es_x")
+check_version  = '0.0.9.so'
+if cy_es.cy_es_x.version()!=check_version:
+    raise Exception(f"Incorrect version of cy_es.cy_es_x.Desire {check_version} but current Version is {cy_es.cy_es_x.version()}")
 else:
     print(cy_es.cy_es_x.version())

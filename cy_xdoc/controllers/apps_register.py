@@ -21,7 +21,12 @@ def get_list_of_apps(request:fastapi.Request,Data: AppInfoRegister,
         data = Data.dict()
         del data["AppId"]
         data["ReturnSegmentKey"]=Data.ReturnSegmentKey or "returnUrl"
-        app = cy_xdoc.container.service_app.create(**data)
+        save_data = {
+            k:v for k,v in data.items() if v is not None
+        }
+        if data.get("RegisteredOn"):
+            del data["RegisteredOn"]
+        app = cy_xdoc.container.service_app.create(**save_data)
         ret.Data = app.to_pydantic()
         apps_cache.clear_cache()
         return ret

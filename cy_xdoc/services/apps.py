@@ -62,13 +62,13 @@ class AppServices:
 
     def create(self,
                Name: str,
-               Description: str,
                Domain: str,
-               LoginUrl: str,
-               ReturnUrlAfterSignIn: str,
-               UserName: str,
-               Password: str,
-               ReturnSegmentKey:str):
+               Description: str=None,
+               LoginUrl: str=None,
+               ReturnUrlAfterSignIn: str=None,
+               UserName: str=None,
+               Password: str=None,
+               ReturnSegmentKey:str=None):
         docs = self.db_connect.db('admin').doc(App)
         doc = docs.fields
         app_id = str(uuid.uuid4())
