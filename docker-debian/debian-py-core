@@ -1,0 +1,14 @@
+FROM nttlong/debian-py-395:1
+RUN apt-get install git -y && mkdir -p /app
+
+COPY ./../compact.py /app/compact.py
+COPY ./../docker-debian/debian-py-core.txt /app/debian-py-core.txt
+COPY ./../elasticsearch /app/elasticsearch
+COPY ./../gridfs /app/gridfs
+COPY ./../pymongo /app/pymongo
+RUN pip install pip==21.3.1
+RUN pip install -r /app/debian-py-core.txt  --no-cache-dir
+RUN python3 /app/compact.py /app/elasticsearch
+RUN python3 /app/compact.py /app/gridfs
+RUN python3 /app/compact.py /app/pymongo
+#docker buildx   build -t docker.lacviet.vn/xdoc/debian-py-core:1  --platform=linux/amd64,linux/arm64/v8  ./.. -f debian-py-core  --push=true --output type=registry
