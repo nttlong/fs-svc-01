@@ -1,0 +1,8 @@
+#syntax=bergkvist/includeimage
+FROM debian
+FROM linuxserver/libreoffice
+FROM python:3.9.17-slim-bullseye
+RUN cp /usr/local/bin/python /usr/bin/python3
+COPY ./../docker-build/check_python_version_395.py /tmp/check_python_version_395.py
+RUN python3 /tmp/check_python_version_395.py
+#docker buildx   build -t docker.lacviet.vn/xdoc/gen-1-xdoc:1  --platform=linux/amd64,linux/arm64/v8  ./.. -f gen-1-xdoc  --push=true --output type=registry

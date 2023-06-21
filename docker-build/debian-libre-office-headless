@@ -1,0 +1,6 @@
+FROM  debian
+RUN apt update
+RUN apt install default-jre -y
+RUN apt install libreoffice-java-common -y
+RUN apt-get  install libreoffice -y
+#docker buildx   build -t nttlong/debian-libre-office-headless:1  --platform=linux/amd64,linux/arm64/v8  ./.. -f debian-libre-office-headless  --push=true --output type=registry

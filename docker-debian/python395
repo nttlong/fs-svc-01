@@ -1,0 +1,18 @@
+FROM  debian
+RUN apt update && apt upgrade
+RUN apt-get install wget -y  build-essential -y
+
+#RUN apt-get install libreadline-gplv2-dev
+RUN apt-get install libncursesw5-dev -y \
+     libssl-dev -y libsqlite3-dev -y tk-dev -y libgdbm-dev -y libc6-dev -y libbz2-dev -y libffi-dev -y zlib1g-dev -y
+RUN wget https://www.python.org/ftp/python/3.9.5/Python-3.9.5.tgz  && tar xzf Python-3.9.5.tgz
+RUN /Python-3.9.5/configure --enable-optimizations
+RUN cd Python-3.9.5
+RUN apt install libffi-dev zlib1g-dev
+RUN make altinstall
+RUN mv /usr/local/bin/python3.9  /usr/bin/python3
+COPY ./../docker-build/check_python_version_395.py /tmp/check_python_version_395.py
+RUN python3.9 /tmp/check_python_version_395.py && rm -fr /Python-3.9.5 && rm  -f Python-3.9.5.tgz
+RUN python3.9 -m pip install --upgrade pip
+#docker buildx   build -t nttlong/python395:1  --platform=linux/amd64,linux/arm64/v8  ./.. -f debian-python395  --push=true --output type=registry
+#docker buildx   build -t docker.lacviet.vn/xdoc/debian-py-395:1  --platform=linux/amd64,linux/arm64/v8  ./.. -f debian-python395  --push=true --output type=registry

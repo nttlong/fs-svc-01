@@ -1,0 +1,17 @@
+FROM debian
+RUN apt update && apt upgrade
+RUN apt install htop -y
+RUN apt install git -y
+RUN apt-get install -y gcc
+RUN apt-get install procps -y
+RUN apt-get install psmisc -y
+RUN apt-get install -y gcc
+RUN apt install default-jdk -y
+RUN apt update --fix-missing
+RUN apt-get -y install ghostscript
+RUN apt-get install ffmpeg -y
+RUN apt-get install -y tesseract-ocr
+RUN apt-get install tesseract-ocr-vie
+RUN apt-get install -y tesseract-ocr-script-viet
+RUN apt-get install -y libopencv-dev python3-opencv
+#docker buildx   build -t nttlong/component:1  --platform=linux/amd64,linux/arm64/v8  ./.. -f components  --push=true --output type=registry

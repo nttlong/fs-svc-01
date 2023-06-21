@@ -1,19 +1,7 @@
-FROM  debian as core-libre-office
-
-
-RUN apt update && apt upgrade && apt-get install wget -y && apt-get install build-essential -y
-RUN wget https://www.python.org/ftp/python/3.9.5/Python-3.9.5.tgz  && tar xzf Python-3.9.5.tgz
-RUN /Python-3.9.5/configure --enable-optimizations
-RUN cd Python-3.9.5
-RUN apt install libffi-dev zlib1g-dev
-RUN make altinstall
-#RUN update-alternatives --install /usr/local/bin/python3 python  /usr/local/bin/python3.9
-RUN mv /usr/local/bin/python3.9  /usr/local/bin/python3
-RUN mkdir -p  /temp
-COPY ./../docker-build/base_api_check.py /temp/base_api_check.py
-RUN python3 /temp/base_api_check.py
-
-
+FROM  nttlong/debian-py-395:1 as core-libre-office
+COPY ./../docker-build/check_python_version_395.py /tmp/check_python_version_395.py
+RUN mv /usr/bin/python3 /usr/bin/python3.9
+RUN python3.9 /tmp/check_python_version_395.py
 RUN apt install default-jre -y
 RUN apt install libreoffice-java-common -y
 RUN apt-get  install libreoffice -y
@@ -24,11 +12,11 @@ RUN apt-get install -y gcc
 RUN apt-get install procps -y
 RUN apt-get install psmisc -y
 RUN apt-get install -y gcc
-RUN  apt-get install python3-pip -y
-RUN python3 -m pip install --upgrade pip
+#RUN  apt-get install python3-pip -y
+#RUN python3 -m pip install --upgrade pip
 RUN apt install git -y
-RUN apt install wget
-RUN apt-get install python-dev -y
+#RUN apt install wget
+
 
 RUN apt install default-jre -y
 RUN apt update --fix-missing
@@ -42,8 +30,8 @@ RUN apt-get install -y tesseract-ocr
 RUN apt-get install tesseract-ocr-vie
 RUN apt-get install -y libopencv-dev python3-opencv
 
+RUN apt-get install python3-pip -y
 
-ARG TARGETARCH
 RUN pip install py-vncorenlp  --no-cache-dir
 #---------- check is isnatll ok----------------------
 RUN mkdir -p data-check
@@ -90,4 +78,4 @@ RUN rm -fr /root/.cache
 #docker buildx inspect --bootstrap
 
 
-#docker buildx   build -t nttlong/base:ttn.2023.004  --platform=linux/amd64,linux/arm64/v8  ./.. -f base-api  --push=true --output type=registry
+#docker buildx   build -t nttlong/stage-1:1  --platform=linux/amd64,linux/arm64/v8  ./.. -f stage-1  --push=true --output type=registry

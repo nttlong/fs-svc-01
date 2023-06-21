@@ -7,8 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Accent.Utils", "Accent.Util
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Accent.KShortestPaths", "Accent.KShortestPaths\Accent.KShortestPaths.csproj", "{BEF9385C-B708-471C-A0B6-6D2B27EB03B5}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Accent.API", "Accent.API\Accent.API.csproj", "{C20BFFEC-9D83-467D-B495-62AD4B14EDF8}"
-EndProject
+
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
