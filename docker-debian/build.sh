@@ -9,13 +9,13 @@ export generation_=1
 export repositiory=docker.lacviet.vn
 export push=docker.lacviet.vn/xdoc
 
-#chmod +x debian-p.sh 1
-chmod +x debian-pod.sh 1
-chmod +x debian-podc.sh 1
-chmod +x debian-podc-framework.sh 1
+chmod +x debian-p.sh
+chmod +x debian-pod.sh
+chmod +x debian-podc.sh
+chmod +x debian-podc-framework.sh
 
-./debian-p.sh
-./debian-pod.sh
-./debian-podc.sh
-./debian-podc-framework.sh
+#./debian-p.sh 1
+./debian-pod.sh 1
+#./debian-podc.sh 1
+#./debian-podc-framework.sh 1
 
