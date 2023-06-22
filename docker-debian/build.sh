@@ -18,12 +18,12 @@ chmod +x debian-py-framework-core.sh
 chmod +x debian-py-framework.sh
 
 
-#./debian-py-39.sh
+./debian-py-39.sh
 #./debian-dot-net-core-6-7.sh
 #./debian-component.sh
 #./debian-libre-office.sh
 ./debian-py-39-core.sh
-#./debian-py-framework-core.sh
+./debian-py-framework-core.sh
 #./debian-py-framework.sh
 
 #xdoc/debian-libre-office

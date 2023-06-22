@@ -2,17 +2,20 @@ ARG REPO_LOCATION=docker.lacviet.vn
 ARG TAG=1
 ARG USER=nttlong
 FROM ${REPO_LOCATION}/${USER}/debian-py-39:${TAG}
-RUN apt-get install git -y && mkdir -p /app
-COPY ./../docker-debian/debian-py-core.txt /app/debian-py-core.txt
-RUN pip install -r /app/debian-py-core.txt  --no-cache-dir
+
+
 COPY ./../compact.py /app/compact.py
 COPY ./../elasticsearch /app/elasticsearch
 RUN python3 /app/compact.py /app/elasticsearch
+COPY ./../bson /app/bson
+RUN python3 /app/compact.py /app/bson
 COPY ./../gridfs /app/gridfs
 RUN python3 /app/compact.py /app/gridfs
 COPY ./../pymongo /app/pymongo
 RUN python3 /app/compact.py /app/pymongo
-RUN pip install pymongo
+
+COPY ./../docker-debian/debian-py-core.txt /app/debian-py-core.txt
+RUN pip install -r /app/debian-py-core.txt  --no-cache-dir
 COPY ./../docker-debian/verify.py /app/docker-debian/verify.py
 WORKDIR /app
 RUN python3 /app/docker-debian/verify.py py39_core

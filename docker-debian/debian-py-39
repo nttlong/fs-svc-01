@@ -9,16 +9,18 @@ RUN apt-get install wget -y  build-essential -y
 #RUN apt-get install libreadline-gplv2-dev
 RUN apt-get install libncursesw5-dev -y \
      libssl-dev -y libsqlite3-dev -y tk-dev -y libgdbm-dev -y libc6-dev -y libbz2-dev -y libffi-dev -y zlib1g-dev -y
-RUN wget https://www.python.org/ftp/python/3.9.5/Python-3.9.5.tgz  && tar xzf Python-3.9.5.tgz
-RUN /Python-3.9.5/configure --enable-optimizations
-RUN cd Python-3.9.5
-RUN apt install libffi-dev zlib1g-dev
-RUN make altinstall
-RUN apt install python3-pip -y && \
+RUN wget https://www.python.org/ftp/python/3.9.5/Python-3.9.5.tgz  && tar xzf Python-3.9.5.tgz && \
+    /Python-3.9.5/configure --enable-optimizations && \
+    cd Python-3.9.5 && \
+    make altinstall && \
+    apt install python3-pip -y && \
     python3.9 -m pip install --upgrade pip && \
     mv /usr/local/bin/python3.9  /usr/bin/python3 && \
-    pip install pip==21.3.1 && pip install cython
+    pip install pip==21.3.1 && \
+    apt-get install git -y && mkdir -p /app &&\
+    pip install Cython==3.0.0b1
 COPY ./../docker-debian/debian-py-39.py /tmp/debian-py-39.py.py
+COPY ./../compact.py /app/compact.py
 RUN python3 /tmp/debian-py-39.py.py && rm -fr /Python-3.9.5 && rm  -f Python-3.9.5.tgz
 WORKDIR /app
 #docker buildx   build -t nttlong/python395:1  --platform=linux/amd64,linux/arm64/v8  ./.. -f debian-python395  --push=true --output type=registry

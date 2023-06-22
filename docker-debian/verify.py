@@ -1,7 +1,16 @@
 import os.path
 import sys
 import pathlib
+import cython
+
+
 sys.path.append(pathlib.Path(__file__).parent.parent.__str__())
+if sys.version_info.major ==3 and sys.version_info.minor ==9 and sys.version_info.micro==5:
+    print(sys.version)
+else:
+    raise Exception(f"incorect version. Current version is {sys.version}")
+if cython.__version__!="3.0.0b1":
+    raise Exception(f"incorect cython version. Current version is {cython.__version__}")
 class stages:
     def py39_core(self):
         from pymongo.mongo_client import MongoClient
