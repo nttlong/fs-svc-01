@@ -1,7 +1,11 @@
+#------------------------------------------------
+#--- DEBIAN PYTHON OFFICE, DOT NET, CORE PYTHON LIB AND FRAMEWORK
+
+#------------------------------------------------
 ARG REPO_LOCATION=docker.lacviet.vn
 ARG TAG=1
 ARG USER=nttlong
-FROM ${REPO_LOCATION}/${USER}/debian-py-39-core:${TAG}
+FROM ${REPO_LOCATION}/${USER}/debian-podc:${TAG}
 
 COPY ./../compact.py /app/compact.py
 COPY ./../cy_es /app/cy_es

@@ -1,5 +1,32 @@
-FROM debian
-ARG TARGETARCH
+#--------------------------------------------------------
+#---- IMAGE IS DEBIAN PYTHON LIBRE OFFICE AND
+#     ALL FILE SERVCIE COMPONENT
+#----
+ARG REPO_LOCATION=docker.lacviet.vn
+ARG TAG=1
+ARG USER=nttlong
+FROM ${REPO_LOCATION}/${USER}/debian-p:${TAG}
+arg TARGETARCH
+RUN apt update
+RUN apt install default-jre -y
+RUN apt install libreoffice-java-common -y
+RUN apt-get  install libreoffice - y
+RUN apt update && apt upgrade
+RUN apt install htop -y
+RUN apt install git -y
+RUN apt-get install -y gcc
+RUN apt-get install procps -y
+RUN apt-get install psmisc -y
+RUN apt-get install -y gcc
+RUN apt install default-jdk -y
+RUN apt update --fix-missing
+RUN apt-get -y install ghostscript
+RUN apt-get install ffmpeg -y
+RUN apt-get install -y tesseract-ocr
+RUN apt-get install tesseract-ocr-vie
+RUN apt-get install -y tesseract-ocr-script-viet
+RUN apt-get install -y libopencv-dev python3-opencv
+RUN mkdir -p /app
 RUN apt update && apt-get install wget -y
 RUN if [ "$TARGETARCH" = "amd64" ]; then \
         wget https://packages.microsoft.com/config/debian/11/packages-microsoft-prod.deb -O packages-microsoft-prod.deb;\
@@ -39,4 +66,3 @@ COPY ./../dotnet_core/VietnameseAccent/ ./python_dot_net_core
 
 RUN dotnet publish ./python_dot_net_core
 RUN rm -fr /root/.cache
-#docker buildx   build -t nttlong/dot-net-core:1  --platform=linux/amd64,linux/arm64/v8  ./.. -f dot-net-core  --push=true --output type=registry

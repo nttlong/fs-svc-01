@@ -1,4 +1,7 @@
 FROM  debian
+#------------------------------------------------------
+#---- image is debian and python 3.9.5 --------------------
+#-----------------------------------------------------------
 ARG REPO_LOCATION=hub.docker.com
 ARG TAG=1
 ARG USER=nttlong

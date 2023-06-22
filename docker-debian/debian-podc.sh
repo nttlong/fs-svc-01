@@ -1,7 +1,8 @@
 #!/bin/bash
+docker_file=debian-podc
 docker --log-level "info" buildx build \
       --build-arg REPO_LOCATION=$repositiory \
       --build-arg TAG=$generation \
       --build-arg USER=$user -t \
-      $push/debian-py-39:$generation  \
-      --platform=$platform ./.. -f debian-py-39  --push=true --output type=registry
+      $push/$docker_file:$generation  \
+      --platform=$platform ./.. -f $docker_file  --push=true --output type=registry
