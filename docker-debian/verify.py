@@ -18,12 +18,12 @@ class stages:
         from bson.objectid import ObjectId
         from gridfs.grid_file import GridIn
         return [MongoClient,Transport,ObjectId,GridIn]
-    def framework_core(self):
+    def core_framework(self):
         from cy_kit.cy_kit_x import singleton
         from cy_docs.cy_docs_x import AggregateDocument
         from cy_es.cy_es_x import get_version
         return [singleton,AggregateDocument,get_version]
-    def framework(self):
+    def app_framework(self):
         from cyx.common.base import DbCollection
         from cy_xdoc.services.files import FileServices
         from cy_web.cy_web_x import WebApp

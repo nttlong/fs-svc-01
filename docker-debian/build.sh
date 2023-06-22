@@ -14,17 +14,17 @@ chmod +x debian-dot-net-core-6-7.sh
 chmod +x debian-component.sh
 chmod +x debian-libre-office.sh
 chmod +x debian-py-39-core.sh
-chmod +x debian-py-framework-core.sh
-chmod +x debian-py-framework.sh
+chmod +x debian-py-39-core-framework.sh
+chmod +x debian-py-39-app-framework.sh
 
 
-./debian-py-39.sh
+#./debian-py-39.sh
 #./debian-dot-net-core-6-7.sh
 #./debian-component.sh
 #./debian-libre-office.sh
 #./debian-py-39-core.sh
-#./debian-py-framework-core.sh
-#./debian-py-framework.sh
+#./debian-py-39-core-framework.sh
+./debian-py-39-app-framework.sh
 
 #xdoc/debian-libre-office
 #xdoc/debian-component

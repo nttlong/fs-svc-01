@@ -2,21 +2,17 @@ ARG REPO_LOCATION=docker.lacviet.vn
 ARG TAG=1
 ARG USER=nttlong
 FROM ${REPO_LOCATION}/${USER}/debian-py-39-core:${TAG}
-COPY ./../docker-debian/debian-py-39.py /tmp/debian-py-39.py.py
-RUN python3 /tmp/debian-py-39.py.py
-RUN apt-get install git -y && mkdir -p /app
-RUN pip uninstall cython -y && pip install Cython==3.0.0b1
+
 COPY ./../compact.py /app/compact.py
 COPY ./../cy_es /app/cy_es
-COPY ./../cy_kit /app/cy_kit
-COPY ./../cy_web /app/cy_web
-COPY ./../cy_docs /app/cy_docs
-COPY ./../compact.py /app/compact.py
-
 RUN python3 /app/compact.py /app/cy_es
+COPY ./../cy_kit /app/cy_kit
 RUN python3 /app/compact.py /app/cy_kit
-
+COPY ./../cy_web /app/cy_web
 RUN python3 /app/compact.py /app/cy_web
+COPY ./../cy_docs /app/cy_docs
 RUN python3 /app/compact.py /app/cy_docs
+COPY ./../docker-debian/debian-py-39-core-framework.req.txt /app/debian-py-39-core-framework.req.txt
+RUN pip install -r /app/debian-py-39-core-framework.req.txt && pip uninstall pymongo -y
 COPY ./../docker-debian/verify.py /app/docker-build/verify.py
-RUN /app/docker-build/verify.py framework_core py395
+RUN python3 /app/docker-build/verify.py py39_core core_framework

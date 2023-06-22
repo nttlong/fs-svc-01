@@ -14,8 +14,8 @@ RUN python3 /app/compact.py /app/gridfs
 COPY ./../pymongo /app/pymongo
 RUN python3 /app/compact.py /app/pymongo
 
-COPY ./../docker-debian/debian-py-core.txt /app/debian-py-core.txt
-RUN pip install -r /app/debian-py-core.txt  --no-cache-dir
+COPY ./../docker-debian/debian-py-core-39.req.txt /app/debian-py-core-39.req.txt
+RUN pip install -r /app/debian-py-core-39.req.txt  --no-cache-dir && pip uninstall pymongo -y
 COPY ./../docker-debian/verify.py /app/docker-debian/verify.py
 WORKDIR /app
 RUN python3 /app/docker-debian/verify.py py39_core

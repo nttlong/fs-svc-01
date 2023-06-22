@@ -11,4 +11,5 @@ RUN pip install -r /app/debian-py-core.txt  --no-cache-dir
 RUN python3 /app/compact.py /app/elasticsearch
 RUN python3 /app/compact.py /app/gridfs
 RUN python3 /app/compact.py /app/pymongo
+
 #docker buildx   build -t docker.lacviet.vn/xdoc/debian-py-core:1  --platform=linux/amd64,linux/arm64/v8  ./.. -f debian-py-core  --push=true --output type=registry

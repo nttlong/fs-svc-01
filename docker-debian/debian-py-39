@@ -14,16 +14,31 @@ RUN wget https://www.python.org/ftp/python/3.9.5/Python-3.9.5.tgz  && \
     /Python-3.9.5/configure --enable-optimizations
     RUN cd Python-3.9.5
     RUN make altinstall
-    RUN apt install python3-pip -y
-    RUN python3.9 -m pip install --upgrade pip && \
-    mv /usr/local/bin/python3.9  /usr/bin/python3 && \
-    pip install pip==21.3.1 && \
-    apt-get install git -y && \
-    mkdir -p /app &&\
-    pip install Cython==3.0.0b1
+    RUN apt-get install git -y
+ARG TARGETARCH
+RUN if [ "$TARGETARCH" = "amd64" ]; then \
+    apt install python3-pip -y ;\
+    python3.9 -m pip install --upgrade pip ;\
+    mv /usr/local/bin/python3.9  /usr/bin/python3 ;\
+    pip install pip==21.3.1 ;\
+    pip install Cython==3.0.0b1 ;\
+    fi
 COPY ./../docker-debian/debian-py-39.py /tmp/debian-py-39.py
+RUN if [ "$TARGETARCH" = "arm64" ]; then \
+    mv /usr/local/bin/python3.9  /usr/local/bin/python3 ;\
+    python3 /tmp/debian-py-39.py; \
+    apt install python3-pip -y ;\
+    python3 -m pip install --upgrade pip ;\
+    pip install pip==21.3.1 ;\
+    pip install Cython==3.0.0b1 ;\
+    fi
+    RUN mkdir -p /app
+    WORKDIR /app
+
+
+
 COPY ./../compact.py /app/compact.py
 RUN python3 /tmp/debian-py-39.py && rm -fr /Python-3.9.5 && rm  -f Python-3.9.5.tgz
-WORKDIR /app
+
 #docker buildx   build -t nttlong/python395:1  --platform=linux/amd64,linux/arm64/v8  ./.. -f debian-python395  --push=true --output type=registry
 #docker buildx   build -t docker.lacviet.vn/xdoc/debian-py-395:1  --platform=linux/amd64,linux/arm64/v8  ./.. -f debian-python395  --push=true --output type=registry
