@@ -12,8 +12,7 @@ COPY ./../gridfs /app/gridfs
 RUN python3 /app/compact.py /app/gridfs
 COPY ./../pymongo /app/pymongo
 RUN python3 /app/compact.py /app/pymongo
-COPY ./../bson /app/bson
-RUN python3 /app/compact.py /app/bson
+RUN pip install pymongo
 COPY ./../docker-debian/verify.py /app/docker-debian/verify.py
 WORKDIR /app
 RUN python3 /app/docker-debian/verify.py py39_core

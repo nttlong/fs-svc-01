@@ -228,7 +228,7 @@ class _BaseCodecOptions(NamedTuple):
     document_class: Type[Mapping[str, Any]]
     tz_aware: bool
     uuid_representation: int
-    unicode_decode_error_handler: str
+    unicode_decode_error_handler: Any
     tzinfo: Optional[datetime.tzinfo]
     type_registry: TypeRegistry
     datetime_conversion: Optional[DatetimeConversion]
@@ -240,7 +240,7 @@ if TYPE_CHECKING:
         document_class: Type[_DocumentType]
         tz_aware: bool
         uuid_representation: int
-        unicode_decode_error_handler: Optional[str]
+        unicode_decode_error_handler: Optional[Any]
         tzinfo: Optional[datetime.tzinfo]
         type_registry: TypeRegistry
         datetime_conversion: Optional[int]
@@ -485,7 +485,7 @@ else:
             return CodecOptions(**opts)
 
 
-DEFAULT_CODEC_OPTIONS: "CodecOptions[Mapping[str, Any]]" = CodecOptions()
+DEFAULT_CODEC_OPTIONS = CodecOptions()
 
 
 def _parse_codec_options(options: Any) -> CodecOptions:
