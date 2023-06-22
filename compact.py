@@ -93,10 +93,13 @@ def generate_compile_file(dir:str=None):
 full_compiler_dir = sys.argv[1]
 is_clear = False
 is_dev = False
+is_publish =False
 if len(sys.argv)>2 and 'clear' in sys.argv:
     is_clear =True
 if len(sys.argv) > 2 and 'dev' in sys.argv:
     is_dev = True
+if len(sys.argv) > 2 and 'publish' in sys.argv:
+    is_publish = True
     #python cy_es/setup.py build_ext --inplace
     #test/models
 # list_of_files = generate_compile_file(full_compiler_dir)
@@ -143,4 +146,7 @@ c_files_only = [x for x in list_of_files if os.path.splitext(x)[1] == '.c']
 print("compiler is completed")
 if not is_dev:
     for x in c_files_only:
+        os.remove(x)
+if is_publish:
+    for x in python_files:
         os.remove(x)

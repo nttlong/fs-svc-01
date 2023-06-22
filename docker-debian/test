@@ -1,0 +1,1 @@
+FROM docker.lacviet.vn/xdoc/debian-dot-net-core-6-7:adm.1

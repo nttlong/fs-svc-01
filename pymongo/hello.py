@@ -20,7 +20,7 @@ import itertools
 from typing import Any, Generic, List, Mapping, Optional, Set, Tuple
 
 from bson.objectid import ObjectId
-from pymongo import common
+import pymongo.common as common
 from pymongo.server_type import SERVER_TYPE
 from pymongo.typings import _DocumentType
 

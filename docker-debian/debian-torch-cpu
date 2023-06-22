@@ -1,0 +1,61 @@
+FROM nttlong/base-core-slim:rc.2023.029  as git
+
+ARG TARGETARCH
+#ADD ./../torch-source /torch-source
+RUN mkdir -p /app/pre_test_build && mkdir -p /tmp-source/amd
+#RUN pip uninstall torch -y && pip uninstall torchvision -y
+
+
+COPY ./../docker-build/base-files-slim.req.txt ./base-files-slim.req.txt
+COPY ./../docker-build/base-file-slim.deep-learning.reg.txt ./base-file-slim.deep-learning.reg.txt
+
+RUN if [ "$TARGETARCH" = "amd64" ]; then \
+    pip uninstall torchvision -y && \
+    pip uninstall torch -y && \
+    pip uninstall timm -y && \
+    pip uninstall easyocr -y && \
+    pip install torch --extra-index-url https://download.pytorch.org/whl/cpu --no-cache-dir && \
+    pip install torchvision --extra-index-url https://download.pytorch.org/whl/cpu --no-cache-dir && \
+    pip install torchaudio --extra-index-url https://download.pytorch.org/whl/cpu --no-cache-dir && \
+    pip install -r base-files-slim.req.txt --no-cache-dir && \
+    pip install -r base-file-slim.deep-learning.reg.txt --no-cache-dir && \
+    pip install timm  --no-cache-dir && \
+    pip install easyocr --no-cache-dir && \
+    pip install librosa --no-cache-dir && \
+    pip install soundfile --no-cache-dir;\
+    fi
+RUN if [ "$TARGETARCH" = "arm64" ]; then \
+    pip install -r base-files-slim.req.txt --no-cache-dir && \
+    pip install -r base-file-slim.deep-learning.reg.txt --no-cache-dir;\
+    fi
+
+
+
+ADD ./../pre_test_build /app/pre_test_build
+RUN if [ "$TARGETARCH" = "arm64"]; then \
+    pip uninstall torch -y && \
+    wget https://github.com/KumaTea/pytorch-aarch64/releases/download/v1.11.0/pytorch-1.11.0-py3.9_cpu_0.tar.bz2 && \
+    pip install pytorch-1.11.0-py3.9_cpu_0.tar.bz2 && \
+    rm pytorch-1.11.0-py3.9_cpu_0.tar.bz2 && \
+    python3 /app/pre_test_build/check_torch_version.py; \
+    fi
+RUN if [ "$TARGETARCH" = "amd64"]; then \
+    python3 /app/pre_test_build/check_torch_version.py; \
+    fi
+RUN pip uninstall deepdoctection -y && \
+    pip uninstall python-doctr -y && \
+    pip uninstall doctr -y && \
+    pip install doctr==1.9.0 && \
+    pip install python-doctr==0.6.0 && \
+    pip install deepdoctection==0.23 && \
+    pip install git+https://github.com/facebookresearch/detectron2.git@2c6c380f94a27bd8455a39506c9105f652b9f760
+RUN pip uninstall packaging -y && \
+    pip install packaging packaging==20.9
+RUN apt-get install -y tesseract-ocr-script-viet
+
+
+
+RUN python3 pre_test_build/check_layout_detection.py
+RUN python3 /app/pre_test_build/check_layout_detection.py
+
+RUN rm -fr /app/pre_test_build
