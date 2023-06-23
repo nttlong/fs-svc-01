@@ -1,0 +1,20 @@
+#------------------------------------------------
+#--- DEBIAN PYTHON OFFICE, DOT NET, CORE PYTHON LIB AND FRAMEWORK
+
+#------------------------------------------------
+ARG REPO_LOCATION=docker.lacviet.vn
+ARG TAG=1
+ARG USER=xdoc
+FROM ${REPO_LOCATION}/${USER}/debian-p:${TAG}
+COPY ./../docker-debian/verify.py /app/docker-build/verify.py
+COPY ./../compact.py /app/compact.py
+COPY ./../bson /app/bson
+RUN python3 /app/compact.py /app/bson
+COPY ./../pymongo /app/pymongo
+RUN python3 /app/compact.py /app/pymongo
+COPY ./../elasticsearch /app/elasticsearch
+RUN python3 /app/compact.py /app/elasticsearch
+COPY ./../gridfs /app/gridfs
+RUN python3 /app/compact.py /app/giridfs
+
+RUN python3 /app/docker-build/verify.py py39_core

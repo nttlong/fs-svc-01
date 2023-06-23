@@ -3,12 +3,17 @@ ARG TAG=1
 ARG USER=xdoc
 FROM ${REPO_LOCATION}/${USER}/debian-p:${TAG}  as python
 FROM ${REPO_LOCATION}/${USER}/debian-libre-office-headless:${TAG}  AS office
+FROM ${REPO_LOCATION}/${USER}/debian-dot-net-core:${TAG}  AS dotnet
 FROM debian
 COPY --from=office / /
+COPY --from=dotnet /usr /usr
 COPY --from=python /usr /usr
 #COPY --from=python /usr/bin/python3 /usr/bin/python3
 COPY ./../docker-debian/verify.py /docker-debian/verify.py
 RUN python3 /docker-debian/verify.py --check soffice
 RUN soffice --headless --convert-to png --outdir /tmp /docker-debian/verify.py
-
+RUN mkdir /python_dot_net_core
+COPY ./../dotnet_core/VietnameseAccent/ ./python_dot_net_core
+RUN dotnet publish ./python_dot_net_core
+RUN python3  /docker-debian/verify.py check
 #docker buildx   build -t nttlong/test:1  --platform=linux/amd64,linux/arm64/v8  ./.. -f test-merge
