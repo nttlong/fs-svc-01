@@ -1,0 +1,21 @@
+#------------------------------------------------
+#--- DEBIAN PYTHON OFFICE, DOT NET, CORE PYTHON LIB AND FRAMEWORK
+
+#------------------------------------------------
+ARG REPO_LOCATION=docker.lacviet.vn
+ARG TAG=1
+ARG USER=nttlong
+FROM ${REPO_LOCATION}/${USER}/debian-py-framework-core:${TAG}
+COPY ./../compact.py /app/compact.py
+COPY ./../cy_consumers /app/cy_consumers
+RUN python3 /app/compact.py /app/cy_consumers
+COPY ./../cy_utils /app/cy_utils
+RUN python3 /app/compact.py /app/cy_utils
+COPY ./../cy_xdoc /app/cy_xdoc
+RUN python3 /app/compact.py /app/cy_xdoc
+COPY ./../cyx /app/cyx
+RUN python3 /app/compact.py /app/cyx
+COPY ./../resource /app/resource
+COPY ./../config.yml /app/config.yml
+COPY ./../production_test /app/production_test
+COPY ./../pre_test_build /app/pre_test_build

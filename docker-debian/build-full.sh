@@ -12,6 +12,7 @@ buildFunc(){
 # first param is image name
 # second param is version
 # shellcheck disable=SC1055
+clear
 echo "build image $1 version $2"
   docker --log-level "info" buildx build \
         --build-arg REPO_LOCATION=$repositiory \
@@ -33,6 +34,9 @@ debian_py_core=1
 #buildFunc 'debian-py-core' $debian_py_core
 debian_py_framework_core=1
 #buildFunc 'debian-py-framework-core' $debian_py_core
+debian_app_framework=1
+buildFunc 'debian-app-framework'  $debian_app_framework
+
 release=1
 rm -f debian-xdoc-app
 echo "
@@ -43,6 +47,7 @@ echo "
   FROM $repositiory/$user/debian-component:$debian_component  AS component
   FROM $repositiory/$user/debian-py-core:$debian_py_core  AS py_core
   FROM $repositiory/$user/debian-py-framework-core:$debian_py_framework_core as py_framework_core
+  FROM $repositiory/$user/debian-app-framework:$debian_app_framework as debian_app_framework
   FROM debian
   COPY --from=office / /
   COPY --from=dotnet /usr /usr
@@ -50,7 +55,7 @@ echo "
   COPY --from=python /usr /usr
   COPY --from=py_framework_core / /
   COPY --from=py_core / /
-
+  COPY --from=debian_app_framework / /
   #COPY --from=python /usr/bin/python3 /usr/bin/python3
   COPY ./../docker-debian/verify.py /docker-debian/verify.py
   RUN python3 /docker-debian/verify.py --check soffice
@@ -65,4 +70,4 @@ echo "
   #docker buildx   build -t nttlong/test:1  --platform=l$platform ./.. -f debian-xdoc-app  --push=true --output type=registry
 " >> debian-xdoc-app
 
-buildFunc 'debian-xdoc-app' "$debian_p.$debian_libre_office_headless.$debian_dot_net_core.$debian_component.$debian_py_core.$debian_py_framework_core.$release"
+#buildFunc 'debian-xdoc-app' "$debian_p.$debian_libre_office_headless.$debian_dot_net_core.$debian_component.$debian_py_core.$debian_py_framework_core.$release"
