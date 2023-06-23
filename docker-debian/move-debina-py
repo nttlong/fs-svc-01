@@ -1,0 +1,3 @@
+FROM nttlong/debian-py-395
+COPY ./../docker-debian/verify.py
+RUN python3 docker-debian/verify.py check

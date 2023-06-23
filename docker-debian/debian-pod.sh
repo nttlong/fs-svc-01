@@ -17,7 +17,7 @@ then
    echo "Some or all of the parameters are empty";
    helpFunction
 fi
-docker_file=debian-po
+docker_file=debian-pod
 echo "------------------------------------------------------------------"
 echo "Build image $docker_file:$1"
 echo "------------------------------------------------------------------"

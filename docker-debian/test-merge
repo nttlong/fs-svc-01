@@ -1,0 +1,14 @@
+ARG REPO_LOCATION=docker.lacviet.vn
+ARG TAG=1
+ARG USER=xdoc
+FROM ${REPO_LOCATION}/${USER}/debian-p:${TAG}  as python
+FROM ${REPO_LOCATION}/${USER}/debian-libre-office-headless:${TAG}  AS office
+FROM debian
+COPY --from=office / /
+COPY --from=python /usr /usr
+#COPY --from=python /usr/bin/python3 /usr/bin/python3
+COPY ./../docker-debian/verify.py /docker-debian/verify.py
+RUN python3 /docker-debian/verify.py --check soffice
+RUN soffice --headless --convert-to png --outdir /tmp /docker-debian/verify.py
+
+#docker buildx   build -t nttlong/test:1  --platform=linux/amd64,linux/arm64/v8  ./.. -f test-merge

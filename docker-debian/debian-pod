@@ -7,27 +7,26 @@ ARG TAG=1
 ARG USER=nttlong
 FROM ${REPO_LOCATION}/${USER}/debian-p:${TAG}
 arg TARGETARCH
-RUN apt update
-RUN apt install default-jre -y
-RUN apt install libreoffice-java-common -y
-RUN apt-get  install libreoffice - y
-RUN apt update && apt upgrade
-RUN apt install htop -y
-RUN apt install git -y
-RUN apt-get install -y gcc
-RUN apt-get install procps -y
-RUN apt-get install psmisc -y
-RUN apt-get install -y gcc
-RUN apt install default-jdk -y
-RUN apt update --fix-missing
-RUN apt-get -y install ghostscript
-RUN apt-get install ffmpeg -y
-RUN apt-get install -y tesseract-ocr
-RUN apt-get install tesseract-ocr-vie
-RUN apt-get install -y tesseract-ocr-script-viet
-RUN apt-get install -y libopencv-dev python3-opencv
-RUN mkdir -p /app
-RUN apt update && apt-get install wget -y
+RUN apt update && \
+    apt install default-jre -y && \
+    apt install libreoffice-java-common -y && \
+    apt-get  install libreoffice -y && \
+    apt install htop -y && \
+    apt install git -y && \
+    apt-get install -y gcc && \
+    apt-get install procps -y && \
+    apt-get install psmisc -y && \
+    apt-get install -y gcc && \
+    apt install default-jdk -y && \
+    #apt update --fix-missing && \
+    apt-get -y install ghostscript && \
+    apt-get install ffmpeg -y && \
+    apt-get install -y tesseract-ocr && \
+    apt-get install tesseract-ocr-vie && \
+    apt-get install -y tesseract-ocr-script-viet && \
+    apt-get install -y libopencv-dev python3-opencv && \
+    mkdir -p /app && \
+    apt update && apt-get install wget -y
 RUN if [ "$TARGETARCH" = "amd64" ]; then \
         wget https://packages.microsoft.com/config/debian/11/packages-microsoft-prod.deb -O packages-microsoft-prod.deb;\
         dpkg -i packages-microsoft-prod.deb;\
@@ -65,4 +64,6 @@ COPY ./../dotnet_core/VietnameseAccent/ ./python_dot_net_core
 
 
 RUN dotnet publish ./python_dot_net_core
+COPY ./../docker-debian/verify.py /docker-debian/verify.py
+RUN python3  /docker-debian/verify.py check
 RUN rm -fr /root/.cache

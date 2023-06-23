@@ -1,14 +1,15 @@
 import os.path
 import sys
 import pathlib
-import cython
+
 
 
 sys.path.append(pathlib.Path(__file__).parent.parent.__str__())
 if sys.version_info.major ==3 and sys.version_info.minor ==9 and sys.version_info.micro==5:
     print(sys.version)
 else:
-    raise Exception(f"incorect version. Current version is {sys.version}")
+    raise Exception(f"incorect version. Current version is {sys.version}. Path to {sys.executable}")
+import cython
 if cython.__version__!="3.0.0b1":
     raise Exception(f"incorect cython version. Current version is {cython.__version__}")
 class stages:
@@ -28,6 +29,27 @@ class stages:
         from cy_xdoc.services.files import FileServices
         from cy_web.cy_web_x import WebApp
         return [DbCollection,FileServices,WebApp]
+    def check(self):
+        return []
+    def office(self):
+        import subprocess
+        libre_office_path = "/usr/bin/soffice"
+        if os.path.isfile(libre_office_path):
+            print(f"{libre_office_path} is ok")
+        else:
+            ret = subprocess.check_output(['which', 'soffice'])
+            ret_ttx = ret.decode('utf8')
+            raise Exception(f"{libre_office_path} was not found. Libre Office path is in '{ret_ttx}'")
+        return []
+    @staticmethod
+    def component(name:str):
+        import subprocess
+        ret = subprocess.check_output(['which', name])
+        ret_ttx = ret.decode('utf8').lstrip('\n').rstrip('\n')
+        if ret_ttx =="":
+            raise Exception(f"{name} was not found. Path is in '{ret_ttx}'")
+        else:
+            print(f"{name} was found. Path is in '{ret_ttx}'")
 def verify(obj):
     print(f"verify {obj}...")
     file_name = sys.modules[obj.__module__].__file__
@@ -67,8 +89,17 @@ def verfy_full_stage():
         if k[0:2]!="__" and k[-2:]!="__":
             val = getattr(obj,k)(obj)
             verify_stage(val)
-lst = [stages.__dict__.get(x) for x in sys.argv if stages.__dict__.get(x)]
-if len(lst)>0:
-    verify_stage(lst)
+
+check_component = [x for x in sys.argv if x.startswith("--check")]
+if len(check_component)>0:
+    components = [x for x in sys.argv if x[0:2]!="__" and x[-2:]!="__" and x!="--check" and os.sep not in x]
+    print(f"Verify components {' '.join(components)}")
+    for x in components:
+        if os.sep not in x:
+            stages.component(x)
 else:
-    verfy_full_stage()
+    lst = [stages.__dict__.get(x) for x in sys.argv if stages.__dict__.get(x)]
+    if len(lst)>0:
+        verify_stage(lst)
+    else:
+        verfy_full_stage()
