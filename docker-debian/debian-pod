@@ -4,7 +4,7 @@
 #----
 ARG REPO_LOCATION=docker.lacviet.vn
 ARG TAG=1
-ARG USER=nttlong
+ARG USER=xdoc
 FROM ${REPO_LOCATION}/${USER}/debian-p:${TAG}
 ARG TARGETARCH
 RUN apt update && \

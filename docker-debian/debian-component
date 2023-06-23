@@ -1,0 +1,27 @@
+#--------------------------------------------------------
+#---- IMAGE IS DEBIAN PYTHON LIBRE OFFICE AND
+#     ALL FILE SERVCIE COMPONENT
+#----
+ARG REPO_LOCATION=docker.lacviet.vn
+ARG TAG=1
+ARG USER=xdoc
+FROM debian
+ARG TARGETARCH
+RUN apt update && \
+    apt install htop -y && \
+    apt install git -y && \
+    apt-get install -y gcc && \
+    apt-get install procps -y && \
+    apt-get install psmisc -y && \
+    apt-get -y install ghostscript && \
+    apt-get install ffmpeg -y && \
+    apt-get install -y tesseract-ocr && \
+    apt-get install tesseract-ocr-vie && \
+    apt-get install -y tesseract-ocr-script-viet
+RUN apt-get install -y libopencv-dev -y python3-opencv -y
+COPY ./../verify.png /app/verify.png
+RUN tesseract /app/verify.png output --oem 1 -l eng
+
+
+COPY ./../docker-debian/verify.py /docker-debian/verify.py
+RUN python3  /docker-debian/verify.py --check tesseract htop git gcc ffmpeg --skip

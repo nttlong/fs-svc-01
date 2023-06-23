@@ -2,16 +2,19 @@ import os.path
 import sys
 import pathlib
 
-
+skip_check_python_version = False
+if len([x for x in sys.argv if x=="--skip"])>0:
+    skip_check_python_version = True
 
 sys.path.append(pathlib.Path(__file__).parent.parent.__str__())
-if sys.version_info.major ==3 and sys.version_info.minor ==9 and sys.version_info.micro==5:
-    print(sys.version)
-else:
-    raise Exception(f"incorect version. Current version is {sys.version}. Path to {sys.executable}")
-import cython
-if cython.__version__!="3.0.0b1":
-    raise Exception(f"incorect cython version. Current version is {cython.__version__}")
+if not skip_check_python_version:
+    if sys.version_info.major ==3 and sys.version_info.minor ==9 and sys.version_info.micro==5:
+        print(sys.version)
+    else:
+        raise Exception(f"incorect version. Current version is {sys.version}. Path to {sys.executable}")
+    import cython
+    if cython.__version__!="3.0.0b1":
+        raise Exception(f"incorect cython version. Current version is {cython.__version__}")
 class stages:
     def py39_core(self):
         from pymongo.mongo_client import MongoClient
@@ -92,7 +95,7 @@ def verfy_full_stage():
 
 check_component = [x for x in sys.argv if x.startswith("--check")]
 if len(check_component)>0:
-    components = [x for x in sys.argv if x[0:2]!="__" and x[-2:]!="__" and x!="--check" and os.sep not in x]
+    components = [x for x in sys.argv if x[0:2]!="__" and x[-2:]!="__" and x!="--check" and os.sep not in x and not x.startswith("--")]
     print(f"Verify components {' '.join(components)}")
     for x in components:
         if os.sep not in x:
