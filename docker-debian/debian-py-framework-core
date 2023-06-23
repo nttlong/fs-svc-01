@@ -1,0 +1,28 @@
+#------------------------------------------------
+#--- DEBIAN PYTHON OFFICE, DOT NET, CORE PYTHON LIB AND FRAMEWORK
+
+#------------------------------------------------
+ARG REPO_LOCATION=docker.lacviet.vn
+ARG TAG=1
+ARG USER=nttlong
+FROM ${REPO_LOCATION}/${USER}/debian-p:${TAG}
+
+COPY ./../compact.py /app/compact.py
+COPY ./../cy_es /app/cy_es
+RUN python3 /app/compact.py /app/cy_es
+COPY ./../cy_kit /app/cy_kit
+RUN python3 /app/compact.py /app/cy_kit
+COPY ./../cy_web /app/cy_web
+RUN python3 /app/compact.py /app/cy_web
+COPY ./../cy_docs /app/cy_docs
+RUN python3 /app/compact.py /app/cy_docs
+
+COPY ./../docker-debian/verify.py /app/docker-build/verify.py
+RUN pip install PyYAML==6.0 --no-cache-dir && \
+    pip install motor==3.0.0  --no-cache-dir  && \
+    pip install pymongo --no-cache-dir && \
+    pip install pydantic==1.10.6 --no-cache-dir && \
+    pip install elasticsearch --no-cache-dir && \
+    python3 /app/docker-build/verify.py core_framework && \
+    pip uninstall pymongo -y && \
+    pip uninstall elasticsearch -y

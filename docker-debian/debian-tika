@@ -1,0 +1,9 @@
+ARG REPO_LOCATION=docker.lacviet.vn
+ARG TAG=1
+ARG USER=xdoc
+FROM debian
+ARG TARGETARCH
+RUN apt update
+RUN  apt install snapd -y
+RUN  snap install core
+RUN snap install tika-server -y

@@ -19,8 +19,7 @@ RUN apt update && \
     apt-get install tesseract-ocr-vie && \
     apt-get install -y tesseract-ocr-script-viet
 RUN apt-get install -y libopencv-dev -y python3-opencv -y
-COPY ./../verify.png /app/verify.png
-RUN tesseract /app/verify.png output --oem 1 -l eng
+
 
 
 COPY ./../docker-debian/verify.py /docker-debian/verify.py
