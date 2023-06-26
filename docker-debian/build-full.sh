@@ -7,6 +7,7 @@ export platform=linux/amd64,linux/arm64/v8
 export generation_=adm.1
 export generation=1
 export repositiory=docker.lacviet.vn
+export repositiory_=docker.io
 export push=docker.lacviet.vn/xdoc
 buildFunc(){
 # first param is image name
@@ -42,11 +43,11 @@ debian_py_torch=1
 #buildFunc 'debian-py-torch' $debian_py_torch
 debian_py_detectron2=1
 #buildFunc 'debian-py-detectron2' $debian_py_detectron2
-#debian_py_torch_vision=1
+debian_py_torch_vision=1
 #buildFunc 'debian-py-torch-vision' $debian_py_torch_vision
 debian_py_torch_audio=1
-buildFunc 'debian-py-torch-audio'  $debian_py_torch_audio
-release=1
+#$buildFunc 'debian-py-torch-audio'  $debian_py_torch_audio
+release=2
 rm -f debian-xdoc-app
 echo "
   ARG REPO_LOCATION=docker.lacviet.vn
@@ -58,6 +59,9 @@ echo "
   FROM $repositiory/$user/debian-py-framework-core:$debian_py_framework_core as py_framework_core
   FROM $repositiory/$user/debian-app-framework:$debian_app_framework as debian_app_framework
   FROM $repositiory/$user/debian-javac:$debian_javac as debian_javac
+  FROM $repositiory/$user/debian-py-detectron2:$debian_py_detectron2 as detectron2
+  FROM $repositiory/$user/debian-py-torch-vision:$debian_py_detectron2 as torch_vision
+  FROM $repositiory/$user/debian-py-torch-audio:$debian_py_torch_audio as torch_audio
   FROM debian
   COPY --from=office / /
   COPY --from=dotnet /usr /usr
@@ -67,6 +71,9 @@ echo "
   COPY --from=py_core / /
   COPY --from=debian_app_framework / /
   COPY --from=debian_javac / /
+  COPY --from=detectron2 / /
+  COPY --from=torch_vision / /
+  COPY --from=torch_audio / /
   #COPY --from=python /usr/bin/python3 /usr/bin/python3
   COPY ./../docker-debian/verify.py /docker-debian/verify.py
   RUN python3 /docker-debian/verify.py --check soffice
@@ -84,4 +91,4 @@ echo "
   #docker buildx   build -t nttlong/test:1  --platform=l$platform ./.. -f debian-xdoc-app  --push=true --output type=registry
 " >> debian-xdoc-app
 build_version="$debian_p.$debian_libre_office_headless$debian_dot_net_core.$debian_component$debian_py_core.$debian_py_framework_core$debian_app_framework.$release"
-#buildFunc 'debian-xdoc-app' $build_version
+buildFunc 'debian-xdoc-app' $build_version

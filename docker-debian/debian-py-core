@@ -15,6 +15,6 @@ RUN python3 /app/compact.py /app/pymongo
 COPY ./../elasticsearch /app/elasticsearch
 RUN python3 /app/compact.py /app/elasticsearch
 COPY ./../gridfs /app/gridfs
-RUN python3 /app/compact.py /app/giridfs
+RUN python3 /app/compact.py /app/gridfs
 
 RUN python3 /app/docker-build/verify.py py39_core
