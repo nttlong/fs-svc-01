@@ -12,7 +12,7 @@ buildFunc(){
 # first param is image name
 # second param is version
 # shellcheck disable=SC1055
-clear
+#clear
 echo "build image $1 version $2"
   docker --log-level "info" buildx build \
         --build-arg REPO_LOCATION=$repositiory \
@@ -66,8 +66,10 @@ echo "
   RUN python3  /docker-debian/verify.py check
   COPY ./../docker-debian/verify.png /docker-debian/verify.png
   RUN tesseract /docker-debian/verify.png output --oem 1 -l eng
+  COPY ./../pre_test_build /app/pre_test_build
+  RUN python3 /app/pre_test_build/check_py_vncorenlp.py
 
   #docker buildx   build -t nttlong/test:1  --platform=l$platform ./.. -f debian-xdoc-app  --push=true --output type=registry
 " >> debian-xdoc-app
-
-#buildFunc 'debian-xdoc-app' "$debian_p.$debian_libre_office_headless.$debian_dot_net_core.$debian_component.$debian_py_core.$debian_py_framework_core.$release"
+build_version="$debian_p.$debian_libre_office_headless$debian_dot_net_core.$debian_component$debian_py_core.$debian_py_framework_core$debian_app_framework.$release"
+buildFunc 'debian-xdoc-app' $build_version
