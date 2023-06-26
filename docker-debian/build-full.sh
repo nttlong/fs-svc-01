@@ -36,7 +36,8 @@ debian_py_framework_core=1
 #buildFunc 'debian-py-framework-core' $debian_py_core
 debian_app_framework=1
 buildFunc 'debian-app-framework'  $debian_app_framework
-
+debian_javac=1
+#buildFunc 'debian-javac' $debian_javac
 release=1
 rm -f debian-xdoc-app
 echo "
@@ -48,6 +49,7 @@ echo "
   FROM $repositiory/$user/debian-py-core:$debian_py_core  AS py_core
   FROM $repositiory/$user/debian-py-framework-core:$debian_py_framework_core as py_framework_core
   FROM $repositiory/$user/debian-app-framework:$debian_app_framework as debian_app_framework
+  FROM $repositiory/$user/debian-javac:$debian_javac as debian_javac
   FROM debian
   COPY --from=office / /
   COPY --from=dotnet /usr /usr
@@ -56,6 +58,7 @@ echo "
   COPY --from=py_framework_core / /
   COPY --from=py_core / /
   COPY --from=debian_app_framework / /
+  COPY --from=debian_javac / /
   #COPY --from=python /usr/bin/python3 /usr/bin/python3
   COPY ./../docker-debian/verify.py /docker-debian/verify.py
   RUN python3 /docker-debian/verify.py --check soffice
@@ -67,6 +70,7 @@ echo "
   COPY ./../docker-debian/verify.png /docker-debian/verify.png
   RUN tesseract /docker-debian/verify.png output --oem 1 -l eng
   COPY ./../pre_test_build /app/pre_test_build
+  RUN pip install py_vncorenlp
   RUN python3 /app/pre_test_build/check_py_vncorenlp.py
 
   #docker buildx   build -t nttlong/test:1  --platform=l$platform ./.. -f debian-xdoc-app  --push=true --output type=registry
