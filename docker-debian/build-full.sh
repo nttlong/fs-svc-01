@@ -35,9 +35,17 @@ debian_py_core=1
 debian_py_framework_core=1
 #buildFunc 'debian-py-framework-core' $debian_py_core
 debian_app_framework=1
-buildFunc 'debian-app-framework'  $debian_app_framework
+#buildFunc 'debian-app-framework'  $debian_app_framework
 debian_javac=1
 #buildFunc 'debian-javac' $debian_javac
+debian_py_torch=1
+#buildFunc 'debian-py-torch' $debian_py_torch
+debian_py_detectron2=1
+#buildFunc 'debian-py-detectron2' $debian_py_detectron2
+#debian_py_torch_vision=1
+#buildFunc 'debian-py-torch-vision' $debian_py_torch_vision
+debian_py_torch_audio=1
+buildFunc 'debian-py-torch-audio'  $debian_py_torch_audio
 release=1
 rm -f debian-xdoc-app
 echo "
@@ -76,4 +84,4 @@ echo "
   #docker buildx   build -t nttlong/test:1  --platform=l$platform ./.. -f debian-xdoc-app  --push=true --output type=registry
 " >> debian-xdoc-app
 build_version="$debian_p.$debian_libre_office_headless$debian_dot_net_core.$debian_component$debian_py_core.$debian_py_framework_core$debian_app_framework.$release"
-buildFunc 'debian-xdoc-app' $build_version
+#buildFunc 'debian-xdoc-app' $build_version

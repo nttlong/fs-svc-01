@@ -1,0 +1,16 @@
+#------------------------------------------------
+#--- DEBIAN PYTHON OFFICE, DOT NET, CORE PYTHON LIB AND FRAMEWORK
+
+#------------------------------------------------
+ARG REPO_LOCATION=docker.lacviet.vn
+ARG TAG=1
+ARG USER=xdoc
+FROM ${REPO_LOCATION}/${USER}/debian-p:${TAG}
+RUN apt install git -y
+RUN pip install torch  --no-cache-dir
+#RUN pip install deepdoctection==0.23 --no-cache-dir
+#RUN pip install git+https://github.com/huggingface/datasets.git@7b2af47647152d39a3acade256da898cb396e4d9 --no-cache-dir
+#RUN pip install git+https://github.com/facebookresearch/detectron2.git@2c6c380f94a27bd8455a39506c9105f652b9f760 --no-cache-dir
+#RUN pip install git+https://github.com/clovaai/donut.git@a0e94bf145d81cfc934eae8848f1269ae9ca46a2 --no-cache-dir
+COPY ./../docker-debian/verify.py /app/docker-debian/verify.py
+RUN python3 /app/docker-debian/verify.py check

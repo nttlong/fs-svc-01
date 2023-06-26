@@ -1,0 +1,7 @@
+ARG REPO_LOCATION=docker.lacviet.vn
+ARG TAG=1
+ARG USER=xdoc
+FROM ${REPO_LOCATION}/${USER}/debian-py-torch:${TAG}
+RUN pip install pip install torchvision --no-cache-dir
+COPY ./../docker-debian/verify.py /app/docker-debian/verify.py
+RUN python3 /app/docker-debian/verify.py check
