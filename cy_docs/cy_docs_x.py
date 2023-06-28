@@ -279,6 +279,7 @@ class Field(__BaseField__):
         return ret
 
     def reduce(self, data, reduce_type: type = None,skip_require:bool=False):
+        import builtins
         reduce_type = reduce_type or self.__delegate_type__
         ret = {"_id": data.get("_id")}
         require_fields = []
@@ -305,13 +306,17 @@ class Field(__BaseField__):
 
                 elif ele_value is None:
                     require_fields += [k]
-                elif isinstance(ele_value, v):
+                elif hasattr(builtins,v) and isinstance(ele_value, getattr(builtins,v)):
                     ret[k] = ele_value
                 else:
                     try:
-                        ret[k] = v(ele_value)
-                    except Exception as e:
-                        raise Exception(f"Can not cast {ele_value} to {v} property {k}")
+                        if isinstance(ele_value,v):
+                            ret[k] = ele_value
+                    except Exception as e1:
+                        try:
+                            ret[k] = v(ele_value)
+                        except Exception as e:
+                            ret[k] = ele_value
             except Exception as e:
                 raise e
 
