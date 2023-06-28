@@ -1,0 +1,11 @@
+
+  FROM docker.io/nttlong/base-core-slim-req:rc.2023.002
+  ARG TARGETARCH
+  RUN apt-get update && apt-get install -y lsb-release && apt-get clean all
+  COPY ./../docker-debian/verify.py /app/docker-debian/verify.py
+  RUN python3 /app/docker-debian/verify.py check
+  COPY ./../compact.py /app/compact.py
+  RUN  pip install Cython==3.0.0b1 && pip uninstall -y pymongo
+  COPY ./../docker-resource/jdk-8u361-linux-aarch64.rpm /tmp/jdk-8u361-linux-aarch64.rpm
+  RUN if [ "$TARGETARCH" = "arm64" ]; then       cd /tmp;      apt-get install alien -y;      rpm -i jdk-8u361-linux-aarch64.rpm;      alien jdk-8u361-linux-aarch64.rpm;      dpkg –i jdk-8u361-linux-aarch64.deb;      fi
+

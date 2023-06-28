@@ -1,9 +1,11 @@
-ARG REPO_LOCATION=docker.lacviet.vn
-ARG TAG=1
-ARG USER=xdoc
 FROM debian
-ARG TARGETARCH
 RUN apt update
-RUN  apt install snapd -y
-RUN  snap install core
-RUN snap install tika-server -y
+RUN apt install maven -y && apt install wget -y
+RUN apt update
+RUN apt -y install wget curl vim unzip
+RUN apt install -y default-jdk
+ARG VER="2.2.1"
+RUN wget https://archive.apache.org/dist/tika/${VER}/tika-${VER}-src.zip
+RUN unzip tika-${VER}-src.zip -d /tmp/tika
+RUN cd /tmp/tika
+RUN mvn install -X

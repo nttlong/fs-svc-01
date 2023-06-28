@@ -46,7 +46,7 @@ class ErrorInfo:
 
 @cy_web.model(all_fields_are_optional=True)
 class CloneFileResult:
-    Info: CloneFileInfo
+    Info: dict
     Error: ErrorInfo
 
 

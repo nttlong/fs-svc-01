@@ -13,7 +13,7 @@ def clone_to_new(app_name:str, UploadId: str, token = fastapi.Depends(cy_xdoc.au
     item = file_service.do_copy(app_name=app_name,upload_id=UploadId)
 
     if item is None:
-        return pydantic.BaseModel(
+        return CloneFileResult(
             Error= pydantic.BaseModel(
                 Code="fileNotFound",
                 Message="File not found"
@@ -21,7 +21,9 @@ def clone_to_new(app_name:str, UploadId: str, token = fastapi.Depends(cy_xdoc.au
             )
         )
     else:
-        return  pydantic.BaseModel(
+
+
+        return  CloneFileResult(
             Info = item
         )
 

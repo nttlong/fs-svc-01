@@ -10,11 +10,11 @@ import cython
 
 
 sys.path.append(pathlib.Path(__file__).parent.parent.__str__())
-if sys.version_info.major ==3 and sys.version_info.minor ==9 and sys.version_info.micro==5:
+if sys.version_info.major ==3 and sys.version_info.minor ==9:
     print(sys.version)
 else:
     raise Exception(f"incorect version. Current version is {sys.version}")
-if cython.__version__!="3.0.0b1":
+if not cython.__version__.startswith("3."):
     raise Exception(f"incorect cython version. Current version is {cython.__version__}")
 def get_content_with_files(files, module_name):
     file_paths = "".join([f"\t\tr'{x}',\n" for x in files])

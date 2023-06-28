@@ -1,19 +1,30 @@
 import os.path
 import sys
 import pathlib
-
+import lzma
+def cmd(ls):
+    import subprocess
+    ret = subprocess.check_output(ls)
+    ret_ttx = ret.decode('utf8')
+    return ret_ttx
+def os_version():
+    ret = cmd(['lsb_release', '-a'])
+    ret =ret.split('Release:')[1].split('\n')[0].lstrip('\n').rstrip('\n')
+    return int(ret)
+if os_version()!=11:
+    raise Exception(f"invalid debian os version. Current version is {os_version()}")
 skip_check_python_version = False
 if len([x for x in sys.argv if x=="--skip"])>0:
     skip_check_python_version = True
 
 sys.path.append(pathlib.Path(__file__).parent.parent.__str__())
 if not skip_check_python_version:
-    if sys.version_info.major ==3 and sys.version_info.minor ==9 and sys.version_info.micro==5:
+    if sys.version_info.major ==3 and sys.version_info.minor ==9:
         print(sys.version)
     else:
         raise Exception(f"incorect version. Current version is {sys.version}. Path to {sys.executable}")
     import cython
-    if cython.__version__!="3.0.0b1":
+    if not cython.__version__.startswith("3."):
         raise Exception(f"incorect cython version. Current version is {cython.__version__}")
 class stages:
     def py39_core(self):
@@ -21,7 +32,7 @@ class stages:
         from elasticsearch.transport import Transport
         from bson.objectid import ObjectId
         from gridfs.grid_file import GridIn
-        return [MongoClient,Transport,ObjectId,GridIn]
+        return [MongoClient,Transport,GridIn]
     def core_framework(self):
         from cy_kit.cy_kit_x import singleton
         from cy_docs.cy_docs_x import AggregateDocument
@@ -32,6 +43,14 @@ class stages:
         from cy_xdoc.services.files import FileServices
         from cy_web.cy_web_x import WebApp
         return [DbCollection,FileServices,WebApp]
+    def java8(self):
+        if not  os.path.isdir("/usr/lib/jvm"):
+            raise Exception("/usr/lib/jvm was not found")
+    def java(self):
+        import subprocess
+        ret = subprocess.check_output(['which', 'java'])
+        ret_ttx = ret.decode('utf8')
+        return  []
     def check(self):
         return []
     def office(self):

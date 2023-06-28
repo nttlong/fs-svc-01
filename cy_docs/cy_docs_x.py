@@ -278,7 +278,7 @@ class Field(__BaseField__):
         }
         return ret
 
-    def reduce(self, data, reduce_type: type = None):
+    def reduce(self, data, reduce_type: type = None,skip_require:bool=False):
         reduce_type = reduce_type or self.__delegate_type__
         ret = {"_id": data.get("_id")}
         require_fields = []
@@ -287,7 +287,8 @@ class Field(__BaseField__):
                 ele_value = data.get(k)
 
                 if hasattr(v, "__module__") and v.__module__ == "typing":
-                    if str(v).startswith("typing.Union["):
+
+                    if str(v).startswith("typing.Union[") or str(v).startswith("typing.Optional["):
                         if ele_value is None:
                             if str(v).endswith(', NoneType]'):
                                 ret[k] = None
@@ -314,7 +315,7 @@ class Field(__BaseField__):
             except Exception as e:
                 raise e
 
-        if len(require_fields) > 0:
+        if len(require_fields) > 0 and skip_require:
             str_require_fields_list = '\n\t'.join(require_fields)
             raise Exception(f"These below fields are require:\n {str_require_fields_list}\n"
                             f"Preview file {inspect.getfile(reduce_type)} at {reduce_type.__name__}")

@@ -236,7 +236,8 @@ class MongoDbFileService(Base):
             app_name=app_name,
             rel_file_path=rel_file_path_to,
             chunk_size=source.fs.chunk_size,
-            size=source.fs.length
+            size=source.fs.length,
+            content_type=source.fs.content_type
         )
 
         @cy_kit.thread_makeup()
@@ -274,7 +275,8 @@ class MongoDbFileService(Base):
             app_name=app_name,
             rel_file_path = rel_file_path_to,
             chunk_size = source.fs.chunk_size,
-            size = source.fs.length
+            size = source.fs.length,
+            content_type=source.fs.content_type
         )
         @cy_kit.cy_kit_x.thread_makeup()
         def process(s:MongoDbFileStorage,d:MongoDbFileStorage):

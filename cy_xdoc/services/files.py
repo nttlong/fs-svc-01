@@ -328,22 +328,26 @@ class FileServices:
                 item.OCRFileId = bson.ObjectId(ocr_fsg.get_id())
 
         @cy_kit.thread_makeup()
-        def copy_thumbs(app_name: str, upload_id: str, thumbs_list: typing.List[str]):
+        def copy_thumbs(app_name: str, to_id:str, thumbs_list: typing.List[str]):
             for x in thumbs_list:
                 rel_path = x[item.id.__len__():]
                 self.file_storage_service.copy(
                     app_name=app_name,
-                    rel_file_path_to=f"{upload_id}/{rel_path}",
+                    rel_file_path_to=f"{to_id}/{rel_path}",
                     run_in_thread=False,
                     rel_file_path_from=x
                 )
 
-        copy_thumbs(app_name=app_name, upload_id=upload_id, thumbs_list=item.AvailableThumbs or []).start()
+
         self.search_engine.copy(
             app_name, from_id=upload_id, to_id=item.id, attach_data=item, run_in_thread=True)
         item.Status = 1
-        data_insert = document_context.fields.reduce(item)
-        document_context.context.insert_one(data_insert)
+
+        item.ThumbHeight=700
+        item.ThumbId = None
+        data_insert = document_context.fields.reduce(item,skip_require=False)
+        ret=document_context.context.insert_one(data_insert)
+        copy_thumbs(app_name=app_name, to_id=data_insert._id, thumbs_list=item.AvailableThumbs or []).start()
         return data_insert
 
     def update_privileges(self, app_name: str, upload_id: str, privileges: typing.List[cy_docs.DocumentObject]):
