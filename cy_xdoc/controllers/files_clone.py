@@ -24,7 +24,7 @@ def clone_to_new(app_name:str, UploadId: str, token = fastapi.Depends(cy_xdoc.au
 
 
         return  CloneFileResult(
-            Info = item
+            Info = item.to_json_convertable()
         )
 
 
