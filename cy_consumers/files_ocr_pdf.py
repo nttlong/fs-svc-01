@@ -57,6 +57,7 @@ def on_receive_msg(msg_info: MessageInfo):
             upload_id=msg_info.Data["_id"]
         )
     if full_file is None or not os.path.isfile(full_file):
+        logs.info(f"{full_file} was not found")
         msg.delete(msg_info)
         return
 

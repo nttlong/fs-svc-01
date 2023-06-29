@@ -46,16 +46,26 @@ logs = cy_kit.create_logs(
 )
 
 
+
 def on_receive_msg(msg_info: MessageInfo):
     image_extractor_service = cy_kit.singleton(ImageExtractorService)
     full_file = msg_info.Data.get("processing_file")
+
+
     if full_file is None:
         msg.delete(msg_info)
         return
     if not os.path.isfile(full_file):
-        print(f"Generate pdf from {full_file}:\nfile was not found")
-        msg.delete(msg_info)
-        return
+        if full_file.startswith("/app/"):
+            full_file=os.path.join(working_dir,full_file["/app/".__len__():])
+            if not os.path.isfile(full_file):
+                print(f"Generate pdf from {full_file}:\nfile was not found")
+                msg.delete(msg_info)
+                return
+        else:
+            print(f"Generate pdf from {full_file}:\nfile was not found")
+            msg.delete(msg_info)
+            return
     print(f"Generate image form {full_file}")
     pdf_file = None
     try:

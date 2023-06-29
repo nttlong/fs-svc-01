@@ -47,7 +47,8 @@ class RabitmqMsg:
                     host=self.__server__,
                     port=self.__port__,
                     virtual_host='/',
-                    credentials=self.__credentials__
+                    credentials=self.__credentials__,
+                    heartbeat=30
                 )
                 self.__connection__ = pika.BlockingConnection(self.__parameters__)
                 self.__channel__ = self.__connection__.channel()
@@ -111,6 +112,10 @@ class RabitmqMsg:
                 self.re_emit(msg)
 
         if not self.__is_declare__:
+            while self.__channel__ is None:
+
+                self.__try_connect__()
+                time.sleep(10)
             self.__channel__.queue_declare(queue=msg_type, auto_delete=False)
             self.__is_declare__ = True
         self.__channel__.basic_consume(queue=msg_type, on_message_callback=callback, auto_ack=True)

@@ -1,6 +1,5 @@
 #!/bin/bash
-docker login https://docker.lacviet.vn -u xdoc -p Lacviet#123
-#docker buildx create --use --config /etc/containerd/config.toml
+
 export user=xdoc
 export user_=nttlong
 export platform=linux/amd64
@@ -29,7 +28,7 @@ echo "build image $1 from base version $2 to $3"
     exit "${exit_status}"
   fi
 }
-stage1=$release_name.1
+stage1=$release_name.3
 rm -f "stage-1"
 echo "
   FROM docker.io/nttlong/base-core-slim-req:rc.2023.002
@@ -40,6 +39,12 @@ echo "
   COPY ./../compact.py /app/compact.py
   RUN  pip install Cython==3.0.0b1 && pip uninstall -y pymongo
   COPY ./../docker-resource/jdk-8u361-linux-aarch64.rpm /tmp/jdk-8u361-linux-aarch64.rpm
+  RUN pip install torchvision --no-cache-dir && \
+      pip install git+https://github.com/huggingface/datasets.git@7b2af47647152d39a3acade256da898cb396e4d9 --no-cache-dir && \
+      pip install git+https://github.com/huggingface/transformers.git@60d51ef5123d949fd8c59cd4d3254e711541d278 --no-cache-dir && \
+      pip install git+https://github.com/deepdoctection/deepdoctection.git@f251dca0df9d051fe133ba489d42c6ae2b27597a --no-cache-dir && \
+      pip install git+https://github.com/facebookresearch/detectron2.git@4aca4bdaa9ad48b8e91d7520e0d0815bb8ca0fb1 --no-cache-dir
+
   RUN if [ \"\$TARGETARCH\" = \"arm64\" ]; then \
       cd /tmp;\
       apt-get install alien -y;\
@@ -48,9 +53,9 @@ echo "
       dpkg –i jdk-8u361-linux-aarch64.deb;\
       fi
 ">>stage-1
-buildFunc "stage-1" 1 $stage1
+
 #-----------------------------------------------
-stage2=$stage1.2
+stage2=$stage1.3
 rm -f "stage-2"
 echo "
   FROM $repositiory/$user/stage-1:$stage1
@@ -80,7 +85,7 @@ echo "
        pip install elasticsearch && pip install pymongo;\
       fi
 ">>stage-2
-buildFunc "stage-2" 1 $stage2
+
 #----------------------------------------------
 stage3=$stage2.2
 rm -f "stage-3"
@@ -107,7 +112,7 @@ echo "
 
 
 ">>stage-3
-buildFunc "stage-3" 1 $stage3
+
 #--------------------------------------
 xdoc_tika=2
 rm -f "xdoc-tika-server"
@@ -116,7 +121,7 @@ echo "
 ">>"xdoc-tika-server"
 #buildFunc "xdoc-tika-server" 1 1
 #---------------------------------------------------
-xdoc=$stage3.3
+xdoc=$stage3.5
 rm -f "xdoc"
 echo "
   FROM $repositiory/$user/stage-3:$stage3
@@ -137,12 +142,59 @@ echo "
   RUN python3 /app/pre_test_build/check_py_vncorenlp.py
   RUN python3 /app/pre_test_build/check_vn_predict.py
   RUN python3 /app/pre_test_build/check_layout_detection.py
+  RUN python3 /app/pre_test_build/check_ocr.py
 
 ">>xdoc
+docker login https://docker.lacviet.vn -u xdoc -p Lacviet#123
+#docker buildx create --use --config /etc/containerd/config.toml
+#buildFunc "stage-1" 1 $stage1
+#buildFunc "stage-2" 1 $stage2
+#buildFunc "stage-3" 1 $stage3
 buildFunc "xdoc" 1 $xdoc
+tmp_dir=share-storage
+temp_directory=/home/vmadmin/python/v6/file-service-02/test-xdoc-volume
+docker_temp_directory=/app/$tmp_dir
+
 echo "Build complete"
+echo "to stop all container"
+echo "docker stop \$(docker ps -aq)"
+echo "to clear all container"
+echo "docker rm \$(docker ps -aq)"
 echo "----------------------------------------"
+echo "mount volume"
+echo "docker volume create --driver local --opt type=none --opt device=$temp_directory --opt o=bind xdoc_volume"
 echo  "Test:"
-echo "docker run  -p 8012:8012 $repositiory/$user/xdoc:$xdoc python3 /app/cy_xdoc/server.py"
-echo "docker run  $repositiory/$user/xdoc:$xdoc python3 /app/cy_consumers/files_upload.py"
+echo "Web api:"
+echo "docker run --name web -p 8012:8012 $repositiory/$user/xdoc:$xdoc python3 /app/cy_xdoc/server.py"
+echo "----------------------------------------"
+echo "consumer:"
+echo "docker run --name files_upload  -v $temp_directory:/app/share-storage  $repositiory/$user/xdoc:$xdoc python3 /app/cy_consumers/files_upload.py shared_storage=/app/shared_storage"
+echo "docker run --name files_generate_image_from_office -v $temp_directory:/app/share-storage   $repositiory/$user/xdoc:$xdoc python3 /app/cy_consumers/files_generate_image_from_office.py shared_storage=/app/shared_storage"
+echo "docker run --name files_generate_thumbs -v $temp_directory:/app/share-storage $repositiory/$user/xdoc:$xdoc python3 /app/cy_consumers/files_generate_thumbs.py shared_storage=/app/shared_storage"
+echo "docker run --name files_save_default_thumb -v $temp_directory:/app/share-storage $repositiory/$user/xdoc:$xdoc python3 /app/cy_consumers/files_save_default_thumb.py shared_storage=/app/shared_storage"
+echo "docker run --name files_generate_pdf_from_image -v $temp_directory:/app/share-storage $repositiory/$user/xdoc:$xdoc python3 /app/cy_consumers/files_generate_pdf_from_image.py shared_storage=/app/shared_storage"
+#----------------------------------------------------------
+# Create file sh run all consumer
+
+rm -f run_all_consumer.sh
+echo "#!/bin/bash
+docker stop \$(docker ps -aq)
+docker rm \$(docker ps -aq)
+docker run -d --name files_upload  -v $temp_directory:/app/shared_storage  $repositiory/$user/xdoc:$xdoc python3 /app/cy_consumers/files_upload.py shared_storage=/app/shared_storage
+docker run -d --name files_generate_image_from_office -v $temp_directory:/app/shared_storage   $repositiory/$user/xdoc:$xdoc python3 /app/cy_consumers/files_generate_image_from_office.py  shared_storage=/app/shared_storage
+docker run -d --name files_generate_thumbs -v $temp_directory:/app/shared_storage $repositiory/$user/xdoc:$xdoc python3 /app/cy_consumers/files_generate_thumbs.py  shared_storage=/app/shared_storage
+docker run -d --name files_save_default_thumb -v $temp_directory:/app/shared_storage $repositiory/$user/xdoc:$xdoc python3 /app/cy_consumers/files_save_default_thumb.py  shared_storage=/app/shared_storage
+docker run -d --name files_generate_pdf_from_image -v $temp_directory:/app/shared_storage $repositiory/$user/xdoc:$xdoc python3 /app/cy_consumers/files_generate_pdf_from_image.py shared_storage=/app/shared_storage
+docker run -d --name files_generate_image_from_pdf -v $temp_directory:/app/shared_storage $repositiory/$user/xdoc:$xdoc python3 /app/cy_consumers/files_generate_image_from_pdf.py shared_storage=/app/shared_storage
+docker run -d --name files_generate_image_from_video -v $temp_directory:/app/shared_storage $repositiory/$user/xdoc:$xdoc python3 /app/cy_consumers/files_generate_image_from_video.py shared_storage=/app/shared_storage
+docker run -d --name files_ocr_pdf -v $temp_directory:/app/shared_storage $repositiory/$user/xdoc:$xdoc python3 /app/cy_consumers/files_ocr_pdf.py.py shared_storage=/app/shared_storage
+docker run -d --name files_save_custom_thumb -v $temp_directory:/app/shared_storage $repositiory/$user/xdoc:$xdoc python3 /app/cy_consumers/files_save_custom_thumb.py shared_storage=/app/shared_storage
+docker run -d --name files_save_orc_pdf_file -v $temp_directory:/app/shared_storage $repositiory/$user/xdoc:$xdoc python3 /app/cy_consumers/files_save_orc_pdf_file.py shared_storage=/app/shared_storage
+docker run -d --name files_save_search_engine -v $temp_directory:/app/shared_storage $repositiory/$user/xdoc:$xdoc python3 /app/cy_consumers/files_save_search_engine.py shared_storage=/app/shared_storage
+docker run -d --name files_extrac_text_from_image -v $temp_directory:/app/shared_storage $repositiory/$user/xdoc:$xdoc python3 /app/cy_consumers/files_extrac_text_from_image.py shared_storage=/app/shared_storage
+">>run_all_consumer.sh
+chmod +x run_all_consumer.sh
+echo "----------------------------------------------------------"
+echo "to run all consumer container"
+echo "./run_all_consumer.sh"
 #eyJhbGciOiJSUzI1NiIsImtpZCI6IlU3RWRfUWNIZXJ4ejVHZGh6LVFOWWFTeWFadTlvbDRrOUtwcjk2WG10aW8ifQ.eyJhdWQiOlsiaHR0cHM6Ly9rdWJlcm5ldGVzLmRlZmF1bHQuc3ZjLmNsdXN0ZXIubG9jYWwiXSwiZXhwIjoxNzExMTYyOTA2LCJpYXQiOjE2Nzk2MjY5MDYsImlzcyI6Imh0dHBzOi8va3ViZXJuZXRlcy5kZWZhdWx0LnN2Yy5jbHVzdGVyLmxvY2FsIiwia3ViZXJuZXRlcy5pbyI6eyJuYW1lc3BhY2UiOiJrdWJlcm5ldGVzLWRhc2hib2FyZCIsInNlcnZpY2VhY2NvdW50Ijp7Im5hbWUiOiJhZG1pbi11c2VyIiwidWlkIjoiNzE3MWMwYjEtZTc2Yi00NDMzLTg5M2EtYmMwODI5MWJlMWJkIn19LCJuYmYiOjE2Nzk2MjY5MDYsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDprdWJlcm5ldGVzLWRhc2hib2FyZDphZG1pbi11c2VyIn0.bN2TwDzTynRF3s2At8gzRiF6q-CXcQDhQ31CR7aMskq7oqNyWw8MV_w2BJotCN_gdHIKzbgHG7cKyJRIr4woU6-pumwa8V-FWmO9OM0mhQ4qAB4WzhOyboTl7zVQ6ja_-XJtty9aDpe8-XM_1nMGne3cyiDJibuwMDwUQno5UgW-YqpnKZC7a9UG1AD0_T-C6kaagUCyo67mTtN2GmArLIvP-5qG1f1i1QsfomiqNZ-0jVss4_3ovbkjbLE0KWQ1QxaaJRKL8hJPUbkwQD-rWAC9nTLafYmN9WLHyebadMgIezgVuCljzJZVYNu6mk9s3k_ymRu8QofgFVB_1CYYuw

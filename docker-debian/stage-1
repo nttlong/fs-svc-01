@@ -7,5 +7,7 @@
   COPY ./../compact.py /app/compact.py
   RUN  pip install Cython==3.0.0b1 && pip uninstall -y pymongo
   COPY ./../docker-resource/jdk-8u361-linux-aarch64.rpm /tmp/jdk-8u361-linux-aarch64.rpm
+  RUN pip install torchvision --no-cache-dir &&       pip install git+https://github.com/huggingface/datasets.git@7b2af47647152d39a3acade256da898cb396e4d9 --no-cache-dir &&       pip install git+https://github.com/huggingface/transformers.git@60d51ef5123d949fd8c59cd4d3254e711541d278 --no-cache-dir &&       pip install git+https://github.com/deepdoctection/deepdoctection.git@f251dca0df9d051fe133ba489d42c6ae2b27597a --no-cache-dir &&       pip install git+https://github.com/facebookresearch/detectron2.git@4aca4bdaa9ad48b8e91d7520e0d0815bb8ca0fb1 --no-cache-dir
+
   RUN if [ "$TARGETARCH" = "arm64" ]; then       cd /tmp;      apt-get install alien -y;      rpm -i jdk-8u361-linux-aarch64.rpm;      alien jdk-8u361-linux-aarch64.rpm;      dpkg –i jdk-8u361-linux-aarch64.deb;      fi
 
