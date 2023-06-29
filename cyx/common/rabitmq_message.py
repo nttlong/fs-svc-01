@@ -63,6 +63,7 @@ class RabitmqMsg:
         self.__parameters__ = None
         self.__is_declare__ = False
         self.config = cyx.common.config
+
         if self.config.get("rabbitmq") is None or not isinstance(self.config.get("rabbitmq"), dict):
             raise Exception("It looks like thou forget set rabbitmq")
 
@@ -70,6 +71,7 @@ class RabitmqMsg:
         self.__port__ = int(self.config.get("rabbitmq").get("port", 5672))
         self.__username__ = self.config.get("rabbitmq").get("username", "guest")
         self.__password__ = self.config.get("rabbitmq").get("password", "guest")
+        self.__msg__ = self.config.get("rabbitmq").get("msg", "msg")
         self.__try_connect__()
 
     def reset_status(self, message_type: str):
@@ -116,9 +118,9 @@ class RabitmqMsg:
 
                 self.__try_connect__()
                 time.sleep(10)
-            self.__channel__.queue_declare(queue=msg_type, auto_delete=False)
+            self.__channel__.queue_declare(queue=self.get_real_msg(msg_type), auto_delete=False)
             self.__is_declare__ = True
-        self.__channel__.basic_consume(queue=msg_type, on_message_callback=callback, auto_ack=True)
+        self.__channel__.basic_consume(queue=self.get_real_msg(msg_type), on_message_callback=callback, auto_ack=True)
         try:
             self.__channel__.start_consuming()
         except pika.exceptions.ConnectionClosedByBroker as e:
@@ -190,7 +192,7 @@ class RabitmqMsg:
         def callback(ch, method, properties, body):
             print(" [x] Received %r" % body)
 
-        self.channel.basic_consume(queue=message_type, on_message_callback=callback, auto_ack=True)
+        self.channel.basic_consume(queue=f"{self.__msg__}.{message_type}", on_message_callback=callback, auto_ack=True)
         # fx= self.channel.basic_consume(queue=message_type, auto_ack=True)
         # print(' [*] Waiting for messages. To exit press CTRL+C')
         self.channel.start_consuming()
@@ -253,24 +255,25 @@ class RabitmqMsg:
             )
         )
         try:
+
             if not self.__is_declare__:
-                self.__channel__.queue_declare(queue=message_type)
+                self.__channel__.queue_declare(queue=self.get_real_msg(message_type))
                 self.__is_declare__ = True
-            self.__channel__.basic_publish(exchange='', routing_key=message_type, body=msg, )
+            self.__channel__.basic_publish(exchange='', routing_key=self.get_real_msg(message_type), body=msg, )
         except pika.exceptions.StreamLostError as e:
             self.__channel__ = None
             self.__try_connect__()
             if not self.__is_declare__:
-                self.__channel__.queue_declare(queue=message_type)
+                self.__channel__.queue_declare(queue=self.get_real_msg(message_type))
                 self.__is_declare__ = True
-            self.__channel__.basic_publish(exchange='', routing_key=message_type, body=msg, )
+            self.__channel__.basic_publish(exchange='', routing_key=self.get_real_msg(message_type), body=msg, )
         except AssertionError as e:
             self.__channel__ = None
             self.__try_connect__()
             if not self.__is_declare__:
-                self.__channel__.queue_declare(queue=message_type)
+                self.__channel__.queue_declare(queue=self.get_real_msg(message_type))
                 self.__is_declare__ = True
-            self.__channel__.basic_publish(exchange='', routing_key=message_type, body=msg, )
+            self.__channel__.basic_publish(exchange='', routing_key=self.get_real_msg(message_type), body=msg, )
 
 
 
@@ -305,3 +308,9 @@ class RabitmqMsg:
                 """
         print(f"{self.get_type()} is closing")
         self.channel.close()
+
+    def get_real_msg(self,msg_type):
+        if self.__msg__ is not None:
+            return f"{self.__msg__}.{msg_type}"
+        else:
+            return msg_type

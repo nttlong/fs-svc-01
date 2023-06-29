@@ -20,7 +20,7 @@ message:
     kafka:
       host: '192.168.18.36'
 shared_storage: ./share-storage
-storage_path: /home/vmadmin/python/v6/file-service-02/storage
+#storage_path: /home/vmadmin/python/v6/file-service-02/storage
 #host_url: https://test.com.vn/lvfile
 db_25:
 #  host: localhost
@@ -66,7 +66,7 @@ jwt:
   secret_key: 09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7
   algorithm: HS256
   access_token_expire_minutes: 480
-tmp_upload_dir: ./tmp
+#tmp_upload_dir: ./tmp
 
 elastic_search:
   server:
@@ -115,11 +115,13 @@ media_plugins:
   - enig_frames.plugins.ocr.pdf_file:PdfFile
 timeout_keep_alive: 5
 tika_server: http://localhost:12345
-temp_directory: ./brokers/tmp-files
+#temp_directory: ./brokers/tmp-files
 rabbitmq:
   port: 30672
   server: 172.16.7.91
+  msg:
 broker:
   is_use: true
   servers: 172.16.7.91:30992
-  temp_directory: ./brokers/tmp-files
+  msg: xdoc
+#  temp_directory: ./brokers/tmp-files

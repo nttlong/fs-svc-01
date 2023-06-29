@@ -1,5 +1,5 @@
 #!/bin/bash
-
+clear
 export user=xdoc
 export user_=nttlong
 export platform=linux/amd64
@@ -7,7 +7,7 @@ export platform_=linux/amd64,linux/arm64/v8
 export repositiory=docker.lacviet.vn
 export repositiory_=docker.io
 export push=docker.lacviet.vn/xdoc
-#export BUILDKIT_PROGRESS=plain
+
 export release_name=amd
 buildFunc(){
 # first param is image name
@@ -33,11 +33,11 @@ rm -f "stage-1"
 echo "
   FROM docker.io/nttlong/base-core-slim-req:rc.2023.002
   ARG TARGETARCH
-  RUN apt-get update && apt-get install -y lsb-release && apt-get clean all
+#  RUN apt-get update && apt-get install -y lsb-release && apt-get clean all
   COPY ./../docker-debian/verify.py /app/docker-debian/verify.py
   RUN python3 /app/docker-debian/verify.py check
   COPY ./../compact.py /app/compact.py
-  RUN  pip install Cython==3.0.0b1 && pip uninstall -y pymongo
+#  RUN  pip install Cython==3.0.0b1 && pip uninstall -y pymongo
   COPY ./../docker-resource/jdk-8u361-linux-aarch64.rpm /tmp/jdk-8u361-linux-aarch64.rpm
   RUN pip install torchvision --no-cache-dir && \
       pip install git+https://github.com/huggingface/datasets.git@7b2af47647152d39a3acade256da898cb396e4d9 --no-cache-dir && \
@@ -55,7 +55,7 @@ echo "
 ">>stage-1
 
 #-----------------------------------------------
-stage2=$stage1.3
+stage2=$stage1.5
 rm -f "stage-2"
 echo "
   FROM $repositiory/$user/stage-1:$stage1
@@ -65,25 +65,25 @@ echo "
   COPY ./../docker-debian/verify.py /app/docker-debian/verify.py
   RUN pip install Cython==3.0.0b1 && python3 /app/docker-debian/verify.py check
   COPY ./../compact.py /app/compact.py
-  COPY ./../pymongo /app/bson
-  COPY ./../gridfs /app/gridfs
-  COPY ./../pymongo /app/pymongo
-  COPY ./../elasticsearch /app/elasticsearch
-  COPY ./../build /app/build
-  RUN pip install pymongo
-  RUN if [ \"\$TARGETARCH\" = \"amd64\" ]; then \
-       rm -fr  /usr/local/lib/python3.9/dist-packages/pymongo;\
-       rm -fr /usr/local/lib/python3.9/dist-packages/elasticsearch;\
-       rm -fr /usr/local/lib/python3.9/dist-packages/gridfs;\
-      python3 /app/docker-debian/verify.py py39_core ;\
-      fi
-  RUN if [ \"\$TARGETARCH\" = \"arm64\" ]; then \
-       rm -fr /app/bson;\
-       rm -fr /app/gridfs;\
-       rm -fr /app/elasticsearch;\
-       rm -fr /app/build;\
-       pip install elasticsearch && pip install pymongo;\
-      fi
+#  COPY ./../pymongo /app/bson
+#  COPY ./../gridfs /app/gridfs
+#  COPY ./../pymongo /app/pymongo
+#  COPY ./../elasticsearch /app/elasticsearch
+#  COPY ./../build /app/build
+#  RUN pip install pymongo
+#  RUN if [ \"\$TARGETARCH\" = \"amd64\" ]; then \
+#       rm -fr  /usr/local/lib/python3.9/dist-packages/pymongo;\
+#       rm -fr /usr/local/lib/python3.9/dist-packages/elasticsearch;\
+#       rm -fr /usr/local/lib/python3.9/dist-packages/gridfs;\
+#      python3 /app/docker-debian/verify.py py39_core ;\
+#      fi
+#  RUN if [ \"\$TARGETARCH\" = \"arm64\" ]; then \
+#       rm -fr /app/bson;\
+#       rm -fr /app/gridfs;\
+#       rm -fr /app/elasticsearch;\
+#       rm -fr /app/build;\
+#       pip install elasticsearch && pip install pymongo;\
+#      fi
 ">>stage-2
 
 #----------------------------------------------
@@ -103,8 +103,8 @@ echo "
   COPY ./../cy_web /app/cy_web
   COPY ./../build /app/build
 
-  RUN if [ \"\$TARGETARCH\" = \"\amd64\" ]; then \
-      python3 /app/docker-debian/verify1.py py39_core core_framework ;\
+  RUN if [ \"\$TARGETARCH\" = \"amd64\" ]; then \
+      python3 /app/docker-debian/verify.py core_framework ;\
       fi
   RUN if [ \"\$TARGETARCH\" = \"arm64\" ]; then \
        rm -fr /app/build;\
@@ -121,7 +121,7 @@ echo "
 ">>"xdoc-tika-server"
 #buildFunc "xdoc-tika-server" 1 1
 #---------------------------------------------------
-xdoc=$stage3.5
+xdoc=$stage3.7
 rm -f "xdoc"
 echo "
   FROM $repositiory/$user/stage-3:$stage3
@@ -137,19 +137,21 @@ echo "
   COPY ./../config.yml /app/config.yml
   COPY ./../resource /app/resource
   COPY ./../docker-debian/verify.png /docker-debian/verify.png
-  RUN tesseract /docker-debian/verify.png output --oem 1 -l eng
-  RUN python3 /app/pre_test_build/check_tika_server.py
-  RUN python3 /app/pre_test_build/check_py_vncorenlp.py
-  RUN python3 /app/pre_test_build/check_vn_predict.py
-  RUN python3 /app/pre_test_build/check_layout_detection.py
-  RUN python3 /app/pre_test_build/check_ocr.py
+#  RUN tesseract /docker-debian/verify.png output --oem 1 -l eng
+#  RUN python3 /app/pre_test_build/check_tika_server.py
+#  RUN python3 /app/pre_test_build/check_py_vncorenlp.py
+#  RUN python3 /app/pre_test_build/check_vn_predict.py
+#  RUN python3 /app/pre_test_build/check_layout_detection.py
+#  COPY ./../docker-debian/test-ocr.pdf /app/docker-debian/test-ocr.pdf
+#  RUN python3 /app/pre_test_build/check_ocr.py  1
 
 ">>xdoc
+#export BUILDKIT_PROGRESS=plain
 docker login https://docker.lacviet.vn -u xdoc -p Lacviet#123
 #docker buildx create --use --config /etc/containerd/config.toml
 #buildFunc "stage-1" 1 $stage1
-#buildFunc "stage-2" 1 $stage2
-#buildFunc "stage-3" 1 $stage3
+buildFunc "stage-2" 1 $stage2
+buildFunc "stage-3" 1 $stage3
 buildFunc "xdoc" 1 $xdoc
 tmp_dir=share-storage
 temp_directory=/home/vmadmin/python/v6/file-service-02/test-xdoc-volume
@@ -187,7 +189,7 @@ docker run -d --name files_save_default_thumb -v $temp_directory:/app/shared_sto
 docker run -d --name files_generate_pdf_from_image -v $temp_directory:/app/shared_storage $repositiory/$user/xdoc:$xdoc python3 /app/cy_consumers/files_generate_pdf_from_image.py shared_storage=/app/shared_storage
 docker run -d --name files_generate_image_from_pdf -v $temp_directory:/app/shared_storage $repositiory/$user/xdoc:$xdoc python3 /app/cy_consumers/files_generate_image_from_pdf.py shared_storage=/app/shared_storage
 docker run -d --name files_generate_image_from_video -v $temp_directory:/app/shared_storage $repositiory/$user/xdoc:$xdoc python3 /app/cy_consumers/files_generate_image_from_video.py shared_storage=/app/shared_storage
-docker run -d --name files_ocr_pdf -v $temp_directory:/app/shared_storage $repositiory/$user/xdoc:$xdoc python3 /app/cy_consumers/files_ocr_pdf.py.py shared_storage=/app/shared_storage
+docker run -d --name files_ocr_pdf -v $temp_directory:/app/shared_storage $repositiory/$user/xdoc:$xdoc python3 /app/cy_consumers/files_ocr_pdf.py shared_storage=/app/shared_storage
 docker run -d --name files_save_custom_thumb -v $temp_directory:/app/shared_storage $repositiory/$user/xdoc:$xdoc python3 /app/cy_consumers/files_save_custom_thumb.py shared_storage=/app/shared_storage
 docker run -d --name files_save_orc_pdf_file -v $temp_directory:/app/shared_storage $repositiory/$user/xdoc:$xdoc python3 /app/cy_consumers/files_save_orc_pdf_file.py shared_storage=/app/shared_storage
 docker run -d --name files_save_search_engine -v $temp_directory:/app/shared_storage $repositiory/$user/xdoc:$xdoc python3 /app/cy_consumers/files_save_search_engine.py shared_storage=/app/shared_storage

@@ -16,6 +16,8 @@ class ContentsServices:
             raise Exception(f"f{path_to_java_md5} was not found")
         os.environ['TIKA_SERVER_JAR'] = path_to_java
         os.environ['TIKA_PATH'] = self.ext_lib_folder
+        os.environ['TIKA_STARTUP_SLEEP'] = '10'
+        os.environ['TIKA_STARTUP_MAX_RETRY'] = '10'
         if sys.modules.get("tika") is not None:
             import importlib
             importlib.reload(sys.modules["tika"])

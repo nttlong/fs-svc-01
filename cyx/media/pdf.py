@@ -4,14 +4,14 @@ import pathlib
 import time
 import typing
 import uuid
-
+import cv2
 import pdfplumber
 import fitz
 import glob
 import ocrmypdf
 from PyPDF2 import PdfFileWriter, PdfFileReader, PdfMerger
 import PyPDF2.errors
-
+from pdfminer.pdfpage import PDFPage
 import cy_kit
 
 from cyx.common.share_storage import ShareStorageService
@@ -49,7 +49,7 @@ class PDFService:
         return image_file_path
 
     def convert_to_image(self, file_path: str, out_put_dir=None, page_number=None) -> str:
-        import cv2
+
         pdf_file = file_path
         filename_only = pathlib.Path(pdf_file).stem
         __out_put_dir__ = out_put_dir or self.processing_folder
@@ -106,26 +106,14 @@ class PDFService:
         return image_file_paths
 
     def get_pdf_searchable_pages(self, fname):
-        # pip install pdfminer
-        # from pdfminer.pdfpage import PDFPage
-        # from pdfminer.pdfparser import PDFParser
-        from io import StringIO
 
-        # from pdfminer.converter import TextConverter
-        # from pdfminer.pdfdocument import PDFDocument
-        # from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
-        from pdfminer.pdfpage import PDFPage
-        # from pdfminer.pdfparser import PDFParser
-        # from pdfminer.layout import LAParams
-        # output_string = StringIO()
+
+
         searchable_pages = []
         non_searchable_pages = []
         # ascii_trip = bytes([0x0c]).decode('ascii')
         with open(fname, 'rb') as infile:
 
-            # rsrcmgr = PDFResourceManager()
-            # device = TextConverter(rsrcmgr, output_string, laparams=LAParams())
-            # interpreter = PDFPageInterpreter(rsrcmgr, device)
             page_num = 0
             for page in PDFPage.get_pages(infile):
 

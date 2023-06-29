@@ -49,6 +49,9 @@ def on_receive_msg(msg_info: MessageInfo):
     file_storage_services = cy_kit.singleton(MongoDbFileService)
     file_services = cy_kit.singleton(FileServices)
     full_file_path = msg_info.Data['processing_file']
+    if not os.path.isfile(full_file_path):
+        msg.delete(msg_info)
+        return
     server_orc_file_path = f'file-ocr/{msg_info.Data["_id"]}/{msg_info.Data["FileNameOnly"]}.pdf'
     fs = None
     try:
