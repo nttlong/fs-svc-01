@@ -41,25 +41,15 @@ release_name="amd"
 xdoc_asm_os=3
 rm -f xdoc-asm-os
 echo "
-    FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine AS donet
+#    FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine AS donet
     FROM docker.io/python:3.9.5-alpine3.12
-    COPY --from=donet / /
+#    COPY --from=donet / /
     RUN apk update && \
         apk add libreoffice && \
         apk add --upgrade tesseract-ocr
-
-    RUN apk fetch openjdk8 && apk add openjdk8
-    ENV JAVA_HOME=/usr/lib/jvm/java-1.8-openjdk
-    ENV PATH=\"\$JAVA_HOME/bin:\${PATH}\"
-    COPY ./../docker-asm/check_os.py /tmp/docker-asm/check_os.py
-    RUN soffice --headless --convert-to png --outdir /tmp /tmp/docker-asm/check_os.py
-    RUN tesseract /tmp/check_os.png output --oem 1 -l eng
-    RUN mkdir /python_dot_net_core
-    COPY ./../dotnet_core/VietnameseAccent/ ./python_dot_net_core
-    RUN dotnet publish ./python_dot_net_core
-    RUN apk --no-cache add gcc musl-dev linux-headers g++ libffi libffi-dev
-    RUN python -m pip install --upgrade pip
-     RUN pip install pythonnet==3.0.1
+    RUn apk add --upgrade ghostscript
+    RUn pip install opencv-python
+    RUN python -c 'import cv2; print(\"Python: import cv2 - SUCCESS\")'
 
 ">>xdoc-asm-os
 
@@ -84,8 +74,8 @@ echo "
           python3 /app/pre_test_build/check_py_vncorenlp.py;\
           fi
      RUN if [\"\$TARGETARCH\"=\"arm64\"]; then \
-          cp /usr/lib/jvm/java-1.8-openjdk/jre/lib/arm64/libjava.so /usr/lib && \
-          cp /usr/lib/jvm/java-1.8-openjdk/jre/lib/arm64/server/libjvm.so /usr/lib &&\
+          cp /usr/lib/jvm/java-1.8-openjdk/jre/lib/aarch64/libjava.so /usr/lib && \
+          cp /usr/lib/jvm/java-1.8-openjdk/jre/lib/aarch64/server/libjvm.so /usr/lib &&\
           python3 /app/pre_test_build/check_py_vncorenlp.py;\
           fi
 #     RUN python3 /app/pre_test_build/check_py_vncorenlp.py
@@ -126,11 +116,14 @@ echo "
       FROM $repositiory/$user/xdoc-asm-api-req:$xdoc_asm_api_req as req
       FROM $repositiory/$user/xdoc-asm-lv-accent-huy:$xdoc_asm_lv_accent_huy as lv
       FROM $repositiory/$user/xdoc-asm-py_vncorenlp:$xdoc_asm_py_vncorenlp as vncorenlp
+      FROM $repositiory/$user/xdoc/xdoc-asm-os@sha256:$xdoc_asm_os as os
       FROM docker.io/python:3.9.5-alpine3.12
       ARG TARGETARCH
+      RUN apk update && apk upgrade
       COPY --from=req / /
       COPY --from=lv / /
       COPY --from=vncorenlp / /
+      COPY --from=os / /
       COPY ./../cy_docs /app/cy_docs
       COPY ./../cy_es /app/cy_es
       COPY ./../cyx /app/cyx
@@ -143,20 +136,27 @@ echo "
       COPY ./../pre_test_build /app/pre_test_build
       ENV JAVA_HOME=/usr/lib/jvm/java-1.8-openjdk
       ENV PATH=\"\$JAVA_HOME/bin:\${PATH}\"
-#      RUN pip uninstall elasticsearch -y && pip install elasticsearch==6.8.2
-      RUN python3 /app/pre_test_build/check_py_vncorenlp.py;
+      COPY ./../docker-asm/check_os.py /app/check_os.py
+      RUN cp /usr/lib/jvm/java-1.8-openjdk/jre/lib/aarch64/libjava.so /usr/lib/jvm/java-1.8-openjdk/bin; exit 0
+      RUN cp /usr/lib/jvm/java-1.8-openjdk/jre/lib/aarch64/server/libjvm.so /usr/lib/jvm/java-1.8-openjdk/jre/lib/aarch64; exit 0
+      RUN python3 /app/pre_test_build/check_py_vncorenlp.py
+      RUN killall python; exit 0
+      RUN killall java; exit 0
 ">> xdoc-slim
 export platform=linux/amd64,linux/arm64/v8
+export platform_=linux/arm64/v8
 release_name=rc
 xdoc_asm_os=$release_name.1
-#buildFunc xdoc-asm-os $xdoc_asm_os $is_publish
+xdoc_asm_os=1
+buildFunc xdoc-asm-os $xdoc_asm_os $is_publish
 xdoc_asm_lv_accent_huy=1
 #buildFunc xdoc-asm-lv-accent-huy $xdoc_asm_lv_accent_huy $is_publish
 xdoc_asm_api_req=1
 #buildFunc xdoc-asm-api-req $xdoc_asm_api_req $is_publish
 xdoc_asm_py_vncorenlp=1
 export BUILDKIT_PROGRESS=
-buildFunc xdoc-asm-py_vncorenlp $xdoc_asm_py_vncorenlp $is_publish
+#buildFunc xdoc-asm-py_vncorenlp $xdoc_asm_py_vncorenlp $is_publish
 xdoc_asm_slim=$xdoc_asm_os.$xdoc_asm_py_vncorenlp.$xdoc_asm_lv_accent_huy.$xdoc_asm_api_req.15
 buildFunc xdoc-slim $xdoc_asm_slim $is_publish
 echo "docker run -p 8012:8012 $repositiory/$user/xdoc-asm-test:$xdoc_asm_test python3 /app/cy_xdoc/server.py"
+#docker buildx create --use --config /etc/containerd/config.toml
