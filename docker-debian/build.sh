@@ -126,7 +126,6 @@ rm -f "xdoc"
 echo "
   FROM $repositiory/$user/stage-3:$stage3
   ARG TARGETARCH
-
   COPY ./../cy_xdoc /app/cy_xdoc
   COPY ./../cyx /app/cyx
   COPY ./../cy_consumers /app/cy_consumers

@@ -8,4 +8,11 @@ def cmd(ls):
     ret = subprocess.check_output(ls)
     ret_ttx = ret.decode('utf8')
     return ret_ttx
-raise Exception(cmd(["which","soffice"]))
+if sys.argv.__len__()>1:
+    ret = cmd(sys.argv[1].split(' '))
+    raise Exception(ret)
+import jnius_config
+import jnius
+raise Exception(jnius.env.get_jdk_home())
+jnius_config.check_vm_running()
+raise Exception(cmd(["which","java"]))
