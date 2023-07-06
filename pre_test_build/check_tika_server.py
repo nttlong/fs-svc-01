@@ -20,6 +20,8 @@ try:
     ret = subprocess.check_output(["which","java"])
     ret_ttx = ret.decode('utf8')
     java_path=ret_ttx.lstrip('\n').rstrip('\n')
+    if not os.path.isfile(java_path):
+        raise Exception("java was not found")
     subprocess.Popen(java_path, stdout=open(os.devnull, "w"), stderr=open(os.devnull, "w"))
     # os.environ['TIKA_JAVA']=ret_ttx
     os.environ['TIKA_SERVER_JAR'] = path_to_java
@@ -46,6 +48,6 @@ try:
         print(ret)
         print("Check tika server is ok")
     except Exception as e:
-        print("Init tika server fail")
+        raise Exception("Init tika server fail")
 except Exception as e:
     raise e

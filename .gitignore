@@ -50,3 +50,9 @@
 
 /docker-resource/
 /test-xdoc-volume/
+/test-001/
+/docker-cy/check/_1Statistic.dat
+/docker-cy/check/news1gram.bin
+/docker-cy/check/news2grams.bin
+/docker-cy/check/ReplaceSpecial.txt
+/docker-cy/check/components/

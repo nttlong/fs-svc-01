@@ -1,0 +1,24 @@
+FROM docker.io/python:3.9.5-alpine3.12
+
+RUN apk --update upgrade
+
+RUN apk add --no-cache \
+    curl \
+    bash \
+    gcompat
+
+ENV GLIBC_VERSION 2.35-r1
+
+# Download and install glibc
+#RUN curl -Lo /etc/apk/keys/sgerrand.rsa.pub https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub && \
+#  curl -Lo glibc.apk "https://github.com/sgerrand/alpine-pkg-glibc/releases/download/${GLIBC_VERSION}/glibc-${GLIBC_VERSION}.apk" && \
+#  curl -Lo glibc-bin.apk "https://github.com/sgerrand/alpine-pkg-glibc/releases/download/${GLIBC_VERSION}/glibc-bin-${GLIBC_VERSION}.apk" && \
+#  apk add --force-overwrite glibc-bin.apk glibc.apk && \
+#  /usr/glibc-compat/sbin/ldconfig /lib /usr/glibc-compat/lib && \
+#  echo 'hosts: files mdns4_minimal [NOTFOUND=return] dns mdns4' >> /etc/nsswitch.conf && \
+#  rm -rf glibc.apk glibc-bin.apk /var/cache/apk/*
+
+RUN python3 -m pip install -U pip setuptools
+RUN apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/v3.14/main  ca-certificates
+RUN python3 -m pip install --no-cache-dir torch;
+RUN python3 -c 'import torch;print(torch.__file__)'
