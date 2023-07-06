@@ -1,8 +1,7 @@
 ARG BASE
 FROM ${BASE}
 ARG TARGETARCH
-RUN apt update && apt-get install wget -y
-WORKDIR /py3_dotnet
+
 RUN if [ "$TARGETARCH" = "amd64" ]; then \
         wget https://packages.microsoft.com/config/debian/11/packages-microsoft-prod.deb -O packages-microsoft-prod.deb;\
         dpkg -i packages-microsoft-prod.deb;\

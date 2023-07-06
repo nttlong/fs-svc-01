@@ -57,13 +57,14 @@ javac_image=$base_py-javac:$javac_tag
 #--------------------------------------------------------------------
 #---------------- build dotnet -----------------------------------------
 rm -f $base_py-dotnet && cp -f ./templates/dotnet ./$base_py-dotnet
-dotnet_tag=1
+dotnet_tag=2
 dotnet_image=$base_py-dotnet:$dotnet_tag
 #buildFunc $base_py-dotnet $dotnet_tag $top_image
 #--------------------------------------------------------------------
 #---------------------combine all components---------------------------
 rm -f $base_py-com
 echo "
+#FROM docker.lacviet.vn/xdoc/py311-libreoffice:1 as office
 FROM $repositiory/$user/$libreoffice_image as office
 FROM $repositiory/$user/$dotnet_image as dotnet
 FROM $repositiory/$user/$tessract_image as tessract
@@ -78,6 +79,7 @@ RUN chmod u+x /check/*.sh
 RUN /check/libreoffice.sh
 RUN /check/tessract.sh
 RUN /check/tika.sh
+COPY --from=python3 / /
 RUN /check/dotnet.sh
 RUN /check/py_vncorenlp.sh
 ">>$base_py-com
@@ -85,8 +87,9 @@ com=1
 export BUILDKIT_PROGRESS=
 export platform=linux/amd64,linux/arm64/v8
 export platform_=linux/amd64
-com_image=$base_py-com:$top_image
-com_tag=1
+
+com_tag=offi$libreoffice_tag.dnet$dotnet_tag.tess$tessract_tag.1
+com_image=$base_py-com:$com_tag
 buildFunc $base_py-com $com_tag $top_image
 echo "------------------------------------------"
 echo "test:"

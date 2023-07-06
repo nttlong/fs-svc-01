@@ -1,22 +1,22 @@
 import os.path
 import pathlib
+from pythonnet import load
+load("coreclr")
 import clr
 _wrking_dir_ = pathlib.Path(__file__).parent.__str__()
 dll_file = "Accent.Utils.dll"
 import subprocess
 #check mono
 mono_path_bin =subprocess.check_output(f"which mono".split(' '))
-mono_path =mono_path_bin.decode('utf8')
-if not os.path.isfile(mono_path):
-    raise Exception("mono was not found")
-ret = subprocess.check_output(f"find / -name {dll_file}".split(' '))
+mono_path =mono_path_bin.decode('utf8').lstrip('\n').rstrip('\n')
+ret = subprocess.check_output(f"find /python_dot_net_core -name {dll_file}".split(' '))
 ret_ttx = ret.decode('utf8')
 dll_path=ret_ttx.lstrip('\n').rstrip('\n')
 dll_paths = dll_path.split('\n')
 publish_paths = [x for x in dll_paths if '/publish/' in x]
 if publish_paths.__len__()==0:
     raise Exception("Can not find publish/Accent.Utils.dll")
-dll_path="/py3_dotnet/python_dot_net_core/Accent.Utils/bin/Debug/net5.0/publish/Accent.Utils.dll"
+dll_path=publish_paths[0]
 clr.AddReference(dll_path)
 import Accent.Utils
 instance = Accent.Utils.AccentPredictor(
