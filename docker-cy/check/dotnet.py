@@ -34,7 +34,7 @@ contents = [
 
 ]
 for content in contents:
-    ret_content = instance.get_text(content)
+    ret_content = instance.PredictAccents(content)
     print(content)
     print(ret_content.replace('\n',' '))
 print("OK")

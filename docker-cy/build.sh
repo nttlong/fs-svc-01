@@ -79,7 +79,6 @@ RUN chmod u+x /check/*.sh
 RUN /check/libreoffice.sh
 RUN /check/tessract.sh
 RUN /check/tika.sh
-COPY --from=python3 / /
 RUN /check/dotnet.sh
 RUN /check/py_vncorenlp.sh
 ">>$base_py-com
