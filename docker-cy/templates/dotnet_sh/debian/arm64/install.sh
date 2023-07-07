@@ -1,7 +1,7 @@
 #!/bin/sh
 apt update && apt-get install wget -y
-apt install mono-complete -y
-apt-get install -y libicu-dev
+apt install mono-complete -y nocache
+apt-get install -y libicu-dev nocache
 mkdir -p /usr/share/dotnet;\
 wget https://download.visualstudio.microsoft.com/download/pr/7c62b503-4ede-4ff2-bc38-50f250a86d89/3b5e9db04cbe0169e852cb050a0dffce/dotnet-sdk-6.0.300-linux-arm64.tar.gz
 tar -zxf dotnet-sdk-6.0.300-linux-arm64.tar.gz -C /usr/share/dotnet
@@ -16,4 +16,4 @@ ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet
 dotnet --list-runtimes
 python3 -m  pip install --upgrade pip
 python3 -m pip uninstall pythonnet -y
-python3 -m pip install pythonnet==3.0.1
+python3 -m pip install pythonnet==3.0.1 --no-cache-dir
