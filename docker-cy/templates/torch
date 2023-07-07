@@ -1,0 +1,5 @@
+ARG BASE
+FROM docker.io/mshaikh/torch-horovod:114-0280  as torch
+FROM ${BASE}
+ARG TARGETARCH
+COPY --from=torch / /
