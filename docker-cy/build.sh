@@ -19,11 +19,11 @@ buildFunc(){
 # shellcheck disable=SC1055
 #clear
 
-echo "docker  buildx build $repositiory/$user/$1:$2 -t --platform=$platform ./.. -f $1  --push=$3 --output type=registry"
+echo "docker  buildx build --build-arg BASE=$3 --build-arg OS_SYS=$4  $repositiory/$user/$1:$2 -t --platform=$platform ./.. -f $1  --push=$3 --output type=registry"
   #docker  buildx build $repositiory/$user/$1:$2 -t --platform=$platform ./.. -f $1  --push=$3 --output type=registry
   docker  --log-level "info" buildx build \
         --build-arg BASE=$3 \
-        --build-arg OS=$4\
+        --build-arg OS=$os\
         -t \
         $repositiory/$user/$1:$2  \
         --platform=$platform ./.. -f $1  --push=true --output type=registry
