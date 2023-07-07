@@ -61,7 +61,7 @@ javac_image=$base_py-javac:$javac_tag
 rm -f $base_py-dotnet && cp -f ./templates/dotnet ./$base_py-dotnet
 dotnet_tag=3
 dotnet_image=$base_py-dotnet:$dotnet_tag
-buildFunc $base_py-dotnet $dotnet_tag $top_image $os
+#buildFunc $base_py-dotnet $dotnet_tag $top_image $os
 #--------------------------------------------------------------------
 #---------------------combine all components---------------------------
 rm -f $base_py-com
@@ -70,35 +70,38 @@ echo "
 FROM $repositiory/$user/$libreoffice_image as office
 FROM $repositiory/$user/$dotnet_image as dotnet
 FROM $repositiory/$user/$tessract_image as tessract
+FROM $repositiory/$user/$javac_image as javac
 FROM $top_image
 COPY --from=office / /
 COPY --from=dotnet / /
 COPY --from=tessract / /
+COPY --from=javac / /
 RUN mv -f /var/lib/dpkg/statoverride /var/lib/dpkg/statoverride-backup
 RUN apt-get update -y && apt-get install -y psmisc nocache
 COPY ./../docker-cy/check /check
 RUN chmod u+x /check/*.sh
+RUN /check/py_vncorenlp.sh
 RUN /check/libreoffice.sh
 RUN /check/tessract.sh
 RUN /check/tika.sh
 RUN /check/dotnet.sh
-RUN /check/py_vncorenlp.sh
+
 ">>$base_py-com
 com=1
 export BUILDKIT_PROGRESS=
 export platform=linux/amd64,linux/arm64/v8
 export platform_=linux/amd64
 
-com_tag=offi$libreoffice_tag.dnet$dotnet_tag.tess$tessract_tag.1
+com_tag=offi$libreoffice_tag.dnet$dotnet_tag.tess$tessract_tag.1.javc$javac_tag
 com_image=$base_py-com:$com_tag
-#buildFunc $base_py-com $com_tag $top_image $os
+buildFunc $base_py-com $com_tag $top_image $os
 echo "------------------------------------------"
 echo "test:"
 echo "docker run $repositiory/$user/$com_image /check/libreoffice.sh"
 echo "docker run $repositiory/$user/$com_image /check/tessract.sh"
 echo "docker run $repositiory/$user/$com_image python3 /check/tika_server.py"
 echo "docker run $repositiory/$user/$com_image python3 /check/dotnet.py"
-echo "docker run $repositiory/$user/$com_image python3 /check/py_vncorenlp.py"
+echo "docker run $repositiory/$user/$com_image python3 /check/py_vncorenlp_check.py"
 echo "docker run $repositiory/$user/$com_image python3 -c 'import time;time.sleep(100000000)'"
 #py3_dotnet=1
 #buildFunc $base_py-dotnet $py3_dotnet
