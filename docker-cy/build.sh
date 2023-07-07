@@ -8,6 +8,7 @@ export platform_=linux/amd64
 export platform=linux/amd64,linux/arm64/v8
 export repositiory=docker.lacviet.vn
 export repositiory_=docker.io
+export os='debian'
 
 
 export top_image=docker.io/python:latest
@@ -22,6 +23,7 @@ echo "docker  buildx build $repositiory/$user/$1:$2 -t --platform=$platform ./..
   #docker  buildx build $repositiory/$user/$1:$2 -t --platform=$platform ./.. -f $1  --push=$3 --output type=registry
   docker  --log-level "info" buildx build \
         --build-arg BASE=$3 \
+        --build-arg OS=$4\
         -t \
         $repositiory/$user/$1:$2  \
         --platform=$platform ./.. -f $1  --push=true --output type=registry
@@ -57,9 +59,9 @@ javac_image=$base_py-javac:$javac_tag
 #--------------------------------------------------------------------
 #---------------- build dotnet -----------------------------------------
 rm -f $base_py-dotnet && cp -f ./templates/dotnet ./$base_py-dotnet
-dotnet_tag=2
+dotnet_tag=3
 dotnet_image=$base_py-dotnet:$dotnet_tag
-#buildFunc $base_py-dotnet $dotnet_tag $top_image
+buildFunc $base_py-dotnet $dotnet_tag $top_image $os
 #--------------------------------------------------------------------
 #---------------------combine all components---------------------------
 rm -f $base_py-com
@@ -89,7 +91,7 @@ export platform_=linux/amd64
 
 com_tag=offi$libreoffice_tag.dnet$dotnet_tag.tess$tessract_tag.1
 com_image=$base_py-com:$com_tag
-buildFunc $base_py-com $com_tag $top_image
+#buildFunc $base_py-com $com_tag $top_image $os
 echo "------------------------------------------"
 echo "test:"
 echo "docker run $repositiory/$user/$com_image /check/libreoffice.sh"
