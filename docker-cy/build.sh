@@ -89,7 +89,7 @@ buildFunc $base_py-opencv $opencv_tag $top_image $os
 rm -f $base_py-torch && cp -f ./templates/torch ./$base_py-torch
 torch_tag=1
 torch_image=$base_py-torch:$torch_tag
-buildFunc $base_py-torch $torch_tag $top_image $os
+#buildFunc $base_py-torch $torch_tag $top_image $os
 #---------------- build torch cpu -----------------------------------------
 rm -f $base_py-torch-cpu && cp -f ./templates/torch-cpu ./$base_py-torch-cpu
 torch_cpu_tag=1
