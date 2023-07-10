@@ -12,12 +12,22 @@ export os='debian'
 
 
 export top_image=docker.io/python:latest
+export top_image=docker.io/python:3.10.12-slim-bookworm
+base_py=py310
 
 buildFunc(){
 # first param is image name
 # second param is version
 # shellcheck disable=SC1055
 #clear
+
+#docker stop $(docker ps -aq)
+#docker rm $(docker ps -aq)
+#docker rmi $(docker images -q)
+#docker volume rm $(docker volume ls)
+#docker builder prune -f
+#docker system prune -a -f
+#docker buildx create --use --config /etc/containerd/config.toml
 
 echo "docker  buildx build --build-arg BASE=$3 --build-arg OS_SYS=$4  $repositiory/$user/$1:$2 -t --platform=$platform ./.. -f $1  --push=$3 --output type=registry"
   #docker  buildx build $repositiory/$user/$1:$2 -t --platform=$platform ./.. -f $1  --push=$3 --output type=registry
@@ -38,24 +48,24 @@ echo "docker  buildx build --build-arg BASE=$3 --build-arg OS_SYS=$4  $repositio
     exit "${exit_status}"
   fi
 }
-base_py=py311
+
 #---------------- build libre office------------------------------------
 rm -f $base_py-libreoffice && cp -f ./templates/libreoffice ./$base_py-libreoffice
 libreoffice_tag=1
 libreoffice_image=$base_py-libreoffice:$libreoffice_tag
-#buildFunc $base_py-libreoffice $libreoffice_tag $top_image
+#buildFunc $base_py-libreoffice $libreoffice_tag $top_image $os
 #--------------------------------------------------------------------
 #---------------- build tessract------------------------------------
 rm -f $base_py-tessract && cp -f ./templates/tessract ./$base_py-tessract
 tessract_tag=1
 tessract_image=$base_py-tessract:$tessract_tag
-#buildFunc $base_py-tessract $tessract_tag $top_image
+#buildFunc $base_py-tessract $tessract_tag $top_image $os
 #--------------------------------------------------------------------
 #----------------- build javac ------------------------
 rm -f $base_py-javac && cp -f ./templates/javac ./$base_py-javac
 javac_tag=1
 javac_image=$base_py-javac:$javac_tag
-#buildFunc $base_py-javac $javac_tag $top_image
+#buildFunc $base_py-javac $javac_tag $top_image $os
 #--------------------------------------------------------------------
 #---------------- build dotnet -----------------------------------------
 rm -f $base_py-dotnet && cp -f ./templates/dotnet ./$base_py-dotnet
@@ -68,11 +78,31 @@ opencv_tag=1
 opencv_image=$base_py-opencv:$opencv_tag
 #buildFunc $base_py-opencv $opencv_tag $top_image $os
 #--------------------------------------------------------------------
-#---------------- build opencv -----------------------------------------
+#---------------- build torch full -----------------------------------------
 rm -f $base_py-torch && cp -f ./templates/torch ./$base_py-torch
 torch_tag=1
 torch_image=$base_py-torch:$torch_tag
-buildFunc $base_py-torch $torch_tag $top_image $os
+#buildFunc $base_py-torch $torch_tag $top_image $os
+#---------------- build torch cpu -----------------------------------------
+rm -f $base_py-torch-cpu && cp -f ./templates/torch-cpu ./$base_py-torch-cpu
+torch_cpu_tag=1
+torch_image=$base_py-torch-cpu:$torch_cpu_tag
+buildFunc $base_py-torch-cpu $torch_cpu_tag $top_image $os
+#---------------- build detectron2 -----------------------------------------
+rm -f $base_py-detectron2 && cp -f ./templates/detectron2 ./$base_py-detectron2
+detectron2_tag=1
+detectron2_image=$base_py-detectron2:$detectron2_tag
+buildFunc $base_py-detectron2 $detectron2_tag $repositiory/$user/$torch_image $os
+#---------------- build huggingface -----------------------------------------
+rm -f $base_py-huggingface && cp -f ./templates/huggingface ./$base_py-huggingface
+huggingface_tag=1
+huggingface_image=$base_py-huggingface:$huggingface_tag
+buildFunc $base_py-huggingface $huggingface_tag $top_image $os
+#---------------- build huggingface -----------------------------------------
+rm -f $base_py-deepdoctection && cp -f ./templates/deepdoctection ./$base_py-deepdoctection
+deepdoctection_tag=1
+deepdoctection_image=$base_py-deepdoctection:$deepdoctection_tag
+buildFunc $base_py-deepdoctection $deepdoctection_tag $top_image $os
 #---------------------combine all components---------------------------
 rm -f $base_py-com
 echo "
@@ -107,7 +137,11 @@ export platform_=linux/amd64
 
 com_tag=offi$libreoffice_tag.dnet$dotnet_tag.tess$tessract_tag.javc$javac_tag.opcv$opencv_tag.1
 com_image=$base_py-com:$com_tag
-#buildFunc $base_py-com $com_tag $top_image $os
+buildFunc $base_py-com $com_tag $top_image $os
+echo "------------deep learning framework----------------"
+echo "docker run $repositiory/$user/$detectron2_image"
+echo "docker run $repositiory/$user/$huggingface_image"
+echo "docker run $repositiory/$user/$deepdoctection_image"
 echo "------------------------------------------"
 echo "test:"
 echo "docker run $repositiory/$user/$com_image /check/libreoffice.sh"
@@ -117,6 +151,8 @@ echo "docker run $repositiory/$user/$com_image python3 /check/dotnet.py"
 echo "docker run $repositiory/$user/$com_image python3 /check/py_vncorenlp_check.py"
 echo "docker run $repositiory/$user/$com_image python3 /check/opencv_check.py"
 echo "docker run $repositiory/$user/$com_image python3 -c 'import time;time.sleep(100000000)'"
+
+#docker run docker docker.lacviet.vn/xdoc/py311-deepdoctection:1 python3 -c 'import time;time.sleep(100000000)'
 #py3_dotnet=1
 #buildFunc $base_py-dotnet $py3_dotnet
 #docker buildx create --use --config /etc/containerd/config.toml
