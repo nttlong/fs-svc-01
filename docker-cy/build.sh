@@ -110,6 +110,31 @@ rm -f $base_py-deepdoctection && cp -f ./templates/deepdoctection ./$base_py-dee
 deepdoctection_tag=1
 deepdoctection_image=$base_py-deepdoctection:$deepdoctection_tag
 buildFunc $base_py-deepdoctection $deepdoctection_tag $top_image $os
+#--- build cython-build----
+rm -f $base_py-cython && cp -f ./templates/cython ./$base_py-cython
+cython_tag=1
+cython_image=$base_py-cython:$cython_tag
+buildFunc $base_py-cython $cython_tag $top_image $os
+#--- build fast-client----
+rm -f $base_py-fast-client && cp -f ./templates/fast-client ./$base_py-fast-client
+fast_client_tag=1
+fast_client_image=$base_py-fast-client:$fast_client_tag
+buildFunc $base_py-fast-client $fast_client_tag $repositiory/$user/$cython_image $os
+#------------ cy_es -------------------
+rm -f $base_py-cy_es && cp -f ./templates/cy_es ./$base_py-cy_es
+cy_es_tag=1
+cy_es_image=$base_py-cy_es:$cy_es_tag
+buildFunc $base_py-cy_es $cy_es_tag $repositiory/$user/$cython_image $os
+#------------ cy_kit -------------------
+rm -f $base_py-cy_kit && cp -f ./templates/cy_kit ./$base_py-cy_kit
+cy_kit_tag=1
+cy_kit_image=$base_py-cy_kit:$cy_kit_tag
+buildFunc $base_py-cy_kit $cy_kit_tag $repositiory/$user/$cython_image $os
+#------------ cy_web -------------------
+rm -f $base_py-cy_kit && cp -f ./templates/cy_kit ./$base_py-cy_kit
+cy_web_tag=1
+cy_web_image=$base_py-cy_web:$cy_web_tag
+buildFunc $base_py-cy_web $cy_web_tag $repositiory/$user/$cython_image $os
 #---------------------combine all components---------------------------
 rm -f $base_py-com
 echo "
