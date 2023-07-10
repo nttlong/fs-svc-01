@@ -14,7 +14,13 @@ export os='debian'
 export top_image=docker.io/python:latest
 export top_image=docker.io/python:3.10.12-slim-bookworm
 base_py=py310
-
+#docker_tag_exists() {
+#    if  docker manifest inspect $1/$2/$3:$4; then
+#      echo "co"
+#    else
+#      echo "kg co"
+#
+#}
 buildFunc(){
 # first param is image name
 # second param is version
@@ -28,61 +34,67 @@ buildFunc(){
 #docker builder prune -f
 #docker system prune -a -f
 #docker buildx create --use --config /etc/containerd/config.toml
+  echo "$repositiory/$user/$1:$2 is checking"
+  echo "---$(docker manifest inspect $repositiory/$user/$1:$2>/dev/null;echo $?)---"
+  if [ "-$(docker manifest inspect $repositiory/$user/$1:$2>/dev/nullnull;echo $?)-" = "-0-" ]; then
+    echo "$repositiory/$user/$1:$2 is existing"
+    return 0
+  fi
 
-echo "docker  buildx build --build-arg BASE=$3 --build-arg OS_SYS=$4  $repositiory/$user/$1:$2 -t --platform=$platform ./.. -f $1  --push=$3 --output type=registry"
   #docker  buildx build $repositiory/$user/$1:$2 -t --platform=$platform ./.. -f $1  --push=$3 --output type=registry
-  docker  --log-level "info" buildx build \
-        --build-arg BASE=$3 \
-        --build-arg OS=$os\
-        -t \
-        $repositiory/$user/$1:$2  \
-        --platform=$platform ./.. -f $1  --push=true --output type=registry
-  exit_status=$?
-  if [ ${exit_status} -ne 0 ]; then
-    echo "build image $1 from base version $2 to $3 error"
-    exit "${exit_status}"
-  fi
-  exit_status=$?
-  if [ ${exit_status} -ne 0 ]; then
-    echo "build image $1 from base version $2 to $3 error"
-    exit "${exit_status}"
-  fi
+  echo "docker  buildx build --build-arg BASE=$3 --build-arg OS_SYS=$4  $repositiory/$user/$1:$2 -t --platform=$platform ./.. -f $1  --push=$3 --output type=registry"
+    docker  --log-level "info" buildx build \
+          --build-arg BASE=$3 \
+          --build-arg OS=$os\
+          -t \
+          $repositiory/$user/$1:$2  \
+          --platform=$platform ./.. -f $1  --push=true --output type=registry
+    exit_status=$?
+    if [ ${exit_status} -ne 0 ]; then
+      echo "build image $1 from base version $2 to $3 error"
+      exit "${exit_status}"
+    fi
+    exit_status=$?
+    if [ ${exit_status} -ne 0 ]; then
+      echo "build image $1 from base version $2 to $3 error"
+      exit "${exit_status}"
+    fi
 }
 
 #---------------- build libre office------------------------------------
 rm -f $base_py-libreoffice && cp -f ./templates/libreoffice ./$base_py-libreoffice
 libreoffice_tag=1
 libreoffice_image=$base_py-libreoffice:$libreoffice_tag
-#buildFunc $base_py-libreoffice $libreoffice_tag $top_image $os
+buildFunc $base_py-libreoffice $libreoffice_tag $top_image $os
 #--------------------------------------------------------------------
 #---------------- build tessract------------------------------------
 rm -f $base_py-tessract && cp -f ./templates/tessract ./$base_py-tessract
 tessract_tag=1
 tessract_image=$base_py-tessract:$tessract_tag
-#buildFunc $base_py-tessract $tessract_tag $top_image $os
+buildFunc $base_py-tessract $tessract_tag $top_image $os
 #--------------------------------------------------------------------
 #----------------- build javac ------------------------
 rm -f $base_py-javac && cp -f ./templates/javac ./$base_py-javac
 javac_tag=1
 javac_image=$base_py-javac:$javac_tag
-#buildFunc $base_py-javac $javac_tag $top_image $os
+buildFunc $base_py-javac $javac_tag $top_image $os
 #--------------------------------------------------------------------
 #---------------- build dotnet -----------------------------------------
 rm -f $base_py-dotnet && cp -f ./templates/dotnet ./$base_py-dotnet
-dotnet_tag=3
+dotnet_tag=1
 dotnet_image=$base_py-dotnet:$dotnet_tag
-#buildFunc $base_py-dotnet $dotnet_tag $top_image $os
+buildFunc $base_py-dotnet $dotnet_tag $top_image $os
 #---------------- build opencv -----------------------------------------
 rm -f $base_py-opencv && cp -f ./templates/opencv ./$base_py-opencv
 opencv_tag=1
 opencv_image=$base_py-opencv:$opencv_tag
-#buildFunc $base_py-opencv $opencv_tag $top_image $os
+buildFunc $base_py-opencv $opencv_tag $top_image $os
 #--------------------------------------------------------------------
 #---------------- build torch full -----------------------------------------
 rm -f $base_py-torch && cp -f ./templates/torch ./$base_py-torch
 torch_tag=1
 torch_image=$base_py-torch:$torch_tag
-#buildFunc $base_py-torch $torch_tag $top_image $os
+buildFunc $base_py-torch $torch_tag $top_image $os
 #---------------- build torch cpu -----------------------------------------
 rm -f $base_py-torch-cpu && cp -f ./templates/torch-cpu ./$base_py-torch-cpu
 torch_cpu_tag=1
@@ -92,7 +104,7 @@ buildFunc $base_py-torch-cpu $torch_cpu_tag $top_image $os
 rm -f $base_py-detectron2 && cp -f ./templates/detectron2 ./$base_py-detectron2
 detectron2_tag=1
 detectron2_image=$base_py-detectron2:$detectron2_tag
-buildFunc $base_py-detectron2 $detectron2_tag $repositiory/$user/$torch_image $os
+@buildFunc $base_py-detectron2 $detectron2_tag $repositiory/$user/$torch_image $os
 #---------------- build huggingface -----------------------------------------
 rm -f $base_py-huggingface && cp -f ./templates/huggingface ./$base_py-huggingface
 huggingface_tag=1
@@ -128,7 +140,6 @@ RUN /check/libreoffice.sh
 RUN /check/tessract.sh
 RUN /check/tika.sh
 RUN /check/dotnet.sh
-
 ">>$base_py-com
 com=1
 export BUILDKIT_PROGRESS=

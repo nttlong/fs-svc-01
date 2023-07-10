@@ -3,11 +3,6 @@ ARG BASE
 FROM ${BASE}
 ARG TARGETARCH
 
-RUN apt update && apt install git -y
+RUN apt update && apt install --yes --force-yes git gcc nocache
 #RUN python3 -m pip install --upgrade  pip
-RUN apt install gcc -y
 RUN pip install git+https://github.com/deepdoctection/deepdoctection.git@f251dca0df9d051fe133ba489d42c6ae2b27597a --no-cache-dir
-
-
-
-COPY --from=python  /usr/local/lib/python3.10/site-packages /usr/local/lib/python3.11/site-packages
