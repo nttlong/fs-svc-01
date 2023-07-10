@@ -14,28 +14,23 @@ export os='debian'
 export top_image=docker.io/python:latest
 export top_image=docker.io/python:3.10.12-slim-bookworm
 base_py=py310
-#docker_tag_exists() {
-#    if  docker manifest inspect $1/$2/$3:$4; then
-#      echo "co"
-#    else
-#      echo "kg co"
-#
-#}
+clear() {
+    docker stop $(docker ps -aq)
+    docker rm $(docker ps -aq)
+    docker rmi $(docker images -q)
+    docker volume rm $(docker volume ls)
+    docker builder prune -f
+    docker system prune -a -f
+    docker buildx create --use --config /etc/containerd/config.toml
+}
 buildFunc(){
 # first param is image name
 # second param is version
 # shellcheck disable=SC1055
 #clear
 
-#docker stop $(docker ps -aq)
-#docker rm $(docker ps -aq)
-#docker rmi $(docker images -q)
-#docker volume rm $(docker volume ls)
-#docker builder prune -f
-#docker system prune -a -f
-#docker buildx create --use --config /etc/containerd/config.toml
+
   echo "$repositiory/$user/$1:$2 is checking"
-  echo "---$(docker manifest inspect $repositiory/$user/$1:$2>/dev/null;echo $?)---"
   if [ "-$(docker manifest inspect $repositiory/$user/$1:$2>/dev/nullnull;echo $?)-" = "-0-" ]; then
     echo "$repositiory/$user/$1:$2 is existing"
     return 0
