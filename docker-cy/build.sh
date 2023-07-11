@@ -110,6 +110,20 @@ rm -f $base_py-deepdoctection && cp -f ./templates/deepdoctection ./$base_py-dee
 deepdoctection_tag=1
 deepdoctection_image=$base_py-deepdoctection:$deepdoctection_tag
 buildFunc $base_py-deepdoctection $deepdoctection_tag $top_image $os
+#----------- build deep-learning-----------
+rm -f $base_py-deep-learning
+echo "
+FROM $repositiory/$user/$torch_image as torch
+FROM $repositiory/$user/$detectron2_image as detectron2
+FROM $repositiory/$user/$huggingface_image as huggingface
+FROM $top_image
+COPY --from=torch / /
+COPY --from=detectron2 / /
+COPY --from=huggingface / /
+">>$base_py-deep-learning
+deep_learning_tag=$torch_cpu_tag$detectron2_tag$huggingface_tag
+deep_learning_image=$base_py-deep-learning:$deep_learning_tag
+buildFunc $base_py-deep-learning $deep_learning_tag $os
 #--- build cython-build----
 rm -f $base_py-cython && cp -f ./templates/cython ./$base_py-cython
 cython_tag=1
@@ -140,6 +154,11 @@ rm -f $base_py-cy_docs && cp -f ./templates/cy_docs ./$base_py-cy_docs
 cy_docs_tag=1
 cy_docs_image=$base_py-cy_docs:$cy_docs_tag
 buildFunc $base_py-cy_docs $cy_docs_tag $repositiory/$user/$cython_image $os
+#------------ cy_env -------------------
+rm -f $base_py-cy-env && cp -f ./templates/cy-env ./$base_py-cy-env
+cy_env_tag=1
+cy_env_image=$base_py-cy-env:$cy_env_tag
+buildFunc $base_py-cy-env $cy_env_tag $top_image $os
 #---------------- cy-core-------------------
 rm -f $base_py-cy-core
 echo "
@@ -148,14 +167,17 @@ FROM $repositiory/$user/$cy_es_image as es
 FROM $repositiory/$user/$cy_kit_image as kit
 FROM $repositiory/$user/$cy_docs_image as docs
 FROM $repositiory/$user/$cy_web_image as web
+FROM $repositiory/$user/$cy_env_image as env
 FROM $top_image
 COPY --from=fast_client /app /app
 COPY --from=es /app /app
 COPY --from=kit /app /app
 COPY --from=docs /app /app
 COPY --from=web /app /app
+COPY --from=env /usr/local/lib/python3.10/site-packages /usr/local/lib/python3.10/site-packages
+
 ">>$base_py-cy-core
-cy_core_tag=$fast_client_tag.$cy_es_tag.$cy_kit_tag.$cy_docs_tag.$cy_web_tag
+cy_core_tag=$fast_client_tag$cy_es_tag$cy_kit_tag$cy_docs_tag$cy_web_tag$cy_env_tag
 cy_core_image=$base_py-cy-core:$cy_core_tag
 buildFunc $base_py-cy-core $cy_core_tag $top_image $os
 #---------------------combine all components---------------------------
@@ -184,12 +206,11 @@ RUN /check/tessract.sh
 RUN /check/tika.sh
 RUN /check/dotnet.sh
 ">>$base_py-com
-com=1
 export BUILDKIT_PROGRESS=
 export platform=linux/amd64,linux/arm64/v8
 export platform_=linux/amd64
 
-com_tag=offi$libreoffice_tag.dnet$dotnet_tag.tess$tessract_tag.javc$javac_tag.opcv$opencv_tag.1
+com_tag=$libreoffice_tag$dotnet_tag$tessract_tag$javac_tag$opencv_tag
 com_image=$base_py-com:$com_tag
 buildFunc $base_py-com $com_tag $top_image $os
 echo "----------------------------------------------"
@@ -206,6 +227,7 @@ echo "------------deep learning framework----------------"
 echo "docker run $repositiory/$user/$detectron2_image"
 echo "docker run $repositiory/$user/$huggingface_image"
 echo "docker run $repositiory/$user/$deepdoctection_image"
+echo "ocker run $repositiory/$user/$deep_learning_image python3 -c 'import time;time.sleep(100000000)'"
 echo "------------------------------------------"
 echo "docker run $repositiory/$user/$fast_client_image python3 -c 'import time;time.sleep(100000000)'"
 echo "docker run $repositiory/$user/$cy_es_image python3 -c 'import time;time.sleep(100000000)'"

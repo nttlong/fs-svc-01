@@ -1,0 +1,6 @@
+ARG BASE
+FROM ${BASE}
+ARG TARGETARCH
+ARG OS
+COPY ./../docker-cy/templates/req.txt /app/req.txt
+RUN pip install -r /app/req.txt && pip cache purge
