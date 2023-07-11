@@ -141,9 +141,9 @@ cy_docs_tag=1
 cy_docs_image=$base_py-cy_docs:$cy_docs_tag
 buildFunc $base_py-cy_docs $cy_docs_tag $repositiory/$user/$cython_image $os
 #---------------- cy-core-------------------
-rm -f $base_cy-core
+rm -f $base_py-cy-core
 echo "
-FROM $repositiory/$user/$cy_fast_client_image as fast_client
+FROM $repositiory/$user/$fast_client_image as fast_client
 FROM $repositiory/$user/$cy_es_image as es
 FROM $repositiory/$user/$cy_kit_image as kit
 FROM $repositiory/$user/$cy_docs_image as docs
@@ -154,10 +154,10 @@ COPY --from=es /app /app
 COPY --from=kit /app /app
 COPY --from=docs /app /app
 COPY --from=web /app /app
-">>$base_cy-core
+">>$base_py-cy-core
 cy_core_tag=$fast_client_tag.$cy_es_tag.$cy_kit_tag.$cy_docs_tag.$cy_web_tag
-cy_core_image=$base_cy-core:$cy_core_tag
-buildFunc $base_cy-core $cy_core_tag $top_image $os
+cy_core_image=$base_py-cy-core:$cy_core_tag
+buildFunc $base_py-cy-core $cy_core_tag $top_image $os
 #---------------------combine all components---------------------------
 rm -f $base_py-com
 echo "
