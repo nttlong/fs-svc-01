@@ -192,16 +192,28 @@ export platform_=linux/amd64
 com_tag=offi$libreoffice_tag.dnet$dotnet_tag.tess$tessract_tag.javc$javac_tag.opcv$opencv_tag.1
 com_image=$base_py-com:$com_tag
 buildFunc $base_py-com $com_tag $top_image $os
+echo "----------------------------------------------"
+echo " In order to run image with arm64 plat from:"
+echo "1-install:
+      sudo apt-get install qemu binfmt-support qemu-user-static
+      2- docker run --platform=linux/arm64/v8  ...
+      example:
+      docker run --platform=linux/arm64/v8 \
+        -v /home/vmadmin/python/v6/file-service-02/from-image-build/arm64:/app \
+        $repositiory/$user/$cy_core_image python3 -c 'import time;time.sleep(100000000)'"
+echo "---------------------------------------------------"
 echo "------------deep learning framework----------------"
 echo "docker run $repositiory/$user/$detectron2_image"
 echo "docker run $repositiory/$user/$huggingface_image"
 echo "docker run $repositiory/$user/$deepdoctection_image"
 echo "------------------------------------------"
-echo "docker run $repositiory/$user/$cy_fast_client_image python3 -c 'import time;time.sleep(100000000)'"
+echo "docker run $repositiory/$user/$fast_client_image python3 -c 'import time;time.sleep(100000000)'"
 echo "docker run $repositiory/$user/$cy_es_image python3 -c 'import time;time.sleep(100000000)'"
 echo "docker run $repositiory/$user/$cy_kit_image python3 -c 'import time;time.sleep(100000000)'"
 echo "docker run $repositiory/$user/$cy_docs_image python3 -c 'import time;time.sleep(100000000)'"
 echo "docker run $repositiory/$user/$cy_web_image python3 -c 'import time;time.sleep(100000000)'"
+echo "docker run $repositiory/$user/$cy_core_image python3 -c 'import time;time.sleep(100000000)'"
+
 echo "------------------------------------------"
 echo "test:"
 echo "docker run $repositiory/$user/$com_image /check/libreoffice.sh"
