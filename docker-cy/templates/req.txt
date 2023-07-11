@@ -106,7 +106,6 @@ PyJWT==1.7.1
 PyMuPDF==1.19.6
 PyPDF2==2.10.0
 pytesseract==0.3.10
-python-doctr==0.6.0
 python-docx==0.8.11
 python-jose==3.3.0
 python-multipart==0.0.6
