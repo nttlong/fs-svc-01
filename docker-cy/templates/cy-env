@@ -6,7 +6,7 @@ ARG OS
 COPY ./../docker-cy/templates/cy-env.req.1.txt /app/cy-env.req.1.txt
 RUN  pip install --upgrade pip && pip install -r /app/cy-env.req.1.txt
 COPY ./../docker-cy/templates/req.txt /app/req.txt
-RUN  pip install --upgrade pip && pip install -r /app/req.txt
+RUN  pip install -r /app/req.txt
 RUN pip install easyocr==1.6.2 --no-cache-dir
 RUN pip install python-doctr==0.6.0 --no-cache-dir
 RUN pip cache purge
