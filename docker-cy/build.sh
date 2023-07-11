@@ -81,7 +81,7 @@ dotnet_image=$base_py-dotnet:$dotnet_tag
 buildFunc $base_py-dotnet $dotnet_tag $top_image $os
 #---------------- build opencv -----------------------------------------
 rm -f $base_py-opencv && cp -f ./templates/opencv ./$base_py-opencv
-opencv_tag=1
+opencv_tag=2
 opencv_image=$base_py-opencv:$opencv_tag
 buildFunc $base_py-opencv $opencv_tag $top_image $os
 #--------------------------------------------------------------------
@@ -107,7 +107,7 @@ huggingface_image=$base_py-huggingface:$huggingface_tag
 buildFunc $base_py-huggingface $huggingface_tag $top_image $os
 #---------------- build huggingface -----------------------------------------
 rm -f $base_py-deepdoctection && cp -f ./templates/deepdoctection ./$base_py-deepdoctection
-deepdoctection_tag=1
+deepdoctection_tag=2
 deepdoctection_image=$base_py-deepdoctection:$deepdoctection_tag
 buildFunc $base_py-deepdoctection $deepdoctection_tag $top_image $os
 #----------- build deep-learning-----------
@@ -116,12 +116,14 @@ echo "
 FROM $repositiory/$user/$torch_image as torch
 FROM $repositiory/$user/$detectron2_image as detectron2
 FROM $repositiory/$user/$huggingface_image as huggingface
+FROM $repositiory/$user/$deepdoctection_image as deepdoctection
 FROM $top_image
 COPY --from=torch / /
 COPY --from=detectron2 / /
 COPY --from=huggingface / /
+COPY --from=deepdoctection / /
 ">>$base_py-deep-learning
-deep_learning_tag=$torch_cpu_tag$detectron2_tag$huggingface_tag
+deep_learning_tag=$torch_cpu_tag$detectron2_tag$huggingface_tag$deepdoctection_tag
 deep_learning_image=$base_py-deep-learning:$deep_learning_tag
 buildFunc $base_py-deep-learning $deep_learning_tag $os
 #--- build cython-build----
@@ -156,7 +158,7 @@ cy_docs_image=$base_py-cy_docs:$cy_docs_tag
 buildFunc $base_py-cy_docs $cy_docs_tag $repositiory/$user/$cython_image $os
 #------------ cy_env -------------------
 rm -f $base_py-cy-env && cp -f ./templates/cy-env ./$base_py-cy-env
-cy_env_tag=1
+cy_env_tag=2
 cy_env_image=$base_py-cy-env:$cy_env_tag
 buildFunc $base_py-cy-env $cy_env_tag $top_image $os
 #---------------- cy-core-------------------
@@ -227,7 +229,7 @@ echo "------------deep learning framework----------------"
 echo "docker run $repositiory/$user/$detectron2_image"
 echo "docker run $repositiory/$user/$huggingface_image"
 echo "docker run $repositiory/$user/$deepdoctection_image"
-echo "ocker run $repositiory/$user/$deep_learning_image python3 -c 'import time;time.sleep(100000000)'"
+echo "docker run $repositiory/$user/$deep_learning_image python3 -c 'import time;time.sleep(100000000)'"
 echo "------------------------------------------"
 echo "docker run $repositiory/$user/$fast_client_image python3 -c 'import time;time.sleep(100000000)'"
 echo "docker run $repositiory/$user/$cy_es_image python3 -c 'import time;time.sleep(100000000)'"
