@@ -131,10 +131,33 @@ cy_kit_tag=1
 cy_kit_image=$base_py-cy_kit:$cy_kit_tag
 buildFunc $base_py-cy_kit $cy_kit_tag $repositiory/$user/$cython_image $os
 #------------ cy_web -------------------
-rm -f $base_py-cy_kit && cp -f ./templates/cy_kit ./$base_py-cy_kit
+rm -f $base_py-cy_web && cp -f ./templates/cy_web ./$base_py-cy_web
 cy_web_tag=1
 cy_web_image=$base_py-cy_web:$cy_web_tag
 buildFunc $base_py-cy_web $cy_web_tag $repositiory/$user/$cython_image $os
+#------------ cy_docs -------------------
+rm -f $base_py-cy_docs && cp -f ./templates/cy_docs ./$base_py-cy_docs
+cy_docs_tag=1
+cy_docs_image=$base_py-cy_docs:$cy_docs_tag
+buildFunc $base_py-cy_docs $cy_docs_tag $repositiory/$user/$cython_image $os
+#---------------- cy-core-------------------
+rm -f $base_cy-core
+echo "
+FROM $repositiory/$user/$cy_fast_client_image as fast_client
+FROM $repositiory/$user/$cy_es_image as es
+FROM $repositiory/$user/$cy_kit_image as kit
+FROM $repositiory/$user/$cy_docs_image as docs
+FROM $repositiory/$user/$cy_web_image as web
+FROM $top_image
+COPY --from=fast_client /app /app
+COPY --from=es /app /app
+COPY --from=kit /app /app
+COPY --from=docs /app /app
+COPY --from=web /app /app
+">>$base_cy-core
+cy_core_tag=$fast_client_tag.$cy_es_tag.$cy_kit_tag.$cy_docs_tag.$cy_web_tag
+cy_core_image=$base_cy-core:$cy_core_tag
+buildFunc $base_cy-core $cy_core_tag $top_image $os
 #---------------------combine all components---------------------------
 rm -f $base_py-com
 echo "
@@ -174,6 +197,12 @@ echo "docker run $repositiory/$user/$detectron2_image"
 echo "docker run $repositiory/$user/$huggingface_image"
 echo "docker run $repositiory/$user/$deepdoctection_image"
 echo "------------------------------------------"
+echo "docker run $repositiory/$user/$cy_fast_client_image python3 -c 'import time;time.sleep(100000000)'"
+echo "docker run $repositiory/$user/$cy_es_image python3 -c 'import time;time.sleep(100000000)'"
+echo "docker run $repositiory/$user/$cy_kit_image python3 -c 'import time;time.sleep(100000000)'"
+echo "docker run $repositiory/$user/$cy_docs_image python3 -c 'import time;time.sleep(100000000)'"
+echo "docker run $repositiory/$user/$cy_web_image python3 -c 'import time;time.sleep(100000000)'"
+echo "------------------------------------------"
 echo "test:"
 echo "docker run $repositiory/$user/$com_image /check/libreoffice.sh"
 echo "docker run $repositiory/$user/$com_image /check/tessract.sh"
@@ -182,6 +211,7 @@ echo "docker run $repositiory/$user/$com_image python3 /check/dotnet.py"
 echo "docker run $repositiory/$user/$com_image python3 /check/py_vncorenlp_check.py"
 echo "docker run $repositiory/$user/$com_image python3 /check/opencv_check.py"
 echo "docker run $repositiory/$user/$com_image python3 -c 'import time;time.sleep(100000000)'"
+
 
 #docker run docker docker.lacviet.vn/xdoc/py311-deepdoctection:1 python3 -c 'import time;time.sleep(100000000)'
 #py3_dotnet=1

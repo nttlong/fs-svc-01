@@ -2,5 +2,5 @@ ARG BASE
 FROM ${BASE}
 ARG TARGETARCH
 ARG OS
-COPY ./../cy_es /app/cy_web
+COPY ./../cy_web /app/cy_web
 RUN python3 /app/compact.py /app/cy_web
