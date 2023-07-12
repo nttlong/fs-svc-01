@@ -157,10 +157,15 @@ cy_docs_tag=1
 cy_docs_image=$base_py-cy_docs:$cy_docs_tag
 buildFunc $base_py-cy_docs $cy_docs_tag $repositiory/$user/$cython_image $os
 #------------ cy_env -------------------
-rm -f $base_py-cy-env && cp -f ./templates/cy-env ./$base_py-cy-env
-cy_env_tag=2
-cy_env_image=$base_py-cy-env:$cy_env_tag
-buildFunc $base_py-cy-env $cy_env_tag $top_image $os
+#rm -f $base_py-cy-env && cp -f ./templates/cy-env ./$base_py-cy-env
+#cy_env_tag=2
+#cy_env_image=$base_py-cy-env:$cy_env_tag
+#buildFunc $base_py-cy-env $cy_env_tag $top_image $os
+#------------ cy_env -------------------
+rm -f $base_py-cy-env && cp -f ./templates/cy-env ./$base_py-cy-env-cpu
+cy_env_cpu_tag=1
+cy_env_image=$base_py-cy-env-cpu:$cy_env_cpu_tag
+buildFunc $base_py-cy-env-cpu $cy_env_cpu_tag $repositiory/$user/$torch_image
 #---------------- cy-core-------------------
 rm -f $base_py-cy-core
 echo "
@@ -215,6 +220,32 @@ export platform_=linux/amd64
 com_tag=$libreoffice_tag$dotnet_tag$tessract_tag$javac_tag$opencv_tag
 com_image=$base_py-com:$com_tag
 buildFunc $base_py-com $com_tag $top_image $os
+#----- apps--------------
+rm -f $base_py-xdoc
+echo "
+FROM $repositiory/$user/$com_image as com
+FROM $repositiory/$user/$deep_learning_image as dlrn
+FROM $repositiory/$user/$cy_core_image as core
+FROM $repositiory/$user/$cy_env_image  as evn
+FROM $top_image
+COPY --from=com / /
+COPY --from=dlrn /usr/local/lib/python3.10/site-packages /usr/local/lib/python3.10/site-packages
+COPY --from=core /usr/local/lib/python3.10/site-packages /usr/local/lib/python3.10/site-packages
+COPY --from=core /app /app
+COPY --from=evn /usr/local/lib/python3.10/site-packages /usr/local/lib/python3.10/site-packages
+COPY ./../cy_consumers /app/cy_consumers
+COPY ./../cy_utils /app/cy_utils
+COPY ./../cy_xdoc /app/cy_xdoc
+COPY ./../cyx /app/cyx
+COPY ./../resource /app/resource
+COPY ./../config.yml /app/config.yml
+RUN pip uninstall pymongo -y && rm -fr /check
+">>$base_py-xdoc
+xdoc_tag=cpu-$com_tag-$deep_learning_tag-$cy_env_cpu_tag-1
+xdoc_image=$base_py-xdoc:$xdoc_tag
+buildFunc $base_py-xdoc $xdoc_tag $top_image $os
+#--------------------------------------------------
+
 echo "----------------------------------------------"
 echo " In order to run image with arm64 plat from:"
 echo "1-install:
@@ -247,7 +278,7 @@ echo "docker run $repositiory/$user/$com_image python3 /check/dotnet.py"
 echo "docker run $repositiory/$user/$com_image python3 /check/py_vncorenlp_check.py"
 echo "docker run $repositiory/$user/$com_image python3 /check/opencv_check.py"
 echo "docker run $repositiory/$user/$com_image python3 -c 'import time;time.sleep(100000000)'"
-
+echo "docker run -p 8012:8012 $repositiory/$user/$xdoc_image python3  /app/cy_xdoc/server.py"
 
 #docker run docker docker.lacviet.vn/xdoc/py311-deepdoctection:1 python3 -c 'import time;time.sleep(100000000)'
 #py3_dotnet=1
