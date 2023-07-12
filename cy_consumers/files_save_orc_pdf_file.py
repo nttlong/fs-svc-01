@@ -3,10 +3,6 @@
 import os
 import pathlib
 import sys
-import threading
-
-import pymongo
-
 working_dir = pathlib.Path(__file__).parent.parent.__str__()
 sys.path.append(working_dir)
 import cy_kit

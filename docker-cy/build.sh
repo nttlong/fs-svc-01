@@ -220,8 +220,8 @@ export platform_=linux/amd64
 com_tag=$libreoffice_tag$dotnet_tag$tessract_tag$javac_tag$opencv_tag
 com_image=$base_py-com:$com_tag
 buildFunc $base_py-com $com_tag $top_image $os
-#----- apps--------------
-rm -f $base_py-xdoc
+#----- app-framework--------------
+rm -f $base_py-xdoc-framework
 echo "
 FROM $repositiory/$user/$com_image as com
 FROM $repositiory/$user/$deep_learning_image as dlrn
@@ -240,10 +240,17 @@ COPY ./../cyx /app/cyx
 COPY ./../resource /app/resource
 COPY ./../config.yml /app/config.yml
 RUN pip uninstall pymongo -y && rm -fr /check
-">>$base_py-xdoc
-xdoc_tag=cpu-$com_tag-$deep_learning_tag-$cy_env_cpu_tag-1
+COPY ./../start.sh /app/start.sh
+RUN chmod +x /app/start.sh
+">>$base_py-xdoc-framework
+xdoc_framework_tag=cpu-$com_tag-$deep_learning_tag-$cy_env_cpu_tag
+xdoc_framework_image=$base_py-xdoc:$xdoc_tag
+buildFunc $base_py-xdoc-framework $xdoc_framework_tag $top_image $os
+#----- apps--------------
+rm -f $base_py-xdoc && cp -f ./templates/xdoc ./$base_py-xdoc
+xdoc_tag=$xdoc_framework_tag-1
 xdoc_image=$base_py-xdoc:$xdoc_tag
-buildFunc $base_py-xdoc $xdoc_tag $top_image $os
+buildFunc $base_py-xdoc $xdoc_tag $xdoc_framework_image $os
 #--------------------------------------------------
 
 echo "----------------------------------------------"
@@ -279,6 +286,7 @@ echo "docker run $repositiory/$user/$com_image python3 /check/py_vncorenlp_check
 echo "docker run $repositiory/$user/$com_image python3 /check/opencv_check.py"
 echo "docker run $repositiory/$user/$com_image python3 -c 'import time;time.sleep(100000000)'"
 echo "docker run -p 8012:8012 $repositiory/$user/$xdoc_image python3  /app/cy_xdoc/server.py"
+echo "docker run -p 8012:8012 $repositiory/$user/$xdoc_image /app/start.sh"
 
 #docker run docker docker.lacviet.vn/xdoc/py311-deepdoctection:1 python3 -c 'import time;time.sleep(100000000)'
 #py3_dotnet=1

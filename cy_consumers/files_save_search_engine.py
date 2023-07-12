@@ -44,47 +44,47 @@ content, info = content_services.get_text(__file__)
 def on_receive_msg(msg_info: MessageInfo):
     # try:
     from cyx.common.file_storage_mongodb import MongoDbFileStorage, MongoDbFileService
+    try:
+        from cy_xdoc.services.files import FileServices
+        from cy_xdoc.services.search_engine import SearchEngine
+        search_engine: SearchEngine = cy_kit.singleton(SearchEngine)
+        file_services = cy_kit.singleton(FileServices)
 
-    from cy_xdoc.services.files import FileServices
-    from cy_xdoc.services.search_engine import SearchEngine
-    search_engine: SearchEngine = cy_kit.singleton(SearchEngine)
-    file_services = cy_kit.singleton(FileServices)
+        full_file_path = msg_info.Data['processing_file']
+        if not os.path.isfile(full_file_path):
+            logs.info(f"{full_file_path} was not found")
+            print(f"{full_file_path} was not found")
+            msg.delete(msg_info)
+            return
 
-    full_file_path = msg_info.Data['processing_file']
-    if not os.path.isfile(full_file_path):
-        logs.info(f"{full_file_path} was not found")
-        print(f"{full_file_path} was not found")
+        print(f"get content from {full_file_path}")
+        logs.info(f"get content from {full_file_path}")
+        content, info = content_services.get_text(full_file_path)
+        print(f"get content from {full_file_path} is ok")
+        logs.info(f"get content from {full_file_path} is ok")
+        if content is None:
+            print(f"get content from{full_file_path} and get no content")
+            logs.info(f"get content from{full_file_path} and get no content")
+            msg.delete(msg_info)
+            return
+
+        upload_item = file_services.get_upload_register(
+            app_name=msg_info.AppName,
+            upload_id=msg_info.Data["_id"]
+        )
+        search_engine.update_content(
+            app_name=msg_info.AppName,
+            id=msg_info.Data["_id"],
+            content=content,
+            meta_data=info,
+            data_item=upload_item
+        )
+        print(f"{full_file_path} was updated to search engine")
+        logs.info(f"{full_file_path} was updated to search engine")
         msg.delete(msg_info)
-        return
-
-    print(f"get content from {full_file_path}")
-    logs.info(f"get content from {full_file_path}")
-    content, info = content_services.get_text(full_file_path)
-    print(f"get content from {full_file_path} is ok")
-    logs.info(f"get content from {full_file_path} is ok")
-    if content is None:
-        print(f"get content from{full_file_path} and get no content")
-        logs.info(f"get content from{full_file_path} and get no content")
-        msg.delete(msg_info)
-        return
-
-    upload_item = file_services.get_upload_register(
-        app_name=msg_info.AppName,
-        upload_id=msg_info.Data["_id"]
-    )
-    search_engine.update_content(
-        app_name=msg_info.AppName,
-        id=msg_info.Data["_id"],
-        content=content,
-        meta_data=info,
-        data_item=upload_item
-    )
-    print(f"{full_file_path} was updated to search engine")
-    logs.info(f"{full_file_path} was updated to search engine")
-    msg.delete(msg_info)
-    # except Exception as e:
-    #     logs.info(e)
-    #     print(e)
+    except Exception as e:
+        logs.info(e)
+        print(e)
 
 
 msg.consume(

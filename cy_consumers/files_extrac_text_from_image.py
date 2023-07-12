@@ -72,17 +72,24 @@ def on_receive_msg(msg_info: MessageInfo):
             upload_id=msg_info.Data["_id"]
         )
         if upload_item:
+            if not os.path.isfile(full_file):
+                msg.delete(msg_info)
+                return
             content = easy_service.get_text(image_file=full_file)
             if content == "":
                 msg.delete(msg_info)
                 return
-            search_engine.update_content(
-                app_name=msg_info.AppName,
-                id=msg_info.Data["_id"],
-                content=content,
-                meta=None,
-                data_item=upload_item
-            )
+            try:
+                search_engine.update_content(
+                    app_name=msg_info.AppName,
+                    id=msg_info.Data["_id"],
+                    content=content,
+                    meta=None,
+                    data_item=upload_item
+                )
+            except Exception as e:
+                print(f"{__file__} search_engine.update_content is error")
+                print(e)
             print(f"Generate pdf from {full_file}:\nPDF file is {pdf_file}")
             logs.info(f"Generate pdf from {full_file}:\nPDF file is {pdf_file}")
             msg.delete(msg_info)

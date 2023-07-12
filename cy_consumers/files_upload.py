@@ -38,7 +38,6 @@ import pathlib
 import sys
 import threading
 import time
-
 working_dir = pathlib.Path(__file__).parent.parent.__str__()
 sys.path.append(working_dir)
 import cy_kit
@@ -247,7 +246,7 @@ def on_receive_msg(msg_info: MessageInfo):
                 message_type=cyx.common.msg.MSG_FILE_EXTRACT_TEXT_FROM_IMAGE,
                 data=msg_info.Data
             )
-            print(f"{cyx.common.msg.MSG_FILE_GENERATE_THUMBS}\n{full_file_path}")
+            print(f"{cyx.common.msg.MSG_FILE_EXTRACT_TEXT_FROM_IMAGE}\n{full_file_path}")
 
         msg.delete(msg_info)
         print(f"{full_file_path}\n is ok")

@@ -1,0 +1,13 @@
+ARG BASE
+FROM ${BASE}
+ARG TARGETARCH
+ARG OS
+COPY ./../cy_consumers /app/cy_consumers
+COPY ./../cy_utils /app/cy_utils
+COPY ./../cy_xdoc /app/cy_xdoc
+COPY ./../cyx /app/cyx
+COPY ./../resource /app/resource
+COPY ./../config.yml /app/config.yml
+RUN pip uninstall pymongo -y && rm -fr /check
+COPY ./../start.sh /app/start.sh
+RUN chmod +x /app/start.sh
