@@ -223,38 +223,30 @@ buildFunc $base_py-com $com_tag $top_image $os
 #----- app-framework--------------
 rm -f $base_py-xdoc-framework
 echo "
-FROM $repositiory/$user/$com_image as com
+
 FROM $repositiory/$user/$deep_learning_image as dlrn
 FROM $repositiory/$user/$cy_core_image as core
-FROM $repositiory/$user/$cy_env_image  as evn
-FROM $top_image
-COPY --from=com / /
-COPY --from=dlrn /usr/local/lib/python3.10/site-packages /usr/local/lib/python3.10/site-packages
-COPY --from=core /usr/local/lib/python3.10/site-packages /usr/local/lib/python3.10/site-packages
+FROM $repositiory/$user/$cy_env_image  as env
+FROM $repositiory/$user/$com_image
+#COPY --from=com / /
+COPY --from=dlrn /usr /usr
+COPY --from=core /usr /usr
 COPY --from=core /app /app
-COPY --from=evn /usr/local/lib/python3.10/site-packages /usr/local/lib/python3.10/site-packages
-COPY ./../cy_consumers /app/cy_consumers
-COPY ./../cy_utils /app/cy_utils
-COPY ./../cy_xdoc /app/cy_xdoc
-COPY ./../cyx /app/cyx
-COPY ./../resource /app/resource
-COPY ./../config.yml /app/config.yml
+COPY --from=env /usr /usr/
 RUN pip uninstall pymongo -y && rm -fr /check
-COPY ./../start.sh /app/start.sh
-RUN chmod +x /app/start.sh
 ">>$base_py-xdoc-framework
-xdoc_framework_tag=cpu-$com_tag-$deep_learning_tag-$cy_env_cpu_tag
-xdoc_framework_image=$base_py-xdoc:$xdoc_tag
+xdoc_framework_tag=cpu-$com_tag-$deep_learning_tag-$cy_env_cpu_tag-1
+xdoc_framework_image=$base_py-xdoc-framework:$xdoc_framework_tag
 buildFunc $base_py-xdoc-framework $xdoc_framework_tag $top_image $os
 #----- apps--------------
 rm -f $base_py-xdoc && cp -f ./templates/xdoc ./$base_py-xdoc
-xdoc_tag=$xdoc_framework_tag-1
+xdoc_tag=$xdoc_framework_tag-2
 xdoc_image=$base_py-xdoc:$xdoc_tag
-buildFunc $base_py-xdoc $xdoc_tag $xdoc_framework_image $os
+buildFunc $base_py-xdoc $xdoc_tag $repositiory/$user/$xdoc_framework_image $os
 #--------------------------------------------------
 
 echo "----------------------------------------------"
-echo " In order to run image with arm64 plat from:"
+echo " In order to run image with arm64 platform:"
 echo "1-install:
       sudo apt-get install qemu binfmt-support qemu-user-static
       2- docker run --platform=linux/arm64/v8  ...
