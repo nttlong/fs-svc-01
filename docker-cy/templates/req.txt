@@ -139,3 +139,4 @@ uvicorn==0.21.1
 Wand==0.6.11
 watchdog==2.1.9
 
+#docker run docker.lacviet.vn/xdoc/py310-cy-env:2 python3 -c 'import time;time.sleep(100000000)'
