@@ -235,12 +235,12 @@ COPY --from=core /app /app
 COPY --from=env /usr /usr/
 RUN pip uninstall pymongo -y && rm -fr /check
 ">>$base_py-xdoc-framework
-xdoc_framework_tag=cpu-$com_tag-$deep_learning_tag-$cy_env_cpu_tag-1
+xdoc_framework_tag=cpu-$com_tag-$deep_learning_tag-$cy_env_cpu_tag1
 xdoc_framework_image=$base_py-xdoc-framework:$xdoc_framework_tag
 buildFunc $base_py-xdoc-framework $xdoc_framework_tag $top_image $os
 #----- apps--------------
 rm -f $base_py-xdoc && cp -f ./templates/xdoc ./$base_py-xdoc
-xdoc_tag=$xdoc_framework_tag-2
+xdoc_tag=$xdoc_framework_tag2
 xdoc_image=$base_py-xdoc:$xdoc_tag
 buildFunc $base_py-xdoc $xdoc_tag $repositiory/$user/$xdoc_framework_image $os
 #--------------------------------------------------
