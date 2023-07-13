@@ -14,7 +14,7 @@ export os='debian'
 export top_image=docker.io/python:latest
 export top_image=docker.io/python:3.10.12-slim-bookworm
 base_py=py310
-clear() {
+reset_build() {
     docker stop $(docker ps -aq)
     docker rm $(docker ps -aq)
     docker rmi $(docker images -q)
@@ -22,7 +22,20 @@ clear() {
     docker builder prune -f
     docker system prune -a -f
     docker buildx create --use --config /etc/containerd/config.toml
+
 }
+tag(){
+  if [ "$platform" = "linux/amd64,linux/arm64/v8" ]; then
+    echo "$1"
+  fi
+  if [ "$platform" = "linux/amd64" ]; then
+    echo "adm.$1"
+  fi
+  if [ "$platform" = "linux/arm64/v8" ]; then
+    echo "arm.$1"
+  fi
+}
+
 buildFunc(){
 # first param is image name
 # second param is version
@@ -45,6 +58,9 @@ buildFunc(){
           $repositiory/$user/$1:$2  \
           --platform=$platform ./.. -f $1  --push=true --output type=registry
     exit_status=$?
+    if [ "-$exit_status-" = "-0-" ]; then
+      reset_build
+    fi
     if [ ${exit_status} -ne 0 ]; then
       echo "build image $1 from base version $2 to $3 error"
       exit "${exit_status}"
@@ -59,57 +75,68 @@ buildFunc(){
 #---------------- build libre office------------------------------------
 rm -f $base_py-libreoffice && cp -f ./templates/libreoffice ./$base_py-libreoffice
 libreoffice_tag=1
-libreoffice_image=$base_py-libreoffice:$libreoffice_tag
-buildFunc $base_py-libreoffice $libreoffice_tag $top_image $os
+libreoffice_tag_build=$(tag $libreoffice_tag)
+libreoffice_image=$base_py-libreoffice:$libreoffice_tag_build
+buildFunc $base_py-libreoffice $libreoffice_tag_build $top_image $os
 #--------------------------------------------------------------------
 #---------------- build tessract------------------------------------
 rm -f $base_py-tessract && cp -f ./templates/tessract ./$base_py-tessract
 tessract_tag=1
-tessract_image=$base_py-tessract:$tessract_tag
-buildFunc $base_py-tessract $tessract_tag $top_image $os
+tessract_tag_build=$(tag $tessract_tag)
+tessract_image=$base_py-tessract:$tessract_tag_build
+buildFunc $base_py-tessract $tessract_tag_build $top_image $os
 #--------------------------------------------------------------------
 #----------------- build javac ------------------------
 rm -f $base_py-javac && cp -f ./templates/javac ./$base_py-javac
 javac_tag=1
-javac_image=$base_py-javac:$javac_tag
-buildFunc $base_py-javac $javac_tag $top_image $os
+javac_tag_build=$(tag $javac_tag)
+javac_image=$base_py-javac:$javac_tag_build
+buildFunc $base_py-javac $javac_tag_build $top_image $os
 #--------------------------------------------------------------------
 #---------------- build dotnet -----------------------------------------
 rm -f $base_py-dotnet && cp -f ./templates/dotnet ./$base_py-dotnet
 dotnet_tag=1
-dotnet_image=$base_py-dotnet:$dotnet_tag
-buildFunc $base_py-dotnet $dotnet_tag $top_image $os
+dotnet_tag_build=$(tag $dotnet_tag)
+
+dotnet_image=$base_py-dotnet:$dotnet_tag_build
+buildFunc $base_py-dotnet $dotnet_tag_build $top_image $os
 #---------------- build opencv -----------------------------------------
 rm -f $base_py-opencv && cp -f ./templates/opencv ./$base_py-opencv
 opencv_tag=2
-opencv_image=$base_py-opencv:$opencv_tag
-buildFunc $base_py-opencv $opencv_tag $top_image $os
+opencv_tag_build=$(tag $opencv_tag)
+opencv_image=$base_py-opencv:$opencv_tag_build
+buildFunc $base_py-opencv $opencv_tag_build $top_image $os
 #--------------------------------------------------------------------
 #---------------- build torch full -----------------------------------------
 rm -f $base_py-torch && cp -f ./templates/torch ./$base_py-torch
 torch_tag=1
-torch_image=$base_py-torch:$torch_tag
+torch_tag_build=$(tag $torch_tag)
+torch_image=$base_py-torch:$torch_tag_build
 #buildFunc $base_py-torch $torch_tag $top_image $os
 #---------------- build torch cpu -----------------------------------------
 rm -f $base_py-torch-cpu && cp -f ./templates/torch-cpu ./$base_py-torch-cpu
 torch_cpu_tag=1
-torch_image=$base_py-torch-cpu:$torch_cpu_tag
-buildFunc $base_py-torch-cpu $torch_cpu_tag $top_image $os
+torch_cpu_tag_build=$(tag $torch_cpu_tag)
+torch_image=$base_py-torch-cpu:$torch_cpu_tag_build
+buildFunc $base_py-torch-cpu $torch_cpu_tag_build $top_image $os
 #---------------- build detectron2 -----------------------------------------
 rm -f $base_py-detectron2 && cp -f ./templates/detectron2 ./$base_py-detectron2
 detectron2_tag=1
-detectron2_image=$base_py-detectron2:$detectron2_tag
-@buildFunc $base_py-detectron2 $detectron2_tag $repositiory/$user/$torch_image $os
+detectron2_tag_build=$(tag $detectron2_tag)
+detectron2_image=$base_py-detectron2:$detectron2_tag_build
+buildFunc $base_py-detectron2 $detectron2_tag_build $repositiory/$user/$torch_image $os
 #---------------- build huggingface -----------------------------------------
 rm -f $base_py-huggingface && cp -f ./templates/huggingface ./$base_py-huggingface
 huggingface_tag=1
-huggingface_image=$base_py-huggingface:$huggingface_tag
-buildFunc $base_py-huggingface $huggingface_tag $top_image $os
+huggingface_tag_build=$(tag $huggingface_tag)
+huggingface_image=$base_py-huggingface:$huggingface_tag_build
+buildFunc $base_py-huggingface $huggingface_tag_build $top_image $os
 #---------------- build huggingface -----------------------------------------
 rm -f $base_py-deepdoctection && cp -f ./templates/deepdoctection ./$base_py-deepdoctection
 deepdoctection_tag=2
-deepdoctection_image=$base_py-deepdoctection:$deepdoctection_tag
-buildFunc $base_py-deepdoctection $deepdoctection_tag $top_image $os
+deepdoctection_tag_build=$(tag $deepdoctection_tag)
+deepdoctection_image=$base_py-deepdoctection:$deepdoctection_tag_build
+buildFunc $base_py-deepdoctection $deepdoctection_tag_build $top_image $os
 #----------- build deep-learning-----------
 rm -f $base_py-deep-learning
 echo "
@@ -122,40 +149,48 @@ COPY --from=torch / /
 COPY --from=detectron2 / /
 COPY --from=huggingface / /
 COPY --from=deepdoctection / /
+
 ">>$base_py-deep-learning
-deep_learning_tag=$torch_cpu_tag$detectron2_tag$huggingface_tag$deepdoctection_tag
-deep_learning_image=$base_py-deep-learning:$deep_learning_tag
-buildFunc $base_py-deep-learning $deep_learning_tag $os
+deep_learning_tag=$(($torch_cpu_tag+$detectron2_tag+$huggingface_tag+$deepdoctection_tag))
+deep_learning_tag_build=$(tag $deep_learning_tag)
+deep_learning_image=$base_py-deep-learning:$deep_learning_tag_build
+buildFunc $base_py-deep-learning $deep_learning_tag_build $os
 #--- build cython-build----
 rm -f $base_py-cython && cp -f ./templates/cython ./$base_py-cython
 cython_tag=1
-cython_image=$base_py-cython:$cython_tag
-buildFunc $base_py-cython $cython_tag $top_image $os
+cython_tag_build=$(tag $cython_tag)
+cython_image=$base_py-cython:$cython_tag_build
+buildFunc $base_py-cython $cython_tag_build $top_image $os
 #--- build fast-client----
 rm -f $base_py-fast-client && cp -f ./templates/fast-client ./$base_py-fast-client
 fast_client_tag=1
-fast_client_image=$base_py-fast-client:$fast_client_tag
-buildFunc $base_py-fast-client $fast_client_tag $repositiory/$user/$cython_image $os
+fast_client_tag_build=$(tag $fast_client_tag)
+fast_client_image=$base_py-fast-client:$fast_client_tag_build
+buildFunc $base_py-fast-client $fast_client_tag_build $repositiory/$user/$cython_image $os
 #------------ cy_es -------------------
 rm -f $base_py-cy_es && cp -f ./templates/cy_es ./$base_py-cy_es
 cy_es_tag=1
-cy_es_image=$base_py-cy_es:$cy_es_tag
-buildFunc $base_py-cy_es $cy_es_tag $repositiory/$user/$cython_image $os
+cy_es_tag_build=$(tag $cy_es_tag)
+cy_es_image=$base_py-cy_es:$cy_es_tag_build
+buildFunc $base_py-cy_es $cy_es_tag_build $repositiory/$user/$cython_image $os
 #------------ cy_kit -------------------
 rm -f $base_py-cy_kit && cp -f ./templates/cy_kit ./$base_py-cy_kit
 cy_kit_tag=1
-cy_kit_image=$base_py-cy_kit:$cy_kit_tag
-buildFunc $base_py-cy_kit $cy_kit_tag $repositiory/$user/$cython_image $os
+cy_kit_tag_build=$(tag $cy_kit_tag)
+cy_kit_image=$base_py-cy_kit:$cy_kit_tag_build
+buildFunc $base_py-cy_kit $cy_kit_tag_build $repositiory/$user/$cython_image $os
 #------------ cy_web -------------------
 rm -f $base_py-cy_web && cp -f ./templates/cy_web ./$base_py-cy_web
 cy_web_tag=1
-cy_web_image=$base_py-cy_web:$cy_web_tag
-buildFunc $base_py-cy_web $cy_web_tag $repositiory/$user/$cython_image $os
+cy_web_tag_build=$(tag $cy_web_tag)
+cy_web_image=$base_py-cy_web:$cy_web_tag_build
+buildFunc $base_py-cy_web $cy_web_tag_build $repositiory/$user/$cython_image $os
 #------------ cy_docs -------------------
 rm -f $base_py-cy_docs && cp -f ./templates/cy_docs ./$base_py-cy_docs
 cy_docs_tag=1
-cy_docs_image=$base_py-cy_docs:$cy_docs_tag
-buildFunc $base_py-cy_docs $cy_docs_tag $repositiory/$user/$cython_image $os
+cy_docs_tag_build=$(tag $cy_docs_tag)
+cy_docs_image=$base_py-cy_docs:$cy_docs_tag_build
+buildFunc $base_py-cy_docs $cy_docs_tag_build $repositiory/$user/$cython_image $os
 #------------ cy_env -------------------
 #rm -f $base_py-cy-env && cp -f ./templates/cy-env ./$base_py-cy-env
 #cy_env_tag=2
@@ -164,8 +199,9 @@ buildFunc $base_py-cy_docs $cy_docs_tag $repositiory/$user/$cython_image $os
 #------------ cy_env -------------------
 rm -f $base_py-cy-env && cp -f ./templates/cy-env ./$base_py-cy-env-cpu
 cy_env_cpu_tag=1
-cy_env_image=$base_py-cy-env-cpu:$cy_env_cpu_tag
-buildFunc $base_py-cy-env-cpu $cy_env_cpu_tag $repositiory/$user/$torch_image
+cy_env_cpu_tag_build=$(tag $cy_env_cpu_tag)
+cy_env_image=$base_py-cy-env-cpu:$cy_env_cpu_tag_build
+buildFunc $base_py-cy-env-cpu $cy_env_cpu_tag_build $repositiory/$user/$torch_image
 #---------------- cy-core-------------------
 rm -f $base_py-cy-core
 echo "
@@ -181,12 +217,13 @@ COPY --from=es /app /app
 COPY --from=kit /app /app
 COPY --from=docs /app /app
 COPY --from=web /app /app
-COPY --from=env /usr/local/lib/python3.10/site-packages /usr/local/lib/python3.10/site-packages
+COPY --from=env /usr /usr
 
 ">>$base_py-cy-core
-cy_core_tag=$fast_client_tag$cy_es_tag$cy_kit_tag$cy_docs_tag$cy_web_tag$cy_env_tag
-cy_core_image=$base_py-cy-core:$cy_core_tag
-buildFunc $base_py-cy-core $cy_core_tag $top_image $os
+cy_core_tag=$(($fast_client_tag+$cy_es_tag+$cy_kit_tag+$cy_docs_tag+$cy_web_tag$cy_env_tag2))
+cy_core_tag_build=$(tag $cy_core_tag)
+cy_core_image=$base_py-cy-core:$cy_core_tag_build
+buildFunc $base_py-cy-core $cy_core_tag_build $top_image $os
 #---------------------combine all components---------------------------
 rm -f $base_py-com
 echo "
@@ -213,13 +250,14 @@ RUN /check/tessract.sh
 RUN /check/tika.sh
 RUN /check/dotnet.sh
 ">>$base_py-com
-export BUILDKIT_PROGRESS=
-export platform=linux/amd64,linux/arm64/v8
-export platform_=linux/amd64
+#export BUILDKIT_PROGRESS=
+#export platform=linux/amd64,linux/arm64/v8
+#export platform_=linux/amd64
 
-com_tag=$libreoffice_tag$dotnet_tag$tessract_tag$javac_tag$opencv_tag
-com_image=$base_py-com:$com_tag
-buildFunc $base_py-com $com_tag $top_image $os
+com_tag=$(($libreoffice_tag+$dotnet_tag+$tessract_tag+$javac_tag+$opencv_tag))
+com_tag_build=$(tag $com_tag)
+com_image=$base_py-com:$com_tag_build
+buildFunc $base_py-com $com_tag_build $top_image $os
 #----- app-framework--------------
 rm -f $base_py-xdoc-framework
 echo "
@@ -234,15 +272,18 @@ COPY --from=core /usr /usr
 COPY --from=core /app /app
 COPY --from=env /usr /usr/
 RUN pip uninstall pymongo -y && rm -fr /check
+RUN apt install python3-opencv
 ">>$base_py-xdoc-framework
-xdoc_framework_tag=cpu-$com_tag-$deep_learning_tag-$cy_env_cpu_tag1
-xdoc_framework_image=$base_py-xdoc-framework:$xdoc_framework_tag
-buildFunc $base_py-xdoc-framework $xdoc_framework_tag $top_image $os
+xdoc_framework_tag=cpu.$com_tag.$deep_learning_tag.$cy_env_cpu_tag
+xdoc_framework_tag_build=$(tag $xdoc_framework_tag)
+xdoc_framework_image=$base_py-xdoc-framework:$xdoc_framework_tag_build
+buildFunc $base_py-xdoc-framework $xdoc_framework_tag_build $top_image $os
 #----- apps--------------
 rm -f $base_py-xdoc && cp -f ./templates/xdoc ./$base_py-xdoc
-xdoc_tag=$xdoc_framework_tag2
-xdoc_image=$base_py-xdoc:$xdoc_tag
-buildFunc $base_py-xdoc $xdoc_tag $repositiory/$user/$xdoc_framework_image $os
+xdoc_tag=$xdoc_framework_tag.1
+xdoc_tag_build=$(tag $xdoc_tag)
+xdoc_image=$base_py-xdoc:$xdoc_tag_build
+buildFunc $base_py-xdoc $xdoc_tag_build $repositiory/$user/$xdoc_framework_image $os
 #--------------------------------------------------
 
 echo "----------------------------------------------"
@@ -279,6 +320,12 @@ echo "docker run $repositiory/$user/$com_image python3 /check/opencv_check.py"
 echo "docker run $repositiory/$user/$com_image python3 -c 'import time;time.sleep(100000000)'"
 echo "docker run -p 8012:8012 $repositiory/$user/$xdoc_image python3  /app/cy_xdoc/server.py"
 echo "docker run -p 8012:8012 $repositiory/$user/$xdoc_image /app/start.sh"
+echo "Create volume:
+
+docker volume create --name xdoc-data
+
+
+"
 
 #docker run docker docker.lacviet.vn/xdoc/py311-deepdoctection:1 python3 -c 'import time;time.sleep(100000000)'
 #py3_dotnet=1
