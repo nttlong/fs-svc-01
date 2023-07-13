@@ -58,9 +58,9 @@ buildFunc(){
           $repositiory/$user/$1:$2  \
           --platform=$platform ./.. -f $1  --push=true --output type=registry
     exit_status=$?
-    if [ "-$exit_status-" = "-0-" ]; then
-      reset_build
-    fi
+#    if [ "-$exit_status-" = "-0-" ]; then
+#      reset_build
+#    fi
     if [ ${exit_status} -ne 0 ]; then
       echo "build image $1 from base version $2 to $3 error"
       exit "${exit_status}"
@@ -241,6 +241,14 @@ COPY --from=javac / /
 COPY --from=opencv / /
 RUN mv -f /var/lib/dpkg/statoverride /var/lib/dpkg/statoverride-backup
 RUN apt-get update -y && apt-get install -y psmisc nocache
+RUN apt update && apt install python3-opencv && \
+    pip uninstall opencv-contrib-python -y && \
+    pip uninstall opencv-python -y && \
+    pip uninstall opencv-python-headless -y && \
+    pip install opencv-python
+RUN apt autoremove ghostscript -y
+RUN  apt install ocrmypdf -y
+
 COPY ./../docker-cy/check /check
 RUN chmod u+x /check/*.sh
 RUN /check/opencv.sh
@@ -249,14 +257,16 @@ RUN /check/libreoffice.sh
 RUN /check/tessract.sh
 RUN /check/tika.sh
 RUN /check/dotnet.sh
+
 ">>$base_py-com
 #export BUILDKIT_PROGRESS=
 #export platform=linux/amd64,linux/arm64/v8
 #export platform_=linux/amd64
 
-com_tag=$(($libreoffice_tag+$dotnet_tag+$tessract_tag+$javac_tag+$opencv_tag))
+com_tag=$(($libreoffice_tag+$dotnet_tag+$tessract_tag+$javac_tag+$opencv_tag+1))
 com_tag_build=$(tag $com_tag)
 com_image=$base_py-com:$com_tag_build
+buildFunc $base_py-com $com_tag_build $top_image $os
 buildFunc $base_py-com $com_tag_build $top_image $os
 #----- app-framework--------------
 rm -f $base_py-xdoc-framework
@@ -265,22 +275,32 @@ echo "
 FROM $repositiory/$user/$deep_learning_image as dlrn
 FROM $repositiory/$user/$cy_core_image as core
 FROM $repositiory/$user/$cy_env_image  as env
+#RUN find -name site-packages; exit 1
 FROM $repositiory/$user/$com_image
 #COPY --from=com / /
-COPY --from=dlrn /usr /usr
-COPY --from=core /usr /usr
+COPY --from=dlrn /usr/local/lib/python3.10 /usr/local/lib/python3.10
+COPY --from=core /usr/local/lib/python3.10 /usr/local/lib/python3.10
 COPY --from=core /app /app
-COPY --from=env /usr /usr/
+COPY --from=env /usr/local/lib/python3.10 /usr/local/lib/python3.10
 RUN pip uninstall pymongo -y && rm -fr /check
-RUN apt install python3-opencv
+#RUN apt update && apt install python3-opencv && \
+#    pip uninstall opencv-contrib-python -y && \
+#    pip uninstall opencv-python -y && \
+#    pip uninstall opencv-python-headless -y && \
+#    pip install opencv-python
+#RUN apt autoremove ghostscript -y
+#RUN  apt install ocrmypdf -y
+
+
+
 ">>$base_py-xdoc-framework
-xdoc_framework_tag=cpu.$com_tag.$deep_learning_tag.$cy_env_cpu_tag
+xdoc_framework_tag=cpu.$com_tag.$deep_learning_tag.$(($cy_env_cpu_tag+1))
 xdoc_framework_tag_build=$(tag $xdoc_framework_tag)
 xdoc_framework_image=$base_py-xdoc-framework:$xdoc_framework_tag_build
 buildFunc $base_py-xdoc-framework $xdoc_framework_tag_build $top_image $os
 #----- apps--------------
 rm -f $base_py-xdoc && cp -f ./templates/xdoc ./$base_py-xdoc
-xdoc_tag=$xdoc_framework_tag.1
+xdoc_tag=$xdoc_framework_tag.3
 xdoc_tag_build=$(tag $xdoc_tag)
 xdoc_image=$base_py-xdoc:$xdoc_tag_build
 buildFunc $base_py-xdoc $xdoc_tag_build $repositiory/$user/$xdoc_framework_image $os

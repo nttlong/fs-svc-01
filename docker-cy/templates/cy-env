@@ -10,4 +10,5 @@ RUN apt update && apt-get upgrade -y &&  apt install build-essential -y
 RUN  pip install -r /app/req.txt
 RUN pip install easyocr==1.6.2 --no-cache-dir
 RUN pip install python-doctr==0.6.0 --no-cache-dir
+
 RUN pip cache purge
